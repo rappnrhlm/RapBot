@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <meta
+        name="theme-color"
+        content="#f5f5f7"
+    >
+
+    <title>Bot Owner Manager</title>
+
+    <style>
+        :root {
+            color-scheme: light;
+
+            --bg: #f5f5f7;
+            --card: rgba(255, 255, 255, 0.78);
+            --card-solid: #ffffff;
+            --text: #1d1d1f;
+            --secondary: #6e6e73;
+            --border: rgba(0, 0, 0, 0.08);
+            --input: rgba(118, 118, 128, 0.12);
+            --button: #0071e3;
+            --button-hover: #0077ed;
+            --danger: #ff3b30;
+            --danger-bg: rgba(255, 59, 48, 0.10);
+            --overlay: rgba(0, 0, 0, 0.35);
+            --shadow:
+                0 20px 60px rgba(0, 0, 0, 0.08),
+                0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            background: var(--bg);
+            color: var(--text);
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "SF Pro Display",
+                "SF Pro Text",
+                "Helvetica Neue",
+                Arial,
+                sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+        }
+
+        .page {
+            width: 100%;
+            min-height: 100vh;
+            padding: 70px 20px 100px;
+        }
+
+        .container {
+            width: min(760px, 100%);
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            margin-bottom: 14px;
+
+            color: var(--button);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34c759;
+            box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.12);
+        }
+
+        .hero h1 {
+            margin: 0;
+
+            font-size: clamp(34px, 6vw, 52px);
+            line-height: 1.04;
+            letter-spacing: -0.045em;
+            font-weight: 700;
+        }
+
+        .hero p {
+            max-width: 510px;
+            margin: 15px auto 0;
+
+            color: var(--secondary);
+            font-size: 17px;
+            line-height: 1.5;
+            letter-spacing: -0.01em;
+        }
+
+        .main-card {
+            overflow: hidden;
+
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+
+            box-shadow: var(--shadow);
+
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+
+        .section-header {
+            padding: 28px 30px 20px;
+
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .section-title {
+            margin: 0 0 5px;
+
+            font-size: 21px;
+            font-weight: 650;
+            letter-spacing: -0.025em;
+        }
+
+        .section-description {
+            margin: 0;
+
+            color: var(--secondary);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .owner-list {
+            padding: 0 16px 16px;
+
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .owner {
+            min-height: 76px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+
+            padding: 14px 16px;
+
+            border: 1px solid transparent;
+            border-radius: 17px;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .owner:hover {
+            background: var(--input);
+            border-color: var(--border);
+        }
+
+        .owner-info {
+            min-width: 0;
+
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar {
+            flex: 0 0 auto;
+
+            width: 44px;
+            height: 44px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #e8e8ed,
+                    #c7c7cc
+                );
+
+            color: #444;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .owner-details {
+            min-width: 0;
+        }
+
+        .owner-name {
+            margin-bottom: 3px;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .owner-number {
+            color: var(--secondary);
+            font-size: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .actions {
+            flex: 0 0 auto;
+
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .action-button {
+            min-width: 58px;
+            height: 36px;
+
+            padding: 0 13px;
+
+            border-radius: 10px;
+
+            background: var(--input);
+            color: var(--text);
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                background 0.18s ease,
+                transform 0.18s ease;
+        }
+
+        .action-button:hover {
+            background: rgba(118, 118, 128, 0.20);
+        }
+
+        .action-button:active {
+            transform: scale(0.96);
+        }
+
+        .delete-button {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        .delete-button:hover {
+            background: rgba(255, 59, 48, 0.17);
+        }
+
+        .add-area {
+            padding: 14px 30px 30px;
+            text-align: center;
+        }
+
+        .add-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            height: 46px;
+            padding: 0 21px;
+
+            border-radius: 999px;
+
+            background: var(--button);
+            color: white;
+
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 4px 12px rgba(0, 113, 227, 0.22);
+
+            transition:
+                background 0.18s ease,
+                transform 0.18s ease,
+                box-shadow 0.18s ease;
+        }
+
+        .add-button:hover {
+            background: var(--button-hover);
+            box-shadow:
+                0 7px 18px rgba(0, 113, 227, 0.27);
+        }
+
+        .add-button:active {
+            transform: scale(0.97);
+        }
+
+        .plus {
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 0;
+        }
+
+        .empty {
+            padding: 50px 20px;
+
+            text-align: center;
+            color: var(--secondary);
+
+            font-size: 15px;
+        }
+
+        .message {
+            margin: 0 30px 15px;
+            padding: 12px 15px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+            line-height: 1.4;
+
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: messageIn 0.25s ease;
+        }
+
+        .message.success {
+            color: #248a3d;
+            background: rgba(52, 199, 89, 0.12);
+        }
+
+        .message.error {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background: var(--overlay);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transition:
+                opacity 0.25s ease,
+                visibility 0.25s ease;
+
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            width: min(440px, 100%);
+
+            padding: 28px;
+
+            background: var(--card-solid);
+
+            border: 1px solid var(--border);
+            border-radius: 24px;
+
+            box-shadow:
+                0 30px 100px rgba(0, 0, 0, 0.20);
+
+            transform: translateY(12px) scale(0.97);
+
+            transition:
+                transform 0.3s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        .modal.active .modal-box {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+
+            margin-bottom: 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background: var(--input);
+
+            font-size: 21px;
+        }
+
+        .modal-box h2 {
+            margin: 0;
+
+            font-size: 25px;
+            letter-spacing: -0.035em;
+        }
+
+        .modal-description {
+            margin: 8px 0 24px;
+
+            color: var(--secondary);
+
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            margin: 0 0 7px 3px;
+
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .field input {
+            width: 100%;
+            height: 48px;
+
+            padding: 0 14px;
+
+            border: 1px solid transparent;
+            border-radius: 12px;
+
+            outline: none;
+
+            background: var(--input);
+            color: var(--text);
+
+            font-size: 15px;
+
+            transition:
+                border-color 0.18s ease,
+                box-shadow 0.18s ease,
+                background 0.18s ease;
+        }
+
+        .field input::placeholder {
+            color: var(--secondary);
+            opacity: 0.75;
+        }
+
+        .field input:focus {
+            background: transparent;
+            border-color: var(--button);
+
+            box-shadow:
+                0 0 0 3px rgba(0, 113, 227, 0.12);
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+
+            margin-top: 24px;
+        }
+
+        .modal-button {
+            height: 46px;
+
+            border-radius: 12px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                transform 0.18s ease,
+                background 0.18s ease;
+        }
+
+        .modal-button:active {
+            transform: scale(0.97);
+        }
+
+        .cancel {
+            background: var(--input);
+            color: var(--text);
+        }
+
+        .cancel:hover {
+            background: rgba(118, 118, 128, 0.20);
+        }
+
+        .confirm {
+            background: var(--button);
+            color: white;
+        }
+
+        .confirm:hover {
+            background: var(--button-hover);
+        }
+
+        .confirm.danger {
+            background: var(--danger);
+        }
+
+        .confirm.danger:hover {
+            background: #ff5a52;
+        }
+
+        .pin-input {
+            text-align: center;
+
+            letter-spacing: 0.45em;
+
+            font-size: 22px !important;
+            font-weight: 600;
+        }
+
+        .delete-warning {
+            padding: 14px;
+
+            border-radius: 12px;
+
+            background: var(--danger-bg);
+            color: var(--danger);
+
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .loading {
+            padding: 45px 20px;
+
+            text-align: center;
+            color: var(--secondary);
+
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                padding: 42px 14px 70px;
+            }
+
+            .hero {
+                margin-bottom: 30px;
+            }
+
+            .hero h1 {
+                font-size: 38px;
+            }
+
+            .hero p {
+                font-size: 15px;
+            }
+
+            .main-card {
+                border-radius: 22px;
+            }
+
+            .section-header {
+                padding: 23px 20px 16px;
+            }
+
+            .owner-list {
+                padding: 0 10px 10px;
+            }
+
+            .owner {
+                padding: 13px 11px;
+            }
+
+            .owner-info {
+                gap: 11px;
+            }
+
+            .avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 15px;
+            }
+
+            .actions {
+                gap: 5px;
+            }
+
+            .action-button {
+                min-width: auto;
+                padding: 0 10px;
+            }
+
+            .add-area {
+                padding: 13px 20px 23px;
+            }
+
+            .message {
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+
+            .modal-box {
+                padding: 23px;
+                border-radius: 21px;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .owner {
+                align-items: flex-start;
+            }
+
+            .actions {
+                margin-left: auto;
+            }
+
+            .owner-number {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <main class="container">
+
+        <header class="hero">
+
+            <div class="eyebrow">
+                <span class="status-dot"></span>
+                Bot Owner Manager
+            </div>
+
+            <h1>
+                Manage your owners.
+            </h1>
+
+            <p>
+                Kelola nomor yang diizinkan menggunakan
+                command bot melalui chat pribadi.
+            </p>
+
+        </header>
+
+
+        <section class="main-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h2 class="section-title">
+                        Owners
+                    </h2>
+
+                    <p class="section-description">
+                        Nomor yang memiliki akses ke bot.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div id="message" class="message"></div>
+
+
+            <div
+                id="ownerList"
+                class="owner-list"
+            >
+                <div class="loading">
+                    Memuat owner...
+                </div>
+            </div>
+
+
+            <div class="add-area">
+
+                <button
+                    class="add-button"
+                    onclick="openAddModal()"
+                >
+                    <span class="plus">+</span>
+                    Tambah Owner
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<div
+    id="formModal"
+    class="modal"
+    onclick="closeOnBackdrop(event, 'formModal')"
+>
+
+    <div
+        class="modal-box"
+        onclick="event.stopPropagation()"
+    >
+
+        <div class="modal-icon">
+            <span id="formIcon">＋</span>
+        </div>
+
+        <h2 id="formTitle">
+            Tambah Owner
+        </h2>
+
+        <p
+            id="formDescription"
+            class="modal-description"
+        >
+            Tambahkan nomor baru yang boleh menggunakan
+            bot melalui chat pribadi.
+        </p>
+
+
+        <input
+            type="hidden"
+            id="oldNumber"
+        >
+
+
+        <div class="field">
+
+            <label for="name">
+                Nama
+            </label>
+
+            <input
+                id="name"
+                type="text"
+                autocomplete="off"
+                placeholder="Contoh: Raffa"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label for="number">
+                Nomor WhatsApp
+            </label>
+
+            <input
+                id="number"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="628123456789"
+            >
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="modal-button cancel"
+                onclick="closeModal('formModal')"
+            >
+                Batal
+            </button>
+
+            <button
+                class="modal-button confirm"
+                onclick="openPinModal()"
+            >
+                Lanjut
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div
+    id="pinModal"
+    class="modal"
+    onclick="closeOnBackdrop(event, 'pinModal')"
+>
+
+    <div
+        class="modal-box"
+        onclick="event.stopPropagation()"
+    >
+
+        <div class="modal-icon">
+            🔐
+        </div>
+
+        <h2>
+            Konfirmasi
+        </h2>
+
+        <p class="modal-description">
+            Masukkan PIN admin untuk mengonfirmasi
+            perubahan ini.
+        </p>
+
+
+        <div class="field">
+
+            <label for="pin">
+                PIN Admin
+            </label>
+
+            <input
+                id="pin"
+                class="pin-input"
+                type="password"
+                inputmode="numeric"
+                maxlength="6"
+                autocomplete="off"
+                placeholder="••••••"
+                onkeydown="handlePinKey(event)"
+            >
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="modal-button cancel"
+                onclick="closeModal('pinModal')"
+            >
+                Batal
+            </button>
+
+            <button
+                id="pinConfirm"
+                class="modal-button confirm"
+                onclick="submitAction()"
+            >
+                Konfirmasi
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    let currentAction = 'add';
+
+
+    async function loadOwners() {
+
+        try {
+
+            const response =
+                await fetch('/api/owners');
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ||
+                    'Gagal mengambil owner.'
+                );
+            }
+
+            renderOwners(data.owners || []);
+
+        } catch (error) {
+
+            document.getElementById(
+                'ownerList'
+            ).innerHTML = `
+                <div class="empty">
+                    Gagal memuat daftar owner.
+                </div>
+            `;
+
+            showMessage(
+                error.message,
+                'error'
+            );
+
+        }
+
+    }
+
+
+    function renderOwners(owners) {
+
+        const list =
+            document.getElementById(
+                'ownerList'
+            );
+
+
+        if (!owners.length) {
+
+            list.innerHTML = `
+                <div class="empty">
+                    Belum ada owner.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        list.innerHTML =
+            owners
+                .map(owner => {
+
+                    const initial =
+                        String(owner.name || '?')
+                            .trim()
+                            .charAt(0)
+                            .toUpperCase();
+
+                    return `
+                        <div class="owner">
+
+                            <div class="owner-info">
+
+                                <div class="avatar">
+                                    ${escapeHtml(initial)}
+                                </div>
+
+                                <div class="owner-details">
+
+                                    <div class="owner-name">
+                                        ${escapeHtml(owner.name)}
+                                    </div>
+
+                                    <div class="owner-number">
+                                        ${escapeHtml(owner.number)}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="actions">
+
+                                <button
+                                    class="action-button"
+                                    onclick='openEditModal(${JSON.stringify(owner)})'
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="action-button delete-button"
+                                    onclick='openDeleteModal(${JSON.stringify(owner)})'
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                })
+                .join('');
+
+    }
+
+
+    function openAddModal() {
+
+        currentAction = 'add';
+
+        document.getElementById(
+            'formTitle'
+        ).textContent = 'Tambah Owner';
+
+        document.getElementById(
+            'formDescription'
+        ).textContent =
+            'Tambahkan nomor baru yang boleh menggunakan bot melalui chat pribadi.';
+
+        document.getElementById(
+            'formIcon'
+        ).textContent = '＋';
+
+        document.getElementById(
+            'name'
+        ).value = '';
+
+        document.getElementById(
+            'number'
+        ).value = '';
+
+        document.getElementById(
+            'oldNumber'
+        ).value = '';
+
+        document.getElementById(
+            'formModal'
+        ).classList.add('active');
+
+        setTimeout(() => {
+
+            document.getElementById(
+                'name'
+            ).focus();
+
+        }, 250);
+
+    }
+
+
+    function openEditModal(owner) {
+
+        currentAction = 'edit';
+
+        document.getElementById(
+            'formTitle'
+        ).textContent = 'Edit Owner';
+
+        document.getElementById(
+            'formDescription'
+        ).textContent =
+            'Perbarui nama atau nomor WhatsApp owner ini.';
+
+        document.getElementById(
+            'formIcon'
+        ).textContent = '✎';
+
+        document.getElementById(
+            'name'
+        ).value = owner.name;
+
+        document.getElementById(
+            'number'
+        ).value = owner.number;
+
+        document.getElementById(
+            'oldNumber'
+        ).value = owner.number;
+
+        document.getElementById(
+            'formModal'
+        ).classList.add('active');
+
+        setTimeout(() => {
+
+            document.getElementById(
+                'name'
+            ).focus();
+
+        }, 250);
+
+    }
+
+
+    function openDeleteModal(owner) {
+
+        currentAction = 'delete';
+
+        document.getElementById(
+            'formTitle'
+        ).textContent =
+            `Hapus ${owner.name}?`;
+
+        document.getElementById(
+            'formDescription'
+        ).innerHTML = `
+            <div class="delete-warning">
+                Owner <strong>${escapeHtml(owner.name)}</strong>
+                dengan nomor
+                <strong>${escapeHtml(owner.number)}</strong>
+                akan dihapus dari daftar akses bot.
+            </div>
+        `;
+
+        document.getElementById(
+            'formIcon'
+        ).textContent = '⌫';
+
+        document.getElementById(
+            'name'
+        ).value = owner.name;
+
+        document.getElementById(
+            'number'
+        ).value = owner.number;
+
+        document.getElementById(
+            'oldNumber'
+        ).value = owner.number;
+
+        document.getElementById(
+            'formModal'
+        ).classList.add('active');
+
+    }
+
+
+    function openPinModal() {
+
+        if (currentAction !== 'delete') {
+
+            const name =
+                document.getElementById(
+                    'name'
+                ).value.trim();
+
+            const number =
+                document.getElementById(
+                    'number'
+                ).value.trim();
+
+            if (!name) {
+
+                showMessage(
+                    'Nama wajib diisi.',
+                    'error'
+                );
+
+                return;
+
+            }
+
+            if (!number) {
+
+                showMessage(
+                    'Nomor WhatsApp wajib diisi.',
+                    'error'
+                );
+
+                return;
+
+            }
+
+        }
+
+
+        closeModal('formModal');
+
+
+        document.getElementById(
+            'pin'
+        ).value = '';
+
+
+        const confirmButton =
+            document.getElementById(
+                'pinConfirm'
+            );
+
+
+        if (currentAction === 'delete') {
+
+            confirmButton.textContent =
+                'Hapus';
+
+            confirmButton.classList.add(
+                'danger'
+            );
+
+        } else {
+
+            confirmButton.textContent =
+                'Konfirmasi';
+
+            confirmButton.classList.remove(
+                'danger'
+            );
+
+        }
+
+
+        document.getElementById(
+            'pinModal'
+        ).classList.add('active');
+
+
+        setTimeout(() => {
+
+            document.getElementById(
+                'pin'
+            ).focus();
+
+        }, 250);
+
+    }
+
+
+    async function submitAction() {
+
+        const pin =
+            document.getElementById(
+                'pin'
+            ).value.trim();
+
+
+        if (!pin) {
+
+            showMessage(
+                'Masukkan PIN admin.',
+                'error'
+            );
+
+            return;
+
+        }
+
+
+        let response;
+
+
+        try {
+
+            if (currentAction === 'add') {
+
+                response =
+                    await fetch(
+                        '/api/owners',
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    name:
+                                        document
+                                            .getElementById(
+                                                'name'
+                                            )
+                                            .value
+                                            .trim(),
+
+                                    number:
+                                        document
+                                            .getElementById(
+                                                'number'
+                                            )
+                                            .value
+                                            .trim(),
+
+                                    pin
+                                })
+                        }
+                    );
+
+            }
+
+
+            if (currentAction === 'edit') {
+
+                const oldNumber =
+                    document.getElementById(
+                        'oldNumber'
+                    ).value;
+
+
+                response =
+                    await fetch(
+                        `/api/owners/${encodeURIComponent(oldNumber)}`,
+                        {
+                            method: 'PUT',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    name:
+                                        document
+                                            .getElementById(
+                                                'name'
+                                            )
+                                            .value
+                                            .trim(),
+
+                                    number:
+                                        document
+                                            .getElementById(
+                                                'number'
+                                            )
+                                            .value
+                                            .trim(),
+
+                                    pin
+                                })
+                        }
+                    );
+
+            }
+
+
+            if (currentAction === 'delete') {
+
+                const number =
+                    document.getElementById(
+                        'oldNumber'
+                    ).value;
+
+
+                response =
+                    await fetch(
+                        `/api/owners/${encodeURIComponent(number)}`,
+                        {
+                            method: 'DELETE',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    pin
+                                })
+                        }
+                    );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                showMessage(
+                    data.message ||
+                    'Terjadi kesalahan.',
+                    'error'
+                );
+
+                return;
+
+            }
+
+
+            closeModal('pinModal');
+
+
+            renderOwners(
+                data.owners || []
+            );
+
+
+            showMessage(
+                data.message ||
+                'Berhasil.',
+                'success'
+            );
+
+
+        } catch (error) {
+
+            showMessage(
+                'Tidak dapat terhubung ke server.',
+                'error'
+            );
+
+        }
+
+    }
+
+
+    function closeModal(id) {
+
+        document
+            .getElementById(id)
+            .classList.remove('active');
+
+    }
+
+
+    function closeOnBackdrop(event, id) {
+
+        if (
+            event.target === event.currentTarget
+        ) {
+            closeModal(id);
+        }
+
+    }
+
+
+    function handlePinKey(event) {
+
+        if (event.key === 'Enter') {
+            submitAction();
+        }
+
+        if (event.key === 'Escape') {
+            closeModal('pinModal');
+        }
+
+    }
+
+
+    document.addEventListener(
+        'keydown',
+        event => {
+
+            if (event.key === 'Escape') {
+
+                closeModal('formModal');
+                closeModal('pinModal');
+
+            }
+
+        }
+    );
+
+
+    function showMessage(
+        text,
+        type
+    ) {
+
+        const element =
+            document.getElementById(
+                'message'
+            );
+
+
+        element.textContent = text;
+
+        element.className =
+            `message show ${type}`;
+
+
+        setTimeout(() => {
+
+            element.classList.remove(
+                'show'
+            );
+
+        }, 3500);
+
+    }
+
+
+    function escapeHtml(value) {
+
+        return String(value ?? '')
+            .replaceAll(
+                '&',
+                '&amp;'
+            )
+            .replaceAll(
+                '<',
+                '&lt;'
+            )
+            .replaceAll(
+                '>',
+                '&gt;'
+            )
+            .replaceAll(
+                '"',
+                '&quot;'
+            )
+            .replaceAll(
+                "'",
+                '&#039;'
+            );
+
+    }
+
+
+    loadOwners();
+
+</script>
+
+</body>
+</html>

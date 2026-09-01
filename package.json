@@ -1,0 +1,35 @@
+{
+  "name": "bot-wa-wwebjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon --ignore auth_baileys/ --ignore data/ --ignore owners.json bot.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@ghuts/brat": "^1.0.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "brat-canvas": "^1.0.30",
+    "canvas": "^3.2.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pino": "^10.3.1",
+    "qrcode-terminal": "^0.12.0",
+    "sharp": "^0.35.4",
+    "wa-sticker-formatter": "^4.4.4",
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "sharp@0.35.4": true,
+    "sharp@0.30.7": true
+  }
+}

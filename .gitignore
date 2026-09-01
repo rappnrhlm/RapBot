@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# WhatsApp authentication/session
+auth_baileys/
+.wwebjs_auth/
+
+# Runtime / local data
+data/
+
+# Backup files
+*.bak
+
+# Logs
+*.log
+logs/
+
+# OS/editor
+.DS_Store
+.vscode/
