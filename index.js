@@ -9,6 +9,7 @@ const client = new Client({
         remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018972684-alpha.html',
     },
     puppeteer: {
+        executablePath: '/usr/bin/chromium',
         headless: true,
         args: [
             '--no-sandbox',
