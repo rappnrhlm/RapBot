@@ -13,6 +13,7 @@
   "type": "commonjs",
   "dependencies": {
     "@ghuts/brat": "^1.0.1",
+    "@napi-rs/canvas": "^1.0.8",
     "@whiskeysockets/baileys": "^7.0.0-rc14",
     "brat-canvas": "^1.0.30",
     "canvas": "^3.2.3",

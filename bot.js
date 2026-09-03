@@ -10,6 +10,7 @@ const {
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 const { Sticker, StickerTypes } = require('wa-sticker-formatter');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const fs = require('fs');
 const path = require('path');
 
@@ -661,6 +662,40 @@ function getBody(msg) {
     );
 }
 
+// HELPER: Menggambar teks meme di atas gambar
+async function drawMeme(imageBuffer, topText, bottomText) {
+    const img = await loadImage(imageBuffer);
+    const canvas = createCanvas(img.width, img.height);
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(img, 0, 0, img.width, img.height);
+
+    const fontSize = Math.floor(img.width / 6);
+    ctx.font = `normal ${fontSize}px Impact, sans-serif`;
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = Math.floor(fontSize / 8);
+    ctx.textAlign = 'center';
+
+    if (topText) {
+        ctx.textBaseline = 'top';
+        const x = img.width / 2;
+        const y = img.height * 0.05;
+        ctx.strokeText(topText.toUpperCase(), x, y);
+        ctx.fillText(topText.toUpperCase(), x, y);
+    }
+
+    if (bottomText) {
+        ctx.textBaseline = 'bottom';
+        const x = img.width / 2;
+        const y = img.height * 0.95;
+        ctx.strokeText(bottomText.toUpperCase(), x, y);
+        ctx.fillText(bottomText.toUpperCase(), x, y);
+    }
+
+    return canvas.toBuffer('image/png');
+}
+
 async function sendMenu(
     sock,
     from,
@@ -680,6 +715,7 @@ async function sendMenu(
 
 🎨 STICKER
 │ !stiker
+│ !smeme <teks atas|teks bawah>
 │ !brat <teks>
 
 👥 GROUP
@@ -786,6 +822,9 @@ async function sendHelp(
         stiker:
             '🎨 !stiker\nKirim gambar dengan caption !stiker atau reply gambar.',
 
+        smeme:
+            '🎨 !smeme <teks atas|teks bawah>\nMembuat stiker meme dengan teks dari gambar.',
+
         brat:
             '🎨 !brat <teks>\nMembuat stiker Brat dari teks.',
 
@@ -834,6 +873,7 @@ Ketik:
 !help <command>
 
 Contoh:
+!help smeme
 !help brat
 !help kick
 !help welcome`
@@ -1363,6 +1403,93 @@ ${topCommands}
                         {
                             text:
                                 '❌ Gagal membuat stiker.'
+                        },
+                        { quoted: msg }
+                    );
+                }
+
+                return;
+            }
+
+            if (
+                command === 'smeme'
+            ) {
+                try {
+                    const rawText = args.join(' ').trim();
+                    const textParts = rawText.split('|');
+                    const topText = textParts[0] ? textParts[0].trim() : '';
+                    const bottomText = textParts[1] ? textParts[1].trim() : (textParts[0] ? '' : '');
+
+                    const imageMsg =
+                        msg.message?.imageMessage ||
+                        msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+
+                    if (!imageMsg) {
+                        await sock.sendMessage(
+                            from,
+                            {
+                                text:
+                                    '❌ Kirim/reply gambar dengan caption:\n*!smeme teks atas|teks bawah*\n\nContoh:\n!smeme ketika ngoding|error 500'
+                            },
+                            { quoted: msg }
+                        );
+
+                        return;
+                    }
+
+                    await sock.sendMessage(
+                        from,
+                        {
+                            text:
+                                '⏳ Sedang membuat stiker meme...'
+                        },
+                        { quoted: msg }
+                    );
+
+                    const stream =
+                        await downloadContentFromMessage(
+                            imageMsg,
+                            'image'
+                        );
+
+                    let buffer = Buffer.alloc(0);
+
+                    for await (const chunk of stream) {
+                        buffer = Buffer.concat([buffer, chunk]);
+                    }
+
+                    const memeBuffer = await drawMeme(buffer, topText, bottomText);
+
+                    const sticker = new Sticker(memeBuffer, {
+                        pack: 'Meme Sticker',
+                        author: 'Raffa',
+                        type: StickerTypes.FULL,
+                        quality: 80
+                    });
+
+                    const stickerBuffer = await sticker.toBuffer();
+
+                    await sock.sendMessage(
+                        from,
+                        {
+                            sticker: stickerBuffer
+                        },
+                        { quoted: msg }
+                    );
+
+                    incrementStickerStats();
+
+                } catch (err) {
+                    console.error(
+                        'Error Smeme:',
+                        err
+                    );
+
+                    await sock.sendMessage(
+                        from,
+                        {
+                            text:
+                                '❌ Gagal membuat stiker meme.'
                         },
                         { quoted: msg }
                     );
