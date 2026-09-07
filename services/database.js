@@ -335,6 +335,33 @@ function getPool() {
     return pool;
 }
 
+const INITIAL_GROUP = {
+    id: '120363429518970623@g.us',
+    name: 'Bukittinggi Kos',
+    groupName: 'admin @bukittinggikos',
+    initializedAt: '2026-09-07T14:38:00.333Z',
+    initializedBy: '6285195532009'
+};
+
+const INITIAL_KOST = [
+    { id: 'KST-000001', group_id: '120363429518970623@g.us', name: 'Kost Farrel', instagram: 'kostfarrel_bukittinggi', tiktok: null, whatsapp: null, status: 'sent', added_by: '6285195532009', created_at: '2026-09-07 21:45:55', sent_by: '6282171641083', sent_at: '2026-09-07 23:00:39' },
+    { id: 'KST-000002', group_id: '120363429518970623@g.us', name: 'Kost Putri Enam Dua', instagram: 'kostputrienamdua', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 22:53:25', sent_by: null, sent_at: null },
+    { id: 'KST-000003', group_id: '120363429518970623@g.us', name: 'Kost Al Hazen', instagram: 'kost_al_hazen_bukittinggi', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:08:31', sent_by: null, sent_at: null },
+    { id: 'KST-000004', group_id: '120363429518970623@g.us', name: 'Kos Gunapaksi', instagram: 'suchi_putri', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:12:40', sent_by: null, sent_at: null },
+    { id: 'KST-000005', group_id: '120363429518970623@g.us', name: 'Fatimah Guesthouse', instagram: 'fatimah_guesthouse', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:14:55', sent_by: null, sent_at: null },
+    { id: 'KST-000006', group_id: '120363429518970623@g.us', name: 'Kost Putri', instagram: 'dhiyazzu_', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:16:04', sent_by: null, sent_at: null },
+    { id: 'KST-000007', group_id: '120363429518970623@g.us', name: 'Mubarak Homestay & Kost', instagram: 'mubarak_homestaybkt', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:28:57', sent_by: null, sent_at: null },
+    { id: 'KST-000008', group_id: '120363429518970623@g.us', name: 'Sabila Homestay', instagram: 'sabilahomestay', tiktok: null, whatsapp: '6282283771685', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:30:04', sent_by: null, sent_at: null },
+    { id: 'KST-000009', group_id: '120363429518970623@g.us', name: 'Kos Putri Tangah Sawah', instagram: null, tiktok: null, whatsapp: '6281268201018', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:33:03', sent_by: null, sent_at: null },
+    { id: 'KST-000010', group_id: '120363429518970623@g.us', name: 'Kontrakan Jorong Tampaik', instagram: null, tiktok: null, whatsapp: '6285760271400', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:34:00', sent_by: null, sent_at: null },
+    { id: 'KST-000011', group_id: '120363429518970623@g.us', name: 'Kontrakan jl.Cangkiang', instagram: null, tiktok: null, whatsapp: '6281267075917', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:35:18', sent_by: null, sent_at: null },
+    { id: 'KST-000012', group_id: '120363429518970623@g.us', name: 'Kost di Birugo', instagram: null, tiktok: null, whatsapp: '6281374043580', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:36:03', sent_by: null, sent_at: null },
+    { id: 'KST-000013', group_id: '120363429518970623@g.us', name: 'Kontrakan simpang pakan ladang', instagram: null, tiktok: null, whatsapp: '6281372282374', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:37:11', sent_by: null, sent_at: null },
+    { id: 'KST-000014', group_id: '120363429518970623@g.us', name: 'Kost Putri dekat UIN', instagram: 'kost_uin_bukittinggi', tiktok: null, whatsapp: '6285718745033', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:38:26', sent_by: null, sent_at: null },
+    { id: 'KST-000015', group_id: '120363429518970623@g.us', name: 'Rumah Kita', instagram: null, tiktok: null, whatsapp: '6281277224179', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:39:31', sent_by: null, sent_at: null },
+    { id: 'KST-000016', group_id: '120363429518970623@g.us', name: 'Kost Putri Gulai Bancah', instagram: null, tiktok: null, whatsapp: '6288279032407', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:40:21', sent_by: null, sent_at: null }
+];
+
 async function ensureKostTable() {
     const db = getPool();
     await db.query(`
@@ -360,6 +387,31 @@ async function ensureKostTable() {
         await db.query(`ALTER TABLE kost ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(50) NULL AFTER tiktok`);
         await db.query(`ALTER TABLE kost MODIFY COLUMN instagram VARCHAR(100) NULL DEFAULT NULL`);
     } catch {}
+
+    // Otomatis daftarkan grup Bukittinggi Kos jika belum ada di data/groups.json
+    try {
+        const groups = getGroups();
+        if (!groups.some(g => g.id === INITIAL_GROUP.id)) {
+            addGroup(INITIAL_GROUP);
+        }
+    } catch {}
+
+    // Otomatis masukkan 16 data kost awal jika tabel kost di database masih kosong
+    try {
+        const [cntRows] = await db.query('SELECT COUNT(*) as cnt FROM kost');
+        if (cntRows[0]?.cnt === 0) {
+            for (const k of INITIAL_KOST) {
+                await db.query(
+                    `INSERT IGNORE INTO kost (id, group_id, name, instagram, tiktok, whatsapp, status, added_by, created_at, sent_by, sent_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [k.id, k.group_id, k.name, k.instagram, k.tiktok, k.whatsapp, k.status, k.added_by, k.created_at, k.sent_by, k.sent_at]
+                );
+            }
+            console.log('[database] Auto-seeded 16 data kost awal ke MariaDB.');
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed check error:', e.message);
+    }
 }
 
 function cleanInstagramUsername(input) {
