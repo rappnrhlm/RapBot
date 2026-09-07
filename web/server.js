@@ -1,72 +1,30 @@
 require('dotenv').config();
 
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
+const database = require('../services/database');
+const { normalizePhoneNumber } = require('../utils/phone');
 
 const app = express();
 const PORT = process.env.WEB_PORT || 3001;
 const ADMIN_PIN = process.env.ADMIN_PIN;
 
-const OWNER_FILE = path.join(__dirname, '..', 'data', 'owners.json');
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-function readOwners() {
-    if (!fs.existsSync(OWNER_FILE)) {
-        fs.writeFileSync(
-            OWNER_FILE,
-            JSON.stringify([], null, 4)
-        );
-    }
-
-    try {
-        const data = JSON.parse(
-            fs.readFileSync(OWNER_FILE, 'utf8')
-        );
-
-        return Array.isArray(data) ? data : [];
-    } catch {
-        return [];
-    }
-}
-
-function writeOwners(owners) {
-    fs.writeFileSync(
-        OWNER_FILE,
-        JSON.stringify(owners, null, 4)
-    );
-}
-
-function normalizeNumber(number) {
-    let value = String(number || '')
-        .replace(/\D/g, '');
-
-    if (value.startsWith('0')) {
-        value = '62' + value.slice(1);
-    }
-
-    return value;
-}
-
 function validatePin(pin) {
-    return String(pin || '') === String(ADMIN_PIN);
+    return Boolean(ADMIN_PIN && String(pin || '') === String(ADMIN_PIN));
 }
 
 app.get('/api/owners', (req, res) => {
     res.json({
         success: true,
-        owners: readOwners()
+        owners: database.getOwners()
     });
 });
 
 app.post('/api/owners', (req, res) => {
-    const {
-        name,
-        number,
-        pin
-    } = req.body;
+    const { name, number, pin } = req.body;
 
     if (!validatePin(pin)) {
         return res.status(401).json({
@@ -75,11 +33,8 @@ app.post('/api/owners', (req, res) => {
         });
     }
 
-    const cleanName =
-        String(name || '').trim();
-
-    const cleanNumber =
-        normalizeNumber(number);
+    const cleanName = String(name || '').trim();
+    const cleanNumber = normalizePhoneNumber(number);
 
     if (!cleanName) {
         return res.status(400).json({
@@ -95,15 +50,12 @@ app.post('/api/owners', (req, res) => {
         });
     }
 
-    const owners = readOwners();
+    const owners = database.getOwners();
 
-    if (
-        owners.some(
-            owner =>
-                normalizeNumber(owner.number) ===
-                cleanNumber
-        )
-    ) {
+    if (owners.some(owner => {
+        const oNum = typeof owner === 'object' ? owner.number : owner;
+        return normalizePhoneNumber(oNum) === cleanNumber;
+    })) {
         return res.status(409).json({
             success: false,
             message: 'Nomor tersebut sudah menjadi owner.'
@@ -112,10 +64,11 @@ app.post('/api/owners', (req, res) => {
 
     owners.push({
         name: cleanName,
-        number: cleanNumber
+        number: cleanNumber,
+        hidden: false
     });
 
-    writeOwners(owners);
+    database.saveOwners(owners);
 
     res.json({
         success: true,
@@ -125,14 +78,8 @@ app.post('/api/owners', (req, res) => {
 });
 
 app.put('/api/owners/:number', (req, res) => {
-    const oldNumber =
-        normalizeNumber(req.params.number);
-
-    const {
-        name,
-        number,
-        pin
-    } = req.body;
+    const oldNumber = normalizePhoneNumber(req.params.number);
+    const { name, number, pin } = req.body;
 
     if (!validatePin(pin)) {
         return res.status(401).json({
@@ -141,11 +88,8 @@ app.put('/api/owners/:number', (req, res) => {
         });
     }
 
-    const cleanName =
-        String(name || '').trim();
-
-    const cleanNumber =
-        normalizeNumber(number);
+    const cleanName = String(name || '').trim();
+    const cleanNumber = normalizePhoneNumber(number);
 
     if (!cleanName) {
         return res.status(400).json({
@@ -161,14 +105,11 @@ app.put('/api/owners/:number', (req, res) => {
         });
     }
 
-    const owners = readOwners();
-
-    const index =
-        owners.findIndex(
-            owner =>
-                normalizeNumber(owner.number) ===
-                oldNumber
-        );
+    const owners = database.getOwners();
+    const index = owners.findIndex(owner => {
+        const oNum = typeof owner === 'object' ? owner.number : owner;
+        return normalizePhoneNumber(oNum) === oldNumber;
+    });
 
     if (index === -1) {
         return res.status(404).json({
@@ -177,13 +118,11 @@ app.put('/api/owners/:number', (req, res) => {
         });
     }
 
-    const duplicate =
-        owners.some(
-            (owner, i) =>
-                i !== index &&
-                normalizeNumber(owner.number) ===
-                cleanNumber
-        );
+    const duplicate = owners.some((owner, i) => {
+        if (i === index) return false;
+        const oNum = typeof owner === 'object' ? owner.number : owner;
+        return normalizePhoneNumber(oNum) === cleanNumber;
+    });
 
     if (duplicate) {
         return res.status(409).json({
@@ -192,12 +131,14 @@ app.put('/api/owners/:number', (req, res) => {
         });
     }
 
+    const currentOwner = owners[index];
     owners[index] = {
         name: cleanName,
-        number: cleanNumber
+        number: cleanNumber,
+        hidden: currentOwner?.hidden || false
     };
 
-    writeOwners(owners);
+    database.saveOwners(owners);
 
     res.json({
         success: true,
@@ -207,12 +148,8 @@ app.put('/api/owners/:number', (req, res) => {
 });
 
 app.delete('/api/owners/:number', (req, res) => {
-    const number =
-        normalizeNumber(req.params.number);
-
-    const {
-        pin
-    } = req.body;
+    const number = normalizePhoneNumber(req.params.number);
+    const { pin } = req.body;
 
     if (!validatePin(pin)) {
         return res.status(401).json({
@@ -221,14 +158,18 @@ app.delete('/api/owners/:number', (req, res) => {
         });
     }
 
-    const owners = readOwners();
+    if (database.isSuperOwner(number)) {
+        return res.status(403).json({
+            success: false,
+            message: 'Super owner tidak bisa dihapus.'
+        });
+    }
 
-    const index =
-        owners.findIndex(
-            owner =>
-                normalizeNumber(owner.number) ===
-                number
-        );
+    const owners = database.getOwners();
+    const index = owners.findIndex(owner => {
+        const oNum = typeof owner === 'object' ? owner.number : owner;
+        return normalizePhoneNumber(oNum) === number;
+    });
 
     if (index === -1) {
         return res.status(404).json({
@@ -238,8 +179,7 @@ app.delete('/api/owners/:number', (req, res) => {
     }
 
     owners.splice(index, 1);
-
-    writeOwners(owners);
+    database.saveOwners(owners);
 
     res.json({
         success: true,
@@ -252,8 +192,8 @@ app.get('/test', (req, res) => {
     res.send('OK');
 });
 
-app.listen(PORT, () => {
-    console.log(
-        `Owner Manager berjalan di http://localhost:${PORT}`
-    );
+const server = app.listen(PORT, () => {
+    console.log(`[WebServer] 🌐 Owner Manager berjalan di http://localhost:${PORT}`);
 });
+
+module.exports = { app, server };
