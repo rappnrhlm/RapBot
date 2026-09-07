@@ -31,10 +31,12 @@ module.exports = {
             'autoreply-list': '📋 !autoreply-list\nMenampilkan daftar autoreply yang terdaftar.',
             'autoreply-del': '🗑️ !autoreply-del !trigger\nMenghapus autoreply (Khusus Owner).',
             'autoreply-edit': '✏️ !autoreply-edit !trigger|respons baru\nMengubah autoreply (Khusus Owner).',
-            addkost: '🏠 !addkost <Nama Kost> > <username_ig>\nMenambahkan data kos ke daftar (Grup Kos).',
-            kost: '🏠 !kost [all|pending|sent]\nMenampilkan daftar kos berdasarkan status.',
-            cari: '🔍 !cari <nama/ig>\nMencari data kos dalam daftar.',
-            sent: '✅ !sent <Nama Kost 1> <Nama Kost 2> ...\nMenandai status kos menjadi sent.'
+            addkost: '🏠 !addkost <Nama Kost> > <kontak (ig/wa/tt)>\nMenambahkan data kos (mendukung Instagram, WhatsApp, TikTok).',
+            kost: '🏠 !kost [all|pending|sent] atau !kost dm atau !kost lengkap <ID>\nMenampilkan daftar kos, daftar link untuk DM, atau detail kos.',
+            cari: '🔍 !cari <nama/kontak/ID>\nMencari data kos dalam daftar.',
+            sent: '✅ !sent <ID>\nMenandai status kos menjadi sent berdasarkan ID.',
+            delkost: '🗑️ !delkost <ID>\nMenghapus data kos berdasarkan ID.',
+            initgroup: '👥 !initgroup <nama>\nInisialisasi registrasi grup secara persistent.'
         };
 
         if (!args || !args[0]) {

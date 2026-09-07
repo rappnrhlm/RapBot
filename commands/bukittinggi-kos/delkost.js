@@ -1,11 +1,11 @@
 module.exports = {
-    name: 'sent',
-    aliases: ['kirim'],
+    name: 'delkost',
+    aliases: ['hapuskost'],
     category: 'bukittinggi-kos',
-    description: 'Menandai status data kost menjadi SENT berdasarkan ID.',
-    usage: '!sent <ID>',
+    description: 'Menghapus data kost berdasarkan ID.',
+    usage: '!delkost <ID>',
 
-    async execute({ sock, msg, from, senderNumber, args, isGroup: isGroupChat, reply, services, utils }) {
+    async execute({ sock, msg, from, args, isGroup: isGroupChat, reply, services, utils }) {
         const database = services?.database || require('../../services/database');
         const jidUtils = utils?.jid || require('../../utils/jid');
 
@@ -37,45 +37,34 @@ Gunakan:
             const targetId = args[0]?.trim();
             if (!targetId) {
                 const formatGuide =
-`❌ Format: !sent <ID>
+`❌ Format: !delkost <ID>
 
 Contoh:
-!sent KST-000001
+!delkost KST-000001
 
 💡 Gunakan !cari <nama> untuk melihat ID kost.`;
                 return sendReply(formatGuide);
             }
 
-            const result = await database.markKostSent(targetId, from, senderNumber || 'unknown');
+            const result = await database.deleteKost(targetId, from);
 
             if (result.notFound) {
                 return sendReply(`❌ Kost dengan ID ${targetId.toUpperCase()} tidak ditemukan.`);
-            }
-
-            if (result.alreadySent) {
-                const idLabel = result.data?.id || targetId.toUpperCase();
-                return sendReply(`ℹ️ Kost ${idLabel} sudah berstatus SENT.`);
             }
 
             if (!result.success) {
                 return sendReply(`❌ ${result.message}`);
             }
 
-            const kost = result.data;
-            const sentAtFormatted = database.formatIndonesianDateTime(kost.sentAt);
-
             const succMsg =
-`✅ *KOST BERHASIL DITANDAI SENT*
+`✅ Kost berhasil dihapus.
 
-🆔 ${kost.id}
-🏠 ${kost.name}
-📌 Status: ✅ SENT
-👤 Sent By: ${kost.sentBy || senderNumber || '-'}
-🕒 Sent At: ${sentAtFormatted}`;
+🆔 ${result.data.id}
+🏠 ${result.data.name}`;
 
             return sendReply(succMsg);
         } catch (err) {
-            console.error('[commands/bukittinggi-kos/sent] Error:', err);
+            console.error('[commands/bukittinggi-kos/delkost] Error:', err);
             const userMsg = err?.userFriendly ? err.message : '❌ Data kost sedang tidak dapat diakses. Silakan coba lagi.';
             return sendReply(userMsg);
         }

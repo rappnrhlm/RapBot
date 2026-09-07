@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f5f7">
+    <title>Bukittinggi Kos — Admin Panel</title>
+
+    <style>
+        :root {
+            color-scheme: light;
+
+            --bg: #f5f5f7;
+            --card: rgba(255, 255, 255, 0.78);
+            --card-solid: #ffffff;
+            --text: #1d1d1f;
+            --secondary: #6e6e73;
+            --border: rgba(0, 0, 0, 0.08);
+            --input: rgba(118, 118, 128, 0.12);
+            --button: #0071e3;
+            --button-hover: #0077ed;
+            --danger: #ff3b30;
+            --danger-bg: rgba(255, 59, 48, 0.10);
+            --warning: #ff9500;
+            --warning-bg: rgba(255, 149, 0, 0.12);
+            --success: #34c759;
+            --success-bg: rgba(52, 199, 89, 0.12);
+            --overlay: rgba(0, 0, 0, 0.35);
+            --shadow:
+                0 20px 60px rgba(0, 0, 0, 0.08),
+                0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "SF Pro Display",
+                "SF Pro Text",
+                "Helvetica Neue",
+                Arial,
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        button, input, select {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+        }
+
+        .page {
+            width: 100%;
+            min-height: 100vh;
+            padding: 50px 20px 90px;
+        }
+
+        .container {
+            width: min(840px, 100%);
+            margin: 0 auto;
+        }
+
+        /* Top Navigation Switcher */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .nav-switcher {
+            display: inline-flex;
+            background: rgba(118, 118, 128, 0.14);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 3px;
+        }
+
+        .nav-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-decoration: none;
+            border-radius: 9px;
+            transition: all 0.18s ease;
+        }
+
+        .nav-tab:hover {
+            color: var(--text);
+        }
+
+        .nav-tab.active {
+            background: #ffffff;
+            color: var(--text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        }
+
+        .pin-badge-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            background: var(--card-solid);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--secondary);
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .pin-badge-btn:hover {
+            background: var(--input);
+            color: var(--text);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 12px;
+            color: var(--button);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34c759;
+            box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.12);
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(34px, 5.5vw, 48px);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+        }
+
+        .hero p {
+            max-width: 520px;
+            margin: 12px auto 0;
+            color: var(--secondary);
+            font-size: 16px;
+            line-height: 1.48;
+            letter-spacing: -0.01em;
+        }
+
+        /* Metrics Bar (Apple Style Stats) */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .metric-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 0, 0, 0.14);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .metric-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .metric-pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .metric-pill.all {
+            background: rgba(0, 113, 227, 0.10);
+            color: var(--button);
+        }
+
+        .metric-pill.pending {
+            background: var(--warning-bg);
+            color: #b45309;
+        }
+
+        .metric-pill.sent {
+            background: var(--success-bg);
+            color: #248a3d;
+        }
+
+        .metric-number {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            line-height: 1.1;
+        }
+
+        /* Main Glass Card */
+        .main-card {
+            overflow: hidden;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+
+        .section-header {
+            padding: 26px 30px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            margin: 0 0 4px;
+            font-size: 21px;
+            font-weight: 650;
+            letter-spacing: -0.025em;
+        }
+
+        .section-description {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Filter Controls */
+        .controls-row {
+            padding: 16px 26px 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .search-field {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+            max-width: 320px;
+        }
+
+        .search-field input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px 0 36px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            outline: none;
+            background: var(--input);
+            color: var(--text);
+            font-size: 14px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .search-field input:focus {
+            background: #ffffff;
+            border-color: var(--button);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+        }
+
+        .search-field .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--secondary);
+            pointer-events: none;
+        }
+
+        .segmented-filter {
+            display: inline-flex;
+            background: rgba(118, 118, 128, 0.12);
+            padding: 3px;
+            border-radius: 10px;
+            gap: 2px;
+        }
+
+        .segment-btn {
+            background: transparent;
+            border: 0;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .segment-btn.active {
+            background: #ffffff;
+            color: var(--text);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Kost List Presentation */
+        .kost-list {
+            padding: 12px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kost-item {
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border: 1px solid transparent;
+            border-radius: 18px;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .kost-item:hover {
+            background: var(--input);
+            border-color: var(--border);
+        }
+
+        .kost-main {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .kost-avatar {
+            flex: 0 0 auto;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #e8e8ed, #c7c7cc);
+            color: #333;
+            font-size: 20px;
+        }
+
+        .kost-avatar.sent {
+            background: linear-gradient(145deg, #dcfce7, #bbf7d0);
+            color: #15803d;
+        }
+
+        .kost-avatar.pending {
+            background: linear-gradient(145deg, #fef3c7, #fde68a);
+            color: #b45309;
+        }
+
+        .kost-meta {
+            min-width: 0;
+        }
+
+        .kost-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .kost-name {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .kost-id-badge {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--secondary);
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 7px;
+            border-radius: 6px;
+        }
+
+        .kost-subtitle {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            color: var(--secondary);
+        }
+
+        .kost-ig-link {
+            color: var(--button);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .kost-ig-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .status-badge.pending {
+            background: var(--warning-bg);
+            color: #b45309;
+        }
+
+        .status-badge.sent {
+            background: var(--success-bg);
+            color: #248a3d;
+        }
+
+        /* Action Buttons (Strictly matching index.html) */
+        .actions {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .action-button {
+            min-width: 58px;
+            height: 36px;
+            padding: 0 13px;
+            border-radius: 10px;
+            background: var(--input);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.18s ease;
+        }
+
+        .action-button:hover {
+            background: rgba(118, 118, 128, 0.20);
+        }
+
+        .action-button:active {
+            transform: scale(0.96);
+        }
+
+        .action-button.sent-action {
+            color: #248a3d;
+            background: rgba(52, 199, 89, 0.12);
+        }
+
+        .action-button.sent-action:hover {
+            background: rgba(52, 199, 89, 0.20);
+        }
+
+        .delete-button {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        .delete-button:hover {
+            background: rgba(255, 59, 48, 0.17);
+        }
+
+        /* Bottom Add Area (Apple style) */
+        .add-area {
+            padding: 14px 30px 30px;
+            text-align: center;
+        }
+
+        .add-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            height: 46px;
+            padding: 0 24px;
+            border-radius: 999px;
+            background: var(--button);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 113, 227, 0.22);
+            transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .add-button:hover {
+            background: var(--button-hover);
+            box-shadow: 0 7px 18px rgba(0, 113, 227, 0.27);
+        }
+
+        .add-button:active {
+            transform: scale(0.97);
+        }
+
+        .plus {
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 0;
+        }
+
+        .empty {
+            padding: 50px 20px;
+            text-align: center;
+            color: var(--secondary);
+            font-size: 15px;
+        }
+
+        /* Apple Alert / Message Banner */
+        .message {
+            margin: 14px 26px 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: messageIn 0.25s ease;
+        }
+
+        .message.success {
+            color: #248a3d;
+            background: rgba(52, 199, 89, 0.12);
+        }
+
+        .message.error {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modals (Matching index.html) */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: var(--overlay);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            width: min(450px, 100%);
+            padding: 28px;
+            background: var(--card-solid);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.20);
+            transform: translateY(12px) scale(0.97);
+            transition: transform 0.3s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        .modal.active .modal-box {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: var(--input);
+            font-size: 21px;
+        }
+
+        .modal-box h2 {
+            margin: 0;
+            font-size: 25px;
+            letter-spacing: -0.035em;
+            font-weight: 700;
+        }
+
+        .modal-description {
+            margin: 8px 0 22px;
+            color: var(--secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            margin: 0 0 7px 3px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .field input, .field select {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            outline: none;
+            background: var(--input);
+            color: var(--text);
+            font-size: 15px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .field input:focus, .field select:focus {
+            background: #ffffff;
+            border-color: var(--button);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+            margin-top: 24px;
+        }
+
+        .modal-button {
+            height: 46px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.18s ease, background 0.18s ease;
+        }
+
+        .modal-button:active {
+            transform: scale(0.97);
+        }
+
+        .cancel {
+            background: var(--input);
+            color: var(--text);
+        }
+
+        .cancel:hover {
+            background: rgba(118, 118, 128, 0.20);
+        }
+
+        .confirm {
+            background: var(--button);
+            color: white;
+        }
+
+        .confirm:hover {
+            background: var(--button-hover);
+        }
+
+        .confirm.danger {
+            background: var(--danger);
+        }
+
+        .confirm.danger:hover {
+            background: #ff5a52;
+        }
+
+        .pin-input {
+            text-align: center;
+            letter-spacing: 0.45em;
+            font-size: 22px !important;
+            font-weight: 600;
+        }
+
+        /* Detail Modal Rows */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: 0;
+        }
+
+        .detail-key {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .detail-val {
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 680px) {
+            .page {
+                padding: 36px 14px 60px;
+            }
+
+            .hero h1 {
+                font-size: 34px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .main-card {
+                border-radius: 22px;
+            }
+
+            .section-header {
+                padding: 20px 18px 14px;
+            }
+
+            .controls-row {
+                padding: 14px 14px 6px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-field {
+                max-width: 100%;
+            }
+
+            .segmented-filter {
+                width: 100%;
+            }
+
+            .segment-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .kost-list {
+                padding: 8px 10px 14px;
+            }
+
+            .kost-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 14px;
+                gap: 12px;
+            }
+
+            .kost-main {
+                width: 100%;
+            }
+
+            .actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .actions .action-button {
+                flex: 1;
+                text-align: center;
+                min-width: 0;
+                padding: 0 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-switcher">
+                <a href="/" class="nav-tab">👥 Owners</a>
+                <a href="/kost" class="nav-tab active">🏠 Bukittinggi Kos</a>
+            </div>
+            <button class="pin-badge-btn" id="btnManagePin">🔑 PIN Admin</button>
+        </nav>
+
+        <!-- Hero -->
+        <header class="hero">
+            <div class="eyebrow">
+                <span class="status-dot"></span>
+                Bukittinggi Kos Database
+            </div>
+            <h1>Kelola data kos.</h1>
+            <p>
+                Kelola pendaftaran kost, verifikasi tautan Instagram, dan pembaruan status pengiriman pesan secara real-time.
+            </p>
+        </header>
+
+        <!-- Metrics Overview (Apple Cards) -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">Total Kost</span>
+                    <span class="metric-pill all">Semua</span>
+                </div>
+                <div class="metric-number" id="statTotal">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">Pending</span>
+                    <span class="metric-pill pending">Perlu DM</span>
+                </div>
+                <div class="metric-number" id="statPending" style="color: #b45309;">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">Sent</span>
+                    <span class="metric-pill sent">Selesai DM</span>
+                </div>
+                <div class="metric-number" id="statSent" style="color: #248a3d;">0</div>
+            </div>
+        </section>
+
+        <!-- Main Glass Card -->
+        <section class="main-card">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Daftar Kost</h2>
+                    <p class="section-description">Seluruh record kost terhubung langsung ke MariaDB.</p>
+                </div>
+            </div>
+
+            <!-- Controls: Search & Segmented Filter -->
+            <div class="controls-row">
+                <div class="search-field">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Cari nama, ID, atau Instagram..." autocomplete="off">
+                </div>
+                <div class="segmented-filter" id="segmentedFilter">
+                    <button class="segment-btn active" data-status="all">Semua</button>
+                    <button class="segment-btn" data-status="pending">Pending</button>
+                    <button class="segment-btn" data-status="sent">Sent</button>
+                </div>
+            </div>
+
+            <!-- Global Message Notification -->
+            <div class="message" id="globalMsg"></div>
+
+            <!-- Kost Items List -->
+            <div class="kost-list" id="kostListContainer">
+                <div class="empty">Memuat data kost...</div>
+            </div>
+
+            <!-- Add Button Area (Apple Pill) -->
+            <div class="add-area">
+                <button class="add-button" id="btnOpenAdd">
+                    <span class="plus">+</span>
+                    Tambah Kost
+                </button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- MODAL: Tambah Kost -->
+<div class="modal" id="modalAdd">
+    <div class="modal-box">
+        <div class="modal-icon">🏠</div>
+        <h2>Tambah Kost</h2>
+        <p class="modal-description">Daftarkan kost baru ke dalam database MariaDB. Isi minimal salah satu kontak (Instagram, WhatsApp, atau TikTok).</p>
+        <form id="formAdd">
+            <div class="field">
+                <label>Nama Kost</label>
+                <input type="text" id="addName" placeholder="Contoh: Kost Melati Indah" required>
+            </div>
+            <div class="field">
+                <label>Instagram (Username / Link)</label>
+                <input type="text" id="addIg" placeholder="Contoh: kostmelati_bkt">
+            </div>
+            <div class="field">
+                <label>WhatsApp (Nomor HP / Link)</label>
+                <input type="text" id="addWa" placeholder="Contoh: 08123456789 atau wa.me/628...">
+            </div>
+            <div class="field">
+                <label>TikTok (Username / Link)</label>
+                <input type="text" id="addTt" placeholder="Contoh: kostmelati atau @kostmelati">
+            </div>
+            <div class="field">
+                <label>Grup WhatsApp</label>
+                <select id="addGroupSelect" required>
+                    <!-- Loaded dynamically -->
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-button cancel" onclick="closeModal('modalAdd')">Batal</button>
+                <button type="submit" class="modal-button confirm">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: Edit Kost -->
+<div class="modal" id="modalEdit">
+    <div class="modal-box">
+        <div class="modal-icon">✏️</div>
+        <h2>Edit Data Kost</h2>
+        <p class="modal-description">Perbarui informasi kost yang tersimpan.</p>
+        <form id="formEdit">
+            <input type="hidden" id="editId">
+            <div class="field">
+                <label>ID Record</label>
+                <input type="text" id="editIdDisplay" disabled style="opacity: 0.65;">
+            </div>
+            <div class="field">
+                <label>Nama Kost</label>
+                <input type="text" id="editName" required>
+            </div>
+            <div class="field">
+                <label>Instagram</label>
+                <input type="text" id="editIg" placeholder="Contoh: kostmelati_bkt">
+            </div>
+            <div class="field">
+                <label>WhatsApp</label>
+                <input type="text" id="editWa" placeholder="Contoh: 08123456789">
+            </div>
+            <div class="field">
+                <label>TikTok</label>
+                <input type="text" id="editTt" placeholder="Contoh: kostmelati">
+            </div>
+            <div class="field">
+                <label>Status</label>
+                <select id="editStatus">
+                    <option value="pending">Pending</option>
+                    <option value="sent">Sent</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-button cancel" onclick="closeModal('modalEdit')">Batal</button>
+                <button type="submit" class="modal-button confirm">Perbarui</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: Detail Kost -->
+<div class="modal" id="modalDetail">
+    <div class="modal-box">
+        <div class="modal-icon">ℹ️</div>
+        <h2>Detail Kost</h2>
+        <p class="modal-description" id="detailSubtitle">Informasi lengkap data kost.</p>
+        <div id="detailRows" style="margin-bottom: 24px;"></div>
+        <div class="modal-actions" style="grid-template-columns: 1fr;">
+            <button type="button" class="modal-button cancel" onclick="closeModal('modalDetail')">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Hapus Confirmation -->
+<div class="modal" id="modalDelete">
+    <div class="modal-box">
+        <div class="modal-icon" style="color: var(--danger); background: var(--danger-bg);">🗑️</div>
+        <h2>Hapus Kost?</h2>
+        <p class="modal-description" id="deleteDesc">Apakah Anda yakin ingin menghapus data kost ini dari MariaDB secara permanen?</p>
+        <div class="modal-actions">
+            <button type="button" class="modal-button cancel" onclick="closeModal('modalDelete')">Batal</button>
+            <button type="button" class="modal-button confirm danger" id="btnConfirmDelete">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: PIN Verification -->
+<div class="modal" id="modalPin">
+    <div class="modal-box">
+        <div class="modal-icon">🔐</div>
+        <h2>Verifikasi PIN</h2>
+        <p class="modal-description">Masukkan PIN admin untuk mengesahkan aksi ini.</p>
+        <form id="formPin">
+            <div class="field">
+                <input type="password" id="pinInput" class="pin-input" placeholder="••••" maxlength="12" required autofocus>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-button cancel" onclick="closeModal('modalPin')">Batal</button>
+                <button type="submit" class="modal-button confirm">Lanjut</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let state = {
+        items: [],
+        groups: [],
+        currentFilter: 'all',
+        searchQuery: '',
+        pendingCallback: null,
+        deletingId: null
+    };
+
+    function getSessionPin() {
+        return sessionStorage.getItem('rapbot_admin_pin') || '';
+    }
+
+    function setSessionPin(pin) {
+        if (pin) {
+            sessionStorage.setItem('rapbot_admin_pin', pin);
+        } else {
+            sessionStorage.removeItem('rapbot_admin_pin');
+        }
+    }
+
+    function showBanner(text, isError = false) {
+        const el = document.getElementById('globalMsg');
+        el.textContent = text;
+        el.className = `message show ${isError ? 'error' : 'success'}`;
+        setTimeout(() => {
+            el.className = 'message';
+        }, 3600);
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    function requirePin(callback) {
+        const pin = getSessionPin();
+        if (pin) {
+            callback(pin);
+        } else {
+            state.pendingCallback = callback;
+            document.getElementById('pinInput').value = '';
+            openModal('modalPin');
+        }
+    }
+
+    document.getElementById('formPin').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = document.getElementById('pinInput').value.trim();
+        if (!val) return;
+        setSessionPin(val);
+        closeModal('modalPin');
+        if (typeof state.pendingCallback === 'function') {
+            const cb = state.pendingCallback;
+            state.pendingCallback = null;
+            cb(val);
+        }
+    });
+
+    document.getElementById('btnManagePin').addEventListener('click', () => {
+        const current = getSessionPin();
+        const next = prompt('Masukkan atau perbarui PIN Admin untuk sesi ini (kosongkan untuk hapus):', current);
+        if (next !== null) {
+            setSessionPin(next.trim());
+            showBanner(next.trim() ? 'PIN admin berhasil disimpan di sesi.' : 'PIN admin dihapus.');
+        }
+    });
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch {
+            return dateStr;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Load registered groups for dropdown
+    async function loadGroups() {
+        try {
+            const res = await fetch('/api/groups');
+            const json = await res.json();
+            if (json.success && Array.isArray(json.groups)) {
+                state.groups = json.groups;
+                const sel = document.getElementById('addGroupSelect');
+                sel.innerHTML = '';
+                if (!json.groups.length) {
+                    sel.innerHTML = '<option value="">(Belum ada grup terdaftar)</option>';
+                } else {
+                    json.groups.forEach(g => {
+                        const opt = document.createElement('option');
+                        opt.value = g.id;
+                        opt.textContent = `${g.name} (${g.groupName || g.id})`;
+                        sel.appendChild(opt);
+                    });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Fetch data
+    async function fetchKostData() {
+        try {
+            const p = new URLSearchParams();
+            if (state.currentFilter !== 'all') p.append('status', state.currentFilter);
+            if (state.searchQuery) p.append('search', state.searchQuery);
+
+            const res = await fetch(`/api/kost?${p.toString()}`);
+            const json = await res.json();
+
+            if (!json.success) {
+                showBanner(json.message || 'Gagal memuat data kost.', true);
+                return;
+            }
+
+            state.items = json.data || [];
+
+            if (json.stats) {
+                document.getElementById('statTotal').textContent = json.stats.total || 0;
+                document.getElementById('statPending').textContent = json.stats.pending || 0;
+                document.getElementById('statSent').textContent = json.stats.sent || 0;
+            }
+
+            renderKostList();
+        } catch (err) {
+            console.error(err);
+            showBanner('Koneksi terputus.', true);
+        }
+    }
+
+    function renderKostList() {
+        const container = document.getElementById('kostListContainer');
+        container.innerHTML = '';
+
+        if (!state.items.length) {
+            container.innerHTML = '<div class="empty">Tidak ada data kost yang cocok.</div>';
+            return;
+        }
+
+        state.items.forEach(k => {
+            const isSent = (k.status || 'pending').toLowerCase() === 'sent';
+            const statusClass = isSent ? 'sent' : 'pending';
+            const statusLabel = isSent ? 'Sent' : 'Pending';
+
+            const contactPills = [];
+            if (k.instagram) {
+                contactPills.push(`
+                    <a href="https://instagram.com/${escapeHtml(k.instagram)}" target="_blank" rel="noopener" class="kost-ig-link" title="Instagram">
+                        📸 @${escapeHtml(k.instagram)}
+                    </a>
+                `);
+            }
+            if (k.whatsapp) {
+                const cleanWa = String(k.whatsapp).replace(/\D/g, '');
+                contactPills.push(`
+                    <a href="https://wa.me/${cleanWa}" target="_blank" rel="noopener" class="kost-ig-link" title="WhatsApp" style="color: #25d366;">
+                        💬 ${escapeHtml(k.whatsapp)}
+                    </a>
+                `);
+            }
+            if (k.tiktok) {
+                contactPills.push(`
+                    <a href="https://www.tiktok.com/@${escapeHtml(k.tiktok)}" target="_blank" rel="noopener" class="kost-ig-link" title="TikTok" style="color: #fe2c55;">
+                        🎵 @${escapeHtml(k.tiktok)}
+                    </a>
+                `);
+            }
+            const contactsHtml = contactPills.length ? contactPills.join('<span style="opacity: 0.35;">•</span>') : '<span style="color: var(--secondary);">-</span>';
+
+            const item = document.createElement('div');
+            item.className = 'kost-item';
+            item.innerHTML = `
+                <div class="kost-main">
+                    <div class="kost-avatar ${statusClass}">
+                        ${isSent ? '✓' : '🏠'}
+                    </div>
+                    <div class="kost-meta">
+                        <div class="kost-title-row">
+                            <span class="kost-name">${escapeHtml(k.name)}</span>
+                            <span class="kost-id-badge">${k.id}</span>
+                            <span class="status-badge ${statusClass}">${statusLabel}</span>
+                        </div>
+                        <div class="kost-subtitle" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                            ${contactsHtml}
+                            <span style="opacity: 0.35;">•</span>
+                            <span>${formatDate(k.createdAt || k.created_at)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="action-button" onclick="openDetail('${k.id}')">Detail</button>
+                    <button class="action-button" onclick="openEdit('${k.id}')">Edit</button>
+                    ${!isSent ? `<button class="action-button sent-action" onclick="markSent('${k.id}')">Tandai Sent</button>` : ''}
+                    <button class="action-button delete-button" onclick="promptDelete('${k.id}')">Hapus</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    // Detail Modal
+    function openDetail(id) {
+        const k = state.items.find(item => item.id === id);
+        if (!k) return;
+
+        const isSent = (k.status || 'pending').toLowerCase() === 'sent';
+        const groupObj = state.groups.find(g => g.id === (k.groupId || k.group_id));
+        const groupText = groupObj ? `${groupObj.name} (${groupObj.groupName || groupObj.id})` : (k.groupId || k.group_id || '-');
+
+        const igDisplay = k.instagram ? `<a href="https://instagram.com/${escapeHtml(k.instagram)}" target="_blank" rel="noopener" class="kost-ig-link">📸 @${escapeHtml(k.instagram)}</a>` : '-';
+        const cleanWa = k.whatsapp ? String(k.whatsapp).replace(/\D/g, '') : '';
+        const waDisplay = k.whatsapp ? `<a href="https://wa.me/${cleanWa}" target="_blank" rel="noopener" class="kost-ig-link" style="color:#25d366;">💬 ${escapeHtml(k.whatsapp)}</a>` : '-';
+        const ttDisplay = k.tiktok ? `<a href="https://www.tiktok.com/@${escapeHtml(k.tiktok)}" target="_blank" rel="noopener" class="kost-ig-link" style="color:#fe2c55;">🎵 @${escapeHtml(k.tiktok)}</a>` : '-';
+
+        document.getElementById('detailSubtitle').textContent = `Data lengkap untuk ${k.name}`;
+
+        const html = `
+            <div class="detail-row">
+                <span class="detail-key">ID Record</span>
+                <span class="detail-val"><span class="kost-id-badge">${k.id}</span></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Nama Kost</span>
+                <span class="detail-val">${escapeHtml(k.name)}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Akun Instagram</span>
+                <span class="detail-val">${igDisplay}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Nomor WhatsApp</span>
+                <span class="detail-val">${waDisplay}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Akun TikTok</span>
+                <span class="detail-val">${ttDisplay}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Grup WhatsApp</span>
+                <span class="detail-val" style="max-width: 210px; word-break: break-all;">${escapeHtml(groupText)}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Status Saat Ini</span>
+                <span class="detail-val">
+                    <span class="status-badge ${isSent ? 'sent' : 'pending'}">${isSent ? 'Sent' : 'Pending'}</span>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Ditambahkan Oleh</span>
+                <span class="detail-val">${escapeHtml(k.addedBy || k.added_by || '-')}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Waktu Masuk</span>
+                <span class="detail-val">${formatDate(k.createdAt || k.created_at)}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Di-DM Oleh</span>
+                <span class="detail-val">${escapeHtml(k.sentBy || k.sent_by || '-')}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Waktu Sent</span>
+                <span class="detail-val">${formatDate(k.sentAt || k.sent_at)}</span>
+            </div>
+        `;
+        document.getElementById('detailRows').innerHTML = html;
+        openModal('modalDetail');
+    }
+
+    // Add Modal
+    document.getElementById('btnOpenAdd').addEventListener('click', () => {
+        document.getElementById('addName').value = '';
+        document.getElementById('addIg').value = '';
+        document.getElementById('addWa').value = '';
+        document.getElementById('addTt').value = '';
+        openModal('modalAdd');
+    });
+
+    document.getElementById('formAdd').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('addName').value.trim();
+        const instagram = document.getElementById('addIg').value.trim();
+        const whatsapp = document.getElementById('addWa').value.trim();
+        const tiktok = document.getElementById('addTt').value.trim();
+        const groupId = document.getElementById('addGroupSelect').value;
+
+        if (!name) return;
+        if (!instagram && !whatsapp && !tiktok) {
+            showBanner('Minimal salah satu kontak (Instagram, WhatsApp, atau TikTok) wajib diisi.', true);
+            return;
+        }
+
+        requirePin(async (pin) => {
+            try {
+                const res = await fetch('/api/kost', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, instagram, whatsapp, tiktok, groupId, pin })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) {
+                    if (res.status === 401) setSessionPin(null);
+                    showBanner(json.message || 'Gagal menambahkan kost.', true);
+                    return;
+                }
+                closeModal('modalAdd');
+                showBanner(`Kost "${name}" (${json.data.id}) berhasil ditambahkan.`);
+                fetchKostData();
+            } catch (err) {
+                showBanner('Gagal menghubungi server.', true);
+            }
+        });
+    });
+
+    // Edit Modal
+    function openEdit(id) {
+        const k = state.items.find(item => item.id === id);
+        if (!k) return;
+
+        document.getElementById('editId').value = k.id;
+        document.getElementById('editIdDisplay').value = k.id;
+        document.getElementById('editName').value = k.name || '';
+        document.getElementById('editIg').value = k.instagram || '';
+        document.getElementById('editWa').value = k.whatsapp || '';
+        document.getElementById('editTt').value = k.tiktok || '';
+        document.getElementById('editStatus').value = (k.status || 'pending').toLowerCase();
+
+        openModal('modalEdit');
+    }
+
+    document.getElementById('formEdit').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editId').value;
+        const name = document.getElementById('editName').value.trim();
+        const instagram = document.getElementById('editIg').value.trim();
+        const whatsapp = document.getElementById('editWa').value.trim();
+        const tiktok = document.getElementById('editTt').value.trim();
+        const status = document.getElementById('editStatus').value;
+
+        if (!name) return;
+        if (!instagram && !whatsapp && !tiktok) {
+            showBanner('Minimal salah satu kontak (Instagram, WhatsApp, atau TikTok) wajib diisi.', true);
+            return;
+        }
+
+        requirePin(async (pin) => {
+            try {
+                const res = await fetch(`/api/kost/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, instagram, whatsapp, tiktok, status, pin })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) {
+                    if (res.status === 401) setSessionPin(null);
+                    showBanner(json.message || 'Gagal memperbarui kost.', true);
+                    return;
+                }
+                closeModal('modalEdit');
+                showBanner(`Kost ${id} berhasil diperbarui.`);
+                fetchKostData();
+            } catch (err) {
+                showBanner('Gagal menghubungi server.', true);
+            }
+        });
+    });
+
+    // Mark Sent
+    function markSent(id) {
+        requirePin(async (pin) => {
+            try {
+                const res = await fetch(`/api/kost/${id}/sent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin, sentBy: 'Web Admin' })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) {
+                    if (res.status === 401) setSessionPin(null);
+                    showBanner(json.message || 'Gagal menandai sent.', true);
+                    return;
+                }
+                showBanner(`Kost ${id} berhasil ditandai SENT.`);
+                fetchKostData();
+            } catch (err) {
+                showBanner('Gagal menghubungi server.', true);
+            }
+        });
+    }
+
+    // Delete Prompt & Confirmation
+    function promptDelete(id) {
+        state.deletingId = id;
+        document.getElementById('deleteDesc').textContent = `Apakah Anda yakin ingin menghapus permanen data kost ${id}?`;
+        openModal('modalDelete');
+    }
+
+    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+        const id = state.deletingId;
+        if (!id) return;
+        closeModal('modalDelete');
+
+        requirePin(async (pin) => {
+            try {
+                const res = await fetch(`/api/kost/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) {
+                    if (res.status === 401) setSessionPin(null);
+                    showBanner(json.message || 'Gagal menghapus kost.', true);
+                    return;
+                }
+                showBanner(`Kost ${id} berhasil dihapus.`);
+                fetchKostData();
+            } catch (err) {
+                showBanner('Gagal menghubungi server.', true);
+            }
+        });
+    });
+
+    // Filter and search
+    let searchTimer = null;
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            state.searchQuery = e.target.value.trim();
+            fetchKostData();
+        }, 250);
+    });
+
+    document.getElementById('segmentedFilter').addEventListener('click', (e) => {
+        const btn = e.target.closest('.segment-btn');
+        if (!btn) return;
+        document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.currentFilter = btn.dataset.status;
+        fetchKostData();
+    });
+
+    // Startup
+    (async () => {
+        await loadGroups();
+        await fetchKostData();
+    })();
+</script>
+</body>
+</html>

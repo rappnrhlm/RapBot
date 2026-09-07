@@ -2,13 +2,29 @@ const fs = require('fs');
 const path = require('path');
 const database = require('../services/database');
 const serverStats = require('../services/serverStats');
-const spreadsheet = require('../services/spreadsheet');
 const jsonUtils = require('../utils/json');
 const phoneUtils = require('../utils/phone');
 const jidUtils = require('../utils/jid');
 const groupUtils = require('../utils/group');
 
 const PREFIX = process.env.BOT_PREFIX || '!';
+const BOT_START_TIME = Math.floor(Date.now() / 1000);
+const MAX_MESSAGE_AGE_SECONDS = Number(process.env.MAX_MESSAGE_AGE) || 60;
+
+function getMessageTimestamp(msg) {
+    if (!msg?.messageTimestamp) return 0;
+    let ts = typeof msg.messageTimestamp === 'number'
+        ? msg.messageTimestamp
+        : (typeof msg.messageTimestamp === 'object' && msg.messageTimestamp?.low)
+            ? msg.messageTimestamp.low
+            : Number(msg.messageTimestamp);
+
+    if (isNaN(ts)) return 0;
+    if (ts > 10000000000) {
+        ts = Math.floor(ts / 1000);
+    }
+    return ts;
+}
 
 function loadCommands(dir = path.join(__dirname, '..', 'commands')) {
     const commands = new Map();
@@ -98,8 +114,7 @@ function createContext({ sock, msg, from, senderNumber, args, commandName, body,
         commands: registry,
         services: {
             database,
-            serverStats,
-            spreadsheet
+            serverStats
         },
         utils: {
             json: jsonUtils,
@@ -129,6 +144,18 @@ async function handleSingleMessage(sock, msg, registry) {
 
     const body = getBody(msg).trim();
     if (!body) return;
+
+    // Abaikan pesan lama yang dikirim sebelum bot aktif atau saat bot offline (stb restart)
+    const msgTimestamp = getMessageTimestamp(msg);
+    if (msgTimestamp > 0) {
+        const now = Math.floor(Date.now() / 1000);
+        const ageSeconds = now - msgTimestamp;
+
+        if (ageSeconds > MAX_MESSAGE_AGE_SECONDS || msgTimestamp < (BOT_START_TIME - 5)) {
+            console.log(`[MessageHandler] ⏳ Mengabaikan pesan lama (${ageSeconds}s lalu): "${body.slice(0, 30)}"`);
+            return;
+        }
+    }
 
     // Abaikan pesan dari bot sendiri KECUALI diawali prefix ! (untuk pengujian self-command)
     if (msg.key?.fromMe && !body.startsWith(PREFIX)) {
