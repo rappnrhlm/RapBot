@@ -42,6 +42,7 @@ module.exports = {
         const isOwner = database.isOwner(senderNumber);
 
         if (action === 'list') {
+            await database.refreshDatabaseCache().catch(() => {});
             const list = database.getAutoreplies();
             if (!list.length) {
                 const emptyMsg = '📋 Belum ada autoreply yang terdaftar.';
