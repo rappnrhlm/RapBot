@@ -51,7 +51,7 @@ module.exports = {
             kost: '🏠 *MANAJEMEN KOST: !kost*\n\n`!kost` atau `!kost pending` — Daftar kos yang belum di-DM\n`!kost sent` — Daftar kos yang sudah di-DM\n`!kost all` — Semua daftar kos\n`!kost dm` — Format ringkas & link langsung untuk DM IG/WA/TT\n`!kost lengkap <ID>` — Detail lengkap satu kos',
             addkost: '🏠 `!addkost <Nama Kost> > <kontak>`\nMenambahkan data kos ke database (mendukung Instagram, WhatsApp, TikTok).\nContoh:\n• `!addkost Kost Melati > kostmelati_bkt`\n• `!addkost Kost Mawar > wa: 08123456789`\n• `!addkost Kost Indah > ig: indah | wa: 08123456789 | tt: indahkos`',
             cari: '🔍 `!cari <keyword>`\nMencari data kos berdasarkan nama, akun IG, nomor WA, username TikTok, atau ID.\nContoh: `!cari birugo` atau `!cari 0812`',
-            sent: '✅ `!sent <ID>`\nMenandai status kos menjadi SENT setelah selesai di-DM.\nContoh: `!sent KST-000001`',
+            sent: '✅ `!sent <ID>` atau `!sent 2 sampai 20`\nMenandai status kos menjadi SENT (mendukung satu ID, daftar koma, atau range).\nContoh:\n• `!sent KST-000001` atau `!sent 1`\n• `!sent KST-000002 sampai KST-000020`\n• `!sent 2 - 20`\n• `!sent 1, 3, 5`',
             kirim: '✅ `!sent <ID>`\nMenandai status kos menjadi SENT (alias dari !sent).',
             delkost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database.\nContoh: `!delkost KST-000001`',
             hapuskost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database (alias dari !delkost).'
@@ -67,7 +67,7 @@ module.exports = {
 │ \`!kost lengkap <ID>\` — Detail lengkap data kos
 │ \`!addkost <Nama> > <kontak>\` — Tambah data kos (IG/WA/TT)
 │ \`!cari <keyword>\` — Cari kos (nama/kontak/ID)
-│ \`!sent <ID>\` — Tandai kos sudah di-DM
+│ \`!sent <ID/range>\` — Tandai kos sudah di-DM (dukung range)
 │ \`!delkost <ID>\` — Hapus data kos
 
 🎨 *STICKER & MEDIA*

@@ -1458,6 +1458,123 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
     };
 }
 
+function normalizeKostId(input) {
+    if (!input) return null;
+    let s = String(input).trim().toUpperCase();
+    const matchFull = s.match(/^KST-(\d+)$/i);
+    if (matchFull) return `KST-${matchFull[1].padStart(6, '0')}`;
+    const matchSpace = s.match(/^KST\s+(\d+)$/i);
+    if (matchSpace) return `KST-${matchSpace[1].padStart(6, '0')}`;
+    if (/^\d+$/.test(s)) return `KST-${s.padStart(6, '0')}`;
+    return s;
+}
+
+function parseKostIdTargets(rawInput) {
+    if (!rawInput) return { type: 'none', ids: [] };
+    let text = String(rawInput).trim();
+
+    // 1. Range syntax: "X sampai Y", "X hingga Y", "X s/d Y", "X sd Y", "X to Y", "X - Y"
+    const rangeRegex = /^(.*?)\s+(?:sampai|hingga|s\/d|sd|to|-)\s+(.*)$/i;
+    let rangeMatch = text.match(rangeRegex);
+
+    // Simple digits range like "2-20"
+    if (!rangeMatch && text.includes('-')) {
+        const hyphenParts = text.split(/\s*-\s*/);
+        if (hyphenParts.length === 2 && /^\d+$/.test(hyphenParts[0]) && /^\d+$/.test(hyphenParts[1])) {
+            rangeMatch = [text, hyphenParts[0], hyphenParts[1]];
+        }
+    }
+
+    if (rangeMatch) {
+        const left = rangeMatch[1].trim();
+        const right = rangeMatch[2].trim();
+        const leftNumMatch = left.replace(/^KST[- ]*/i, '').trim();
+        const rightNumMatch = right.replace(/^KST[- ]*/i, '').trim();
+
+        if (/^\d+$/.test(leftNumMatch) && /^\d+$/.test(rightNumMatch)) {
+            let start = parseInt(leftNumMatch, 10);
+            let end = parseInt(rightNumMatch, 10);
+            if (start > end) [start, end] = [end, start];
+            if (end - start > 100) end = start + 100;
+            const ids = [];
+            for (let i = start; i <= end; i++) {
+                ids.push(`KST-${String(i).padStart(6, '0')}`);
+            }
+            return { type: 'range', start, end, ids };
+        }
+    }
+
+    // 2. Multiple IDs separated by comma or space
+    const tokens = text.split(/[,|\s]+/).map(t => t.trim()).filter(Boolean);
+    if (tokens.length > 1) {
+        const ids = [...new Set(tokens.map(normalizeKostId).filter(Boolean))];
+        return { type: 'list', ids };
+    }
+
+    // 3. Single ID
+    if (tokens.length === 1) {
+        const id = normalizeKostId(tokens[0]);
+        return { type: 'single', ids: id ? [id] : [] };
+    }
+
+    return { type: 'none', ids: [] };
+}
+
+async function markKostBatchSent(ids, groupId, senderNumber = '') {
+    await ensureAllTables();
+    const db = getPool();
+    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
+    const cleanIds = Array.isArray(ids) ? [...new Set(ids.map(normalizeKostId).filter(Boolean))] : [];
+
+    if (cleanIds.length === 0) {
+        return { success: false, message: 'Tidak ada ID yang valid.' };
+    }
+
+    let query = 'SELECT id, name, status, sent_by, sent_at FROM kost WHERE id IN (?)';
+    const params = [cleanIds];
+    if (cleanGroupId) {
+        query += ' AND group_id = ?';
+        params.push(cleanGroupId);
+    }
+
+    const [rows] = await db.query(query, params);
+    const rowMap = new Map(rows.map(r => [r.id, r]));
+
+    const toUpdate = [];
+    const alreadySent = [];
+    const notFound = [];
+
+    for (const id of cleanIds) {
+        const row = rowMap.get(id);
+        if (!row) {
+            notFound.push(id);
+        } else if (row.status === 'sent') {
+            alreadySent.push(row);
+        } else {
+            toUpdate.push(row);
+        }
+    }
+
+    if (toUpdate.length > 0) {
+        const updateIds = toUpdate.map(r => r.id);
+        let updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = NOW() WHERE id IN (?)';
+        const updateParams = ['sent', senderNumber || null, updateIds];
+        if (cleanGroupId) {
+            updateSql += ' AND group_id = ?';
+            updateParams.push(cleanGroupId);
+        }
+        await db.query(updateSql, updateParams);
+    }
+
+    return {
+        success: true,
+        updated: toUpdate,
+        alreadySent,
+        notFound,
+        total: cleanIds.length
+    };
+}
+
 async function deleteKost(idOrGroup, groupIdOrId = null) {
     let targetId = idOrGroup;
     let targetGroup = groupIdOrId;
@@ -1622,6 +1739,9 @@ module.exports = {
     addKost,
     markKostSent,
     markSent: markKostSent,
+    markKostBatchSent,
+    normalizeKostId,
+    parseKostIdTargets,
     deleteKost,
     updateKost,
     getKostStats,
