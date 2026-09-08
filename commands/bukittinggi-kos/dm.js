@@ -55,8 +55,7 @@ Contoh:
 
         const igUrl = kost.instagram ? database.formatInstagramUrl(kost.instagram) : '-';
         const ttUrl = kost.tiktok ? database.formatTiktokUrl(kost.tiktok) : '-';
-        const waClickUrl = kost.whatsapp ? dmTemplate.generateWhatsappDmUrl(kost.whatsapp, kost.name) : null;
-        const waDisplay = waClickUrl ? `[Klik untuk Langsung Kirim Chat WA](${waClickUrl})\n   (${database.formatWhatsappUrl(kost.whatsapp)})` : '-';
+        const waDisplay = kost.whatsapp ? database.formatWhatsappUrl(kost.whatsapp) : '-';
         const statusBadge = (kost.status || 'pending').toLowerCase() === 'sent' ? '✅ SUDAH DI-DM (SENT)' : '⏳ BELUM DI-DM (PENDING)';
 
         const cardText =
@@ -70,7 +69,7 @@ Contoh:
 
 ────────────────────
 👇 *Teks template promosi ada di balon chat terpisah di bawah.*
-Tinggal *tahan (long press)* balon chat di bawah ➡️ Salin ➡️ Paste di DM IG/TikTok!
+Tinggal *tahan (long press)* balon chat di bawah ➡️ Salin ➡️ Paste di DM IG/WA/TikTok!
 
 Setelah selesai di-DM, tandai dengan:
 \`!sent ${kost.id}\``;

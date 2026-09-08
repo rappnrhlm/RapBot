@@ -302,10 +302,7 @@ Contoh:
                 list.forEach((k, idx) => {
                     let contactLines = [];
                     if (k.instagram) contactLines.push(`   📸 IG: ${database.formatInstagramUrl(k.instagram)}`);
-                    if (k.whatsapp) {
-                        const waDirect = dmTemplate.generateWhatsappDmUrl(k.whatsapp, k.name);
-                        contactLines.push(`   💬 WA (Auto Teks): ${waDirect}`);
-                    }
+                    if (k.whatsapp) contactLines.push(`   💬 WA: ${database.formatWhatsappUrl(k.whatsapp)}`);
                     if (k.tiktok) contactLines.push(`   🎵 TT: ${database.formatTiktokUrl(k.tiktok)}`);
                     if (contactLines.length === 0) contactLines.push('   ℹ️ -');
 
