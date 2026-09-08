@@ -69,7 +69,7 @@ module.exports = {
             }
 
             const name = args.slice(1).join(' ') || 'Owner';
-            const result = database.addOwner(cleanNumber, name);
+            const result = await database.addOwner(cleanNumber, name);
 
             if (!result.success) {
                 const warnMsg = `⚠️ ${result.message}`;
@@ -113,7 +113,7 @@ module.exports = {
                 return;
             }
 
-            const result = database.deleteOwner(cleanNumber);
+            const result = await database.deleteOwner(cleanNumber);
             if (!result.success) {
                 const notFoundMsg = `❌ ${result.message}`;
                 if (typeof reply === 'function') {

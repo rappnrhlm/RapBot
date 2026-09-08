@@ -23,7 +23,7 @@ app.get('/api/owners', (req, res) => {
     });
 });
 
-app.post('/api/owners', (req, res) => {
+app.post('/api/owners', async (req, res) => {
     const { name, number, pin } = req.body;
 
     if (!validatePin(pin)) {
@@ -50,34 +50,22 @@ app.post('/api/owners', (req, res) => {
         });
     }
 
-    const owners = database.getOwners();
-
-    if (owners.some(owner => {
-        const oNum = typeof owner === 'object' ? owner.number : owner;
-        return normalizePhoneNumber(oNum) === cleanNumber;
-    })) {
+    const result = await database.addOwner(cleanNumber, cleanName);
+    if (!result.success) {
         return res.status(409).json({
             success: false,
-            message: 'Nomor tersebut sudah menjadi owner.'
+            message: result.message
         });
     }
-
-    owners.push({
-        name: cleanName,
-        number: cleanNumber,
-        hidden: false
-    });
-
-    database.saveOwners(owners);
 
     res.json({
         success: true,
         message: 'Owner berhasil ditambahkan.',
-        owners
+        owners: result.owners
     });
 });
 
-app.put('/api/owners/:number', (req, res) => {
+app.put('/api/owners/:number', async (req, res) => {
     const oldNumber = normalizePhoneNumber(req.params.number);
     const { name, number, pin } = req.body;
 
@@ -105,49 +93,22 @@ app.put('/api/owners/:number', (req, res) => {
         });
     }
 
-    const owners = database.getOwners();
-    const index = owners.findIndex(owner => {
-        const oNum = typeof owner === 'object' ? owner.number : owner;
-        return normalizePhoneNumber(oNum) === oldNumber;
-    });
-
-    if (index === -1) {
-        return res.status(404).json({
+    const result = await database.updateOwner(oldNumber, { name: cleanName, number: cleanNumber });
+    if (!result.success) {
+        return res.status(400).json({
             success: false,
-            message: 'Owner tidak ditemukan.'
+            message: result.message
         });
     }
-
-    const duplicate = owners.some((owner, i) => {
-        if (i === index) return false;
-        const oNum = typeof owner === 'object' ? owner.number : owner;
-        return normalizePhoneNumber(oNum) === cleanNumber;
-    });
-
-    if (duplicate) {
-        return res.status(409).json({
-            success: false,
-            message: 'Nomor tersebut sudah digunakan owner lain.'
-        });
-    }
-
-    const currentOwner = owners[index];
-    owners[index] = {
-        name: cleanName,
-        number: cleanNumber,
-        hidden: currentOwner?.hidden || false
-    };
-
-    database.saveOwners(owners);
 
     res.json({
         success: true,
         message: 'Owner berhasil diperbarui.',
-        owners
+        owners: result.owners
     });
 });
 
-app.delete('/api/owners/:number', (req, res) => {
+app.delete('/api/owners/:number', async (req, res) => {
     const number = normalizePhoneNumber(req.params.number);
     const { pin } = req.body;
 
@@ -165,26 +126,18 @@ app.delete('/api/owners/:number', (req, res) => {
         });
     }
 
-    const owners = database.getOwners();
-    const index = owners.findIndex(owner => {
-        const oNum = typeof owner === 'object' ? owner.number : owner;
-        return normalizePhoneNumber(oNum) === number;
-    });
-
-    if (index === -1) {
+    const result = await database.deleteOwner(number);
+    if (!result.success) {
         return res.status(404).json({
             success: false,
-            message: 'Owner tidak ditemukan.'
+            message: result.message
         });
     }
-
-    owners.splice(index, 1);
-    database.saveOwners(owners);
 
     res.json({
         success: true,
         message: 'Owner berhasil dihapus.',
-        owners
+        owners: result.owners
     });
 });
 

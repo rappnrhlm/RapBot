@@ -16,402 +16,20 @@ const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
 
 const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '6285195532009');
 
-function ensureDataFiles() {
-    const fs = require('fs');
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-
-    if (!fs.existsSync(OWNER_FILE)) {
-        writeJSON(OWNER_FILE, [
-            { name: 'Raffa', number: SUPER_OWNER, hidden: false }
-        ]);
-    }
-
-    if (!fs.existsSync(STATS_FILE)) {
-        writeJSON(STATS_FILE, {
-            messages: 0,
-            commands: 0,
-            stickers: 0,
-            brats: 0,
-            startedAt: new Date().toISOString(),
-            commandUsage: {}
-        });
-    }
-
-    if (!fs.existsSync(LOG_FILE)) {
-        writeJSON(LOG_FILE, []);
-    }
-
-    if (!fs.existsSync(WELCOME_FILE)) {
-        writeJSON(WELCOME_FILE, {
-            enabled: true,
-            text:
-                '👋 Selamat datang @user di *@group*!\n\n' +
-                'Semoga betah di sini 🤙\n' +
-                'Ketik !menu untuk melihat fitur bot.'
-        });
-    }
-
-    if (!fs.existsSync(AUTOREPLY_FILE)) {
-        writeJSON(AUTOREPLY_FILE, []);
-    }
-
-    if (!fs.existsSync(KOST_FILE)) {
-        writeJSON(KOST_FILE, []);
-    }
-
-    if (!fs.existsSync(GROUPS_FILE)) {
-        writeJSON(GROUPS_FILE, { groups: [] });
-    }
-}
-
-// ----------------------------------------------------
-// OWNERS
-// ----------------------------------------------------
-
-function getOwners() {
-    ensureDataFiles();
-    const data = readJSON(OWNER_FILE, []);
-    return Array.isArray(data) ? data : [];
-}
-
-function saveOwners(owners) {
-    return writeJSON(OWNER_FILE, owners);
-}
-
-function isOwner(number, botNumber = null) {
-    const normalized = normalizePhoneNumber(number);
-    if (!normalized) return false;
-    if (isSuperOwner(normalized)) return true;
-    if (botNumber && normalizePhoneNumber(botNumber) === normalized) return true;
-    return getOwners().some(owner => {
-        const ownerNumber = typeof owner === 'object' ? owner.number : owner;
-        return normalizePhoneNumber(ownerNumber) === normalized;
-    });
-}
-
-function isSuperOwner(number) {
-    const normalized = normalizePhoneNumber(number);
-    return normalized === SUPER_OWNER;
-}
-
-function addOwner(number, name = 'Owner') {
-    const cleanNumber = normalizePhoneNumber(number);
-    if (!cleanNumber) return { success: false, message: 'Nomor tidak valid.' };
-
-    const owners = getOwners();
-    const exists = owners.some(o => {
-        const ownerNumber = typeof o === 'object' ? o.number : o;
-        return normalizePhoneNumber(ownerNumber) === cleanNumber;
-    });
-
-    if (exists) {
-        return { success: false, message: `${cleanNumber} sudah menjadi owner.` };
-    }
-
-    owners.push({ name: name || 'Owner', number: cleanNumber, hidden: false });
-    saveOwners(owners);
-    return { success: true, message: `${cleanNumber} berhasil ditambahkan sebagai owner.`, owners };
-}
-
-function deleteOwner(number) {
-    const cleanNumber = normalizePhoneNumber(number);
-    if (!cleanNumber) return { success: false, message: 'Nomor tidak valid.' };
-    if (cleanNumber === SUPER_OWNER) {
-        return { success: false, message: 'Super owner tidak bisa dihapus.' };
-    }
-
-    const owners = getOwners();
-    const initialLen = owners.length;
-    const filtered = owners.filter(o => {
-        const ownerNumber = typeof o === 'object' ? o.number : o;
-        return normalizePhoneNumber(ownerNumber) !== cleanNumber;
-    });
-
-    if (filtered.length === initialLen) {
-        return { success: false, message: 'Owner tidak ditemukan.' };
-    }
-
-    saveOwners(filtered);
-    return { success: true, message: `${cleanNumber} berhasil dihapus dari owner.`, owners: filtered };
-}
-
-// ----------------------------------------------------
-// STATS
-// ----------------------------------------------------
-
-function getStats() {
-    ensureDataFiles();
-    return readJSON(STATS_FILE, {
-        messages: 0,
-        commands: 0,
-        stickers: 0,
-        brats: 0,
-        startedAt: new Date().toISOString(),
-        commandUsage: {}
-    });
-}
-
-function saveStats(stats) {
-    return writeJSON(STATS_FILE, stats);
-}
-
-function incrementMessageStats() {
-    const stats = getStats();
-    stats.messages = (stats.messages || 0) + 1;
-    saveStats(stats);
-}
-
-function incrementCommandStats(command) {
-    if (!command) return;
-    const stats = getStats();
-    stats.commands = (stats.commands || 0) + 1;
-    if (!stats.commandUsage) stats.commandUsage = {};
-    stats.commandUsage[command] = (stats.commandUsage[command] || 0) + 1;
-    saveStats(stats);
-}
-
-function incrementStickerStats() {
-    const stats = getStats();
-    stats.stickers = (stats.stickers || 0) + 1;
-    saveStats(stats);
-}
-
-function incrementBratStats() {
-    const stats = getStats();
-    stats.brats = (stats.brats || 0) + 1;
-    saveStats(stats);
-}
-
-// ----------------------------------------------------
-// COMMAND LOGS
-// ----------------------------------------------------
-
-function getLogs() {
-    ensureDataFiles();
-    return readJSON(LOG_FILE, []);
-}
-
-function logCommand(command, from, senderNumber, isGroupChat = false) {
-    const logs = getLogs();
-    logs.push({
-        command,
-        from,
-        sender: senderNumber || 'unknown',
-        type: isGroupChat ? 'group' : 'private',
-        timestamp: new Date().toISOString()
-    });
-
-    if (logs.length > 5000) {
-        logs.splice(0, logs.length - 5000);
-    }
-
-    writeJSON(LOG_FILE, logs);
-}
-
-// ----------------------------------------------------
-// WELCOME
-// ----------------------------------------------------
-
-function getWelcomeConfig() {
-    ensureDataFiles();
-    return readJSON(WELCOME_FILE, {
-        enabled: true,
-        text:
-            '👋 Selamat datang @user di *@group*!\n\n' +
-            'Semoga betah di sini 🤙\n' +
-            'Ketik !menu untuk melihat fitur bot.'
-    });
-}
-
-function saveWelcomeConfig(config) {
-    return writeJSON(WELCOME_FILE, config);
-}
-
-// ----------------------------------------------------
-// AUTOREPLIES
-// ----------------------------------------------------
-
-function getAutoreplies() {
-    ensureDataFiles();
-    const list = readJSON(AUTOREPLY_FILE, []);
-    return Array.isArray(list) ? list : [];
-}
-
-function saveAutoreplies(list) {
-    return writeJSON(AUTOREPLY_FILE, list);
-}
-
-function normalizeTriggerList(triggerInput) {
-    if (!triggerInput) return [];
-    // Hapus kurung kurawal pembungkus jika ada: { ... }
-    let cleaned = String(triggerInput).trim().replace(/^\{+|\}+$/g, '').trim();
-    // Split berdasarkan slash / atau koma ,
-    const list = cleaned
-        .split(/[/,]+/)
-        .map(t => t.trim().replace(/^\{+|\}+$/g, '').trim())
-        .filter(Boolean);
-    return list;
-}
-
-function findAutoreply(trigger) {
-    if (!trigger) return null;
-    const normalized = trigger.trim().toLowerCase();
-    const list = getAutoreplies();
-
-    return list.find(item => {
-        if (Array.isArray(item.triggers) && item.triggers.length > 0) {
-            if (item.triggers.some(t => t.toLowerCase() === normalized)) return true;
-        }
-        if (item.trigger?.toLowerCase() === normalized) return true;
-        // Fallback jika item.trigger string mengandung / atau ,
-        if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
-            const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
-            if (parts.includes(normalized)) return true;
-        }
-        return false;
-    }) || null;
-}
-
-function addAutoreply(triggerInput, response, createdBy = 'owner') {
-    if (!triggerInput || !response) {
-        return { success: false, message: 'Trigger dan respons wajib diisi.' };
-    }
-
-    const triggers = normalizeTriggerList(triggerInput);
-    if (triggers.length === 0) {
-        return { success: false, message: 'Format trigger tidak valid.' };
-    }
-
-    // Periksa apakah ada trigger yang sudah terdaftar
-    for (const t of triggers) {
-        const found = findAutoreply(t);
-        if (found) {
-            const label = Array.isArray(found.triggers) ? found.triggers.join(' / ') : found.trigger;
-            return {
-                success: false,
-                message: `Trigger "${t}" sudah terdaftar pada autoreply (${label}). Gunakan edit untuk mengubahnya.`
-            };
-        }
-    }
-
-    const list = getAutoreplies();
-    const primaryTrigger = triggers.join(' / ');
-    const newItem = {
-        trigger: primaryTrigger,
-        triggers: triggers,
-        response: response.trim(),
-        createdBy: createdBy || 'owner',
-        createdAt: new Date().toISOString()
-    };
-
-    list.push(newItem);
-    saveAutoreplies(list);
-    return { success: true, message: `Autoreply untuk "${primaryTrigger}" berhasil ditambahkan.`, item: newItem };
-}
-
-function editAutoreply(triggerInput, newResponse, updatedBy = 'owner') {
-    if (!triggerInput || !newResponse) {
-        return { success: false, message: 'Trigger dan respons baru wajib diisi.' };
-    }
-
-    const targets = normalizeTriggerList(triggerInput);
-    const list = getAutoreplies();
-
-    let foundIndex = -1;
-    for (const t of targets) {
-        const normalized = t.toLowerCase();
-        foundIndex = list.findIndex(item => {
-            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
-            if (item.trigger?.toLowerCase() === normalized) return true;
-            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
-                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
-                if (parts.includes(normalized)) return true;
-            }
-            return false;
-        });
-        if (foundIndex !== -1) break;
-    }
-
-    if (foundIndex === -1) {
-        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
-    }
-
-    const item = list[foundIndex];
-    if (targets.length > 0) {
-        item.triggers = targets;
-        item.trigger = targets.join(' / ');
-    }
-    item.response = newResponse.trim();
-    item.updatedBy = updatedBy;
-    item.updatedAt = new Date().toISOString();
-
-    saveAutoreplies(list);
-    const label = Array.isArray(item.triggers) ? item.triggers.join(' / ') : item.trigger;
-    return { success: true, message: `Autoreply untuk "${label}" berhasil diubah.`, item };
-}
-
-function deleteAutoreply(triggerInput) {
-    if (!triggerInput) return { success: false, message: 'Trigger wajib diisi.' };
-
-    const targets = normalizeTriggerList(triggerInput);
-    const list = getAutoreplies();
-
-    let index = -1;
-    for (const t of targets) {
-        const normalized = t.toLowerCase();
-        index = list.findIndex(item => {
-            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
-            if (item.trigger?.toLowerCase() === normalized) return true;
-            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
-                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
-                if (parts.includes(normalized)) return true;
-            }
-            return false;
-        });
-        if (index !== -1) break;
-    }
-
-    if (index === -1) {
-        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
-    }
-
-    const removed = list.splice(index, 1)[0];
-    saveAutoreplies(list);
-    const label = Array.isArray(removed.triggers) ? removed.triggers.join(' / ') : removed.trigger;
-    return { success: true, message: `Autoreply untuk "${label}" berhasil dihapus.`, item: removed };
-}
-
-// ----------------------------------------------------
-// MARIADB CONNECTION POOL & KOST REPOSITORY
-// ----------------------------------------------------
-
-let pool = null;
-
-function getPool() {
-    if (!pool) {
-        pool = mysql.createPool({
-            host: process.env.DB_HOST || 'localhost',
-            port: Number(process.env.DB_PORT) || 3306,
-            user: process.env.DB_USER || 'dbrapa',
-            password: process.env.DB_PASSWORD || '090409',
-            database: process.env.DB_NAME || 'RapDB',
-            waitForConnections: true,
-            connectionLimit: 10,
-            queueLimit: 0,
-            dateStrings: true
-        });
-    }
-    return pool;
-}
-
 const INITIAL_GROUP = {
     id: '120363429518970623@g.us',
     name: 'Bukittinggi Kos',
     groupName: 'admin @bukittinggikos',
     initializedAt: '2026-09-07T14:38:00.333Z',
     initializedBy: '6285195532009'
+};
+
+const DEFAULT_WELCOME = {
+    enabled: true,
+    text:
+        '👋 Selamat datang @user di *@group*!\n\n' +
+        'Semoga betah di sini 🤙\n' +
+        'Ketik !menu untuk melihat fitur bot.'
 };
 
 const INITIAL_KOST = [
@@ -433,8 +51,123 @@ const INITIAL_KOST = [
     { id: 'KST-000016', group_id: '120363429518970623@g.us', name: 'Kost Putri Gulai Bancah', instagram: null, tiktok: null, whatsapp: '6288279032407', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:40:21', sent_by: null, sent_at: null }
 ];
 
-async function ensureKostTable() {
+// ====================================================
+// IN-MEMORY CACHE (ULTRA LOW-LATENCY 0MS READS)
+// ====================================================
+const cache = {
+    owners: [],
+    groups: [],
+    autoreplies: [],
+    welcome: { ...DEFAULT_WELCOME },
+    stats: {
+        messages: 0,
+        commands: 0,
+        stickers: 0,
+        brats: 0,
+        startedAt: new Date().toISOString(),
+        commandUsage: {}
+    },
+    logs: [],
+    initialized: false
+};
+
+// Initial synchronous hydration from local JSON backup
+function initLocalCache() {
+    try {
+        const rawOwners = readJSON(OWNER_FILE, null);
+        if (Array.isArray(rawOwners) && rawOwners.length > 0) {
+            cache.owners = rawOwners;
+        } else {
+            cache.owners = [{ name: 'Raffa', number: SUPER_OWNER, hidden: false }];
+        }
+
+        const rawGroups = readJSON(GROUPS_FILE, null);
+        if (Array.isArray(rawGroups?.groups)) {
+            cache.groups = rawGroups.groups;
+        } else if (Array.isArray(rawGroups)) {
+            cache.groups = rawGroups;
+        } else {
+            cache.groups = [INITIAL_GROUP];
+        }
+
+        const rawAutoreplies = readJSON(AUTOREPLY_FILE, null);
+        if (Array.isArray(rawAutoreplies)) {
+            cache.autoreplies = rawAutoreplies;
+        }
+
+        const rawWelcome = readJSON(WELCOME_FILE, null);
+        if (rawWelcome && typeof rawWelcome === 'object') {
+            cache.welcome = { ...DEFAULT_WELCOME, ...rawWelcome };
+        }
+
+        const rawStats = readJSON(STATS_FILE, null);
+        if (rawStats && typeof rawStats === 'object') {
+            cache.stats = { ...cache.stats, ...rawStats };
+        }
+
+        const rawLogs = readJSON(LOG_FILE, null);
+        if (Array.isArray(rawLogs)) {
+            cache.logs = rawLogs;
+        }
+    } catch (err) {
+        console.warn('[database] Warning: error initializing local cache:', err.message);
+    }
+}
+
+// Ensure local data files exist as fallback / backup
+function ensureDataFiles() {
+    const fs = require('fs');
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(OWNER_FILE)) writeJSON(OWNER_FILE, cache.owners);
+    if (!fs.existsSync(STATS_FILE)) writeJSON(STATS_FILE, cache.stats);
+    if (!fs.existsSync(LOG_FILE)) writeJSON(LOG_FILE, cache.logs);
+    if (!fs.existsSync(WELCOME_FILE)) writeJSON(WELCOME_FILE, cache.welcome);
+    if (!fs.existsSync(AUTOREPLY_FILE)) writeJSON(AUTOREPLY_FILE, cache.autoreplies);
+    if (!fs.existsSync(GROUPS_FILE)) writeJSON(GROUPS_FILE, { groups: cache.groups });
+    if (!fs.existsSync(KOST_FILE)) writeJSON(KOST_FILE, []);
+}
+
+initLocalCache();
+
+// Helper to write backup JSON files
+function syncDataFile(file, data) {
+    try {
+        writeJSON(file, data);
+    } catch {}
+}
+
+// ====================================================
+// MARIADB CONNECTION POOL
+// ====================================================
+let pool = null;
+
+function getPool() {
+    if (!pool) {
+        pool = mysql.createPool({
+            host: process.env.DB_HOST || 'armbian',
+            port: Number(process.env.DB_PORT) || 3306,
+            user: process.env.DB_USER || 'dbrapa',
+            password: process.env.DB_PASSWORD || '090409',
+            database: process.env.DB_NAME || 'RapDB',
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0,
+            dateStrings: true
+        });
+    }
+    return pool;
+}
+
+// ====================================================
+// TABLE DEFINITIONS & AUTO-MIGRATION
+// ====================================================
+
+async function ensureAllTables() {
     const db = getPool();
+
+    // 1. Table: kost
     await db.query(`
         CREATE TABLE IF NOT EXISTS kost (
             id VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -459,15 +192,89 @@ async function ensureKostTable() {
         await db.query(`ALTER TABLE kost MODIFY COLUMN instagram VARCHAR(100) NULL DEFAULT NULL`);
     } catch {}
 
-    // Otomatis daftarkan grup Bukittinggi Kos jika belum ada di data/groups.json
-    try {
-        const groups = getGroups();
-        if (!groups.some(g => g.id === INITIAL_GROUP.id)) {
-            addGroup(INITIAL_GROUP);
-        }
-    } catch {}
+    // 2. Table: bot_groups (Persistent Group Registration)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS bot_groups (
+            id VARCHAR(100) NOT NULL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            group_name VARCHAR(255) DEFAULT '',
+            initialized_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            initialized_by VARCHAR(100) DEFAULT '',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
 
-    // Otomatis masukkan 16 data kost awal jika tabel kost di database masih kosong
+    // 3. Table: autoreplies (Dynamic Multi-Trigger Autoreply)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS autoreplies (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            trigger_name VARCHAR(255) NOT NULL,
+            triggers_json TEXT NOT NULL,
+            response TEXT NOT NULL,
+            created_by VARCHAR(100) DEFAULT 'owner',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_by VARCHAR(100) DEFAULT NULL,
+            updated_at DATETIME DEFAULT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // 4. Table: owners (Super Owner & Bot Owners)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS owners (
+            number VARCHAR(50) NOT NULL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL DEFAULT 'Owner',
+            hidden TINYINT(1) NOT NULL DEFAULT 0,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // 5. Table: welcome_settings (Greeting Configuration)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS welcome_settings (
+            id VARCHAR(50) NOT NULL PRIMARY KEY DEFAULT 'default',
+            enabled TINYINT(1) NOT NULL DEFAULT 1,
+            text TEXT NOT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // 6. Table: bot_stats (Bot Usage Counters)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS bot_stats (
+            id VARCHAR(50) NOT NULL PRIMARY KEY DEFAULT 'main',
+            messages INT NOT NULL DEFAULT 0,
+            commands INT NOT NULL DEFAULT 0,
+            stickers INT NOT NULL DEFAULT 0,
+            brats INT NOT NULL DEFAULT 0,
+            started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            command_usage_json LONGTEXT DEFAULT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // 7. Table: command_logs (Command Execution Logs)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS command_logs (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            command VARCHAR(100) NOT NULL,
+            from_jid VARCHAR(100) NOT NULL,
+            sender VARCHAR(100) NOT NULL,
+            type ENUM('group', 'private') NOT NULL DEFAULT 'private',
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_cmd_time (command, timestamp),
+            INDEX idx_sender (sender)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Auto-seed tables if they are empty
+    await autoSeedTablesIfEmpty(db);
+
+    // Refresh in-memory cache with canonical MariaDB data
+    await refreshDatabaseCache();
+}
+
+async function autoSeedTablesIfEmpty(db) {
+    // 1. Seed kost
     try {
         const [cntRows] = await db.query('SELECT COUNT(*) as cnt FROM kost');
         if (cntRows[0]?.cnt === 0) {
@@ -481,9 +288,815 @@ async function ensureKostTable() {
             console.log('[database] Auto-seeded 16 data kost awal ke MariaDB.');
         }
     } catch (e) {
-        console.error('[database] Auto-seed check error:', e.message);
+        console.error('[database] Auto-seed kost check error:', e.message);
+    }
+
+    // 2. Seed bot_groups
+    try {
+        const [cntGroups] = await db.query('SELECT COUNT(*) as cnt FROM bot_groups');
+        if (cntGroups[0]?.cnt === 0) {
+            const fileGroups = readJSON(GROUPS_FILE, null);
+            const list = Array.isArray(fileGroups?.groups) ? fileGroups.groups : (Array.isArray(fileGroups) ? fileGroups : [INITIAL_GROUP]);
+            for (const g of list) {
+                if (!g?.id) continue;
+                await db.query(
+                    `INSERT IGNORE INTO bot_groups (id, name, group_name, initialized_at, initialized_by)
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [g.id, g.name || 'Grup', g.groupName || '', g.initializedAt ? new Date(g.initializedAt) : new Date(), g.initializedBy || '']
+                );
+            }
+            console.log(`[database] Auto-seeded ${list.length} bot_groups ke MariaDB.`);
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed bot_groups check error:', e.message);
+    }
+
+    // 3. Seed autoreplies
+    try {
+        const [cntAutoreplies] = await db.query('SELECT COUNT(*) as cnt FROM autoreplies');
+        if (cntAutoreplies[0]?.cnt === 0) {
+            const fileAutoreplies = readJSON(AUTOREPLY_FILE, []);
+            if (Array.isArray(fileAutoreplies) && fileAutoreplies.length > 0) {
+                for (const item of fileAutoreplies) {
+                    const trigName = item.trigger || (Array.isArray(item.triggers) ? item.triggers.join(' / ') : '!help');
+                    const trigJson = JSON.stringify(Array.isArray(item.triggers) ? item.triggers : [trigName]);
+                    await db.query(
+                        `INSERT INTO autoreplies (trigger_name, triggers_json, response, created_by, created_at, updated_by, updated_at)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            trigName,
+                            trigJson,
+                            item.response || '',
+                            item.createdBy || 'owner',
+                            item.createdAt ? new Date(item.createdAt) : new Date(),
+                            item.updatedBy || null,
+                            item.updatedAt ? new Date(item.updatedAt) : null
+                        ]
+                    );
+                }
+                console.log(`[database] Auto-seeded ${fileAutoreplies.length} autoreplies ke MariaDB.`);
+            }
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed autoreplies check error:', e.message);
+    }
+
+    // 4. Seed owners
+    try {
+        const [cntOwners] = await db.query('SELECT COUNT(*) as cnt FROM owners');
+        if (cntOwners[0]?.cnt === 0) {
+            const fileOwners = readJSON(OWNER_FILE, []);
+            const list = Array.isArray(fileOwners) && fileOwners.length > 0
+                ? fileOwners
+                : [{ name: 'Raffa', number: SUPER_OWNER, hidden: false }];
+
+            for (const o of list) {
+                const num = normalizePhoneNumber(typeof o === 'object' ? o.number : o);
+                if (!num) continue;
+                const name = (typeof o === 'object' && o.name) ? o.name : 'Owner';
+                const hidden = Boolean(typeof o === 'object' && o.hidden);
+                await db.query(
+                    `INSERT IGNORE INTO owners (number, name, hidden, added_at)
+                     VALUES (?, ?, ?, NOW())`,
+                    [num, name, hidden ? 1 : 0]
+                );
+            }
+            console.log(`[database] Auto-seeded ${list.length} owners ke MariaDB.`);
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed owners check error:', e.message);
+    }
+
+    // 5. Seed welcome_settings
+    try {
+        const [rows] = await db.query("SELECT id FROM welcome_settings WHERE id = 'default'");
+        if (rows.length === 0) {
+            const fileWelcome = readJSON(WELCOME_FILE, DEFAULT_WELCOME);
+            await db.query(
+                `INSERT INTO welcome_settings (id, enabled, text)
+                 VALUES ('default', ?, ?)`,
+                [fileWelcome.enabled ? 1 : 0, fileWelcome.text || DEFAULT_WELCOME.text]
+            );
+            console.log('[database] Auto-seeded welcome_settings ke MariaDB.');
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed welcome_settings check error:', e.message);
+    }
+
+    // 6. Seed bot_stats
+    try {
+        const [rows] = await db.query("SELECT id FROM bot_stats WHERE id = 'main'");
+        if (rows.length === 0) {
+            const fileStats = readJSON(STATS_FILE, cache.stats);
+            await db.query(
+                `INSERT INTO bot_stats (id, messages, commands, stickers, brats, started_at, command_usage_json)
+                 VALUES ('main', ?, ?, ?, ?, ?, ?)`,
+                [
+                    fileStats.messages || 0,
+                    fileStats.commands || 0,
+                    fileStats.stickers || 0,
+                    fileStats.brats || 0,
+                    fileStats.startedAt ? new Date(fileStats.startedAt) : new Date(),
+                    JSON.stringify(fileStats.commandUsage || {})
+                ]
+            );
+            console.log('[database] Auto-seeded bot_stats ke MariaDB.');
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed bot_stats check error:', e.message);
     }
 }
+
+// Refresh in-memory cache directly from MariaDB
+async function refreshDatabaseCache() {
+    const db = getPool();
+
+    try {
+        // 1. Refresh Owners
+        const [ownerRows] = await db.query('SELECT number, name, hidden FROM owners ORDER BY added_at ASC');
+        if (ownerRows.length > 0) {
+            cache.owners = ownerRows.map(r => ({
+                number: r.number,
+                name: r.name,
+                hidden: Boolean(r.hidden)
+            }));
+            syncDataFile(OWNER_FILE, cache.owners);
+        }
+
+        // 2. Refresh Groups
+        const [groupRows] = await db.query('SELECT id, name, group_name, initialized_at, initialized_by FROM bot_groups');
+        if (groupRows.length > 0) {
+            cache.groups = groupRows.map(r => ({
+                id: r.id,
+                name: r.name,
+                groupName: r.group_name || '',
+                initializedAt: r.initialized_at,
+                initializedBy: r.initialized_by || ''
+            }));
+            syncDataFile(GROUPS_FILE, { groups: cache.groups });
+        }
+
+        // 3. Refresh Autoreplies
+        const [autoRows] = await db.query('SELECT id, trigger_name, triggers_json, response, created_by, created_at, updated_by, updated_at FROM autoreplies ORDER BY id ASC');
+        cache.autoreplies = autoRows.map(r => {
+            let triggers = [];
+            try {
+                triggers = JSON.parse(r.triggers_json);
+            } catch {
+                triggers = [r.trigger_name];
+            }
+            return {
+                id: r.id,
+                trigger: r.trigger_name,
+                triggers,
+                response: r.response,
+                createdBy: r.created_by,
+                createdAt: r.created_at,
+                updatedBy: r.updated_by,
+                updatedAt: r.updated_at
+            };
+        });
+        syncDataFile(AUTOREPLY_FILE, cache.autoreplies);
+
+        // 4. Refresh Welcome
+        const [welcomeRows] = await db.query("SELECT enabled, text FROM welcome_settings WHERE id = 'default'");
+        if (welcomeRows.length > 0) {
+            cache.welcome = {
+                enabled: Boolean(welcomeRows[0].enabled),
+                text: welcomeRows[0].text
+            };
+            syncDataFile(WELCOME_FILE, cache.welcome);
+        }
+
+        // 5. Refresh Stats
+        const [statsRows] = await db.query("SELECT messages, commands, stickers, brats, started_at, command_usage_json FROM bot_stats WHERE id = 'main'");
+        if (statsRows.length > 0) {
+            let usage = {};
+            try {
+                usage = JSON.parse(statsRows[0].command_usage_json || '{}');
+            } catch {}
+            cache.stats = {
+                messages: Number(statsRows[0].messages || 0),
+                commands: Number(statsRows[0].commands || 0),
+                stickers: Number(statsRows[0].stickers || 0),
+                brats: Number(statsRows[0].brats || 0),
+                startedAt: statsRows[0].started_at,
+                commandUsage: usage
+            };
+            syncDataFile(STATS_FILE, cache.stats);
+        }
+
+        cache.initialized = true;
+    } catch (err) {
+        console.error('[database] Error refreshing cache from MariaDB:', err.message);
+    }
+}
+
+// ====================================================
+// OWNERS REPOSITORY
+// ====================================================
+
+function getOwners() {
+    return cache.owners;
+}
+
+async function saveOwners(owners) {
+    if (!Array.isArray(owners)) return;
+    cache.owners = owners;
+    syncDataFile(OWNER_FILE, owners);
+
+    try {
+        const db = getPool();
+        for (const o of owners) {
+            const num = normalizePhoneNumber(typeof o === 'object' ? o.number : o);
+            if (!num) continue;
+            const name = (typeof o === 'object' && o.name) ? o.name : 'Owner';
+            const hidden = Boolean(typeof o === 'object' && o.hidden);
+            await db.query(
+                `INSERT INTO owners (number, name, hidden, added_at)
+                 VALUES (?, ?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE name = VALUES(name), hidden = VALUES(hidden)`,
+                [num, name, hidden ? 1 : 0]
+            );
+        }
+    } catch (err) {
+        console.error('[database] Error saving owners to MariaDB:', err.message);
+    }
+}
+
+function isOwner(number, botNumber = null) {
+    const normalized = normalizePhoneNumber(number);
+    if (!normalized) return false;
+    if (isSuperOwner(normalized)) return true;
+    if (botNumber && normalizePhoneNumber(botNumber) === normalized) return true;
+    return cache.owners.some(owner => {
+        const ownerNumber = typeof owner === 'object' ? owner.number : owner;
+        return normalizePhoneNumber(ownerNumber) === normalized;
+    });
+}
+
+function isSuperOwner(number) {
+    const normalized = normalizePhoneNumber(number);
+    return normalized === SUPER_OWNER;
+}
+
+async function addOwner(number, name = 'Owner') {
+    const cleanNumber = normalizePhoneNumber(number);
+    if (!cleanNumber) return { success: false, message: 'Nomor tidak valid.' };
+
+    const exists = cache.owners.some(o => {
+        const ownerNumber = typeof o === 'object' ? o.number : o;
+        return normalizePhoneNumber(ownerNumber) === cleanNumber;
+    });
+
+    if (exists) {
+        return { success: false, message: `${cleanNumber} sudah menjadi owner.` };
+    }
+
+    const newOwner = { name: name || 'Owner', number: cleanNumber, hidden: false };
+    cache.owners.push(newOwner);
+    syncDataFile(OWNER_FILE, cache.owners);
+
+    try {
+        const db = getPool();
+        await db.query(
+            `INSERT INTO owners (number, name, hidden, added_at)
+             VALUES (?, ?, ?, NOW())
+             ON DUPLICATE KEY UPDATE name = VALUES(name), hidden = VALUES(hidden)`,
+            [newOwner.number, newOwner.name, newOwner.hidden ? 1 : 0]
+        );
+    } catch (err) {
+        console.error('[database] Error inserting owner to MariaDB:', err.message);
+    }
+
+    return { success: true, message: `${cleanNumber} berhasil ditambahkan sebagai owner.`, owners: cache.owners };
+}
+
+async function updateOwner(oldNumber, { name, number, hidden = false }) {
+    const cleanOld = normalizePhoneNumber(oldNumber);
+    const cleanNew = normalizePhoneNumber(number);
+    const cleanName = String(name || '').trim();
+
+    if (!cleanOld || !cleanNew) return { success: false, message: 'Nomor tidak valid.' };
+    if (!cleanName) return { success: false, message: 'Nama wajib diisi.' };
+
+    const index = cache.owners.findIndex(o => normalizePhoneNumber(o.number) === cleanOld);
+    if (index === -1) {
+        return { success: false, message: 'Owner tidak ditemukan.' };
+    }
+
+    // Check conflict if changing to another existing number
+    if (cleanOld !== cleanNew) {
+        const duplicate = cache.owners.some((o, i) => i !== index && normalizePhoneNumber(o.number) === cleanNew);
+        if (duplicate) {
+            return { success: false, message: 'Nomor tersebut sudah digunakan owner lain.' };
+        }
+    }
+
+    const updated = {
+        name: cleanName,
+        number: cleanNew,
+        hidden: Boolean(hidden)
+    };
+    cache.owners[index] = updated;
+    syncDataFile(OWNER_FILE, cache.owners);
+
+    try {
+        const db = getPool();
+        if (cleanOld === cleanNew) {
+            await db.query(
+                'UPDATE owners SET name = ?, hidden = ? WHERE number = ?',
+                [updated.name, updated.hidden ? 1 : 0, cleanOld]
+            );
+        } else {
+            await db.query('DELETE FROM owners WHERE number = ?', [cleanOld]);
+            await db.query(
+                'INSERT INTO owners (number, name, hidden, added_at) VALUES (?, ?, ?, NOW())',
+                [updated.number, updated.name, updated.hidden ? 1 : 0]
+            );
+        }
+    } catch (err) {
+        console.error('[database] Error updating owner in MariaDB:', err.message);
+    }
+
+    return { success: true, message: 'Owner berhasil diperbarui.', owners: cache.owners };
+}
+
+async function deleteOwner(number) {
+    const cleanNumber = normalizePhoneNumber(number);
+    if (!cleanNumber) return { success: false, message: 'Nomor tidak valid.' };
+    if (cleanNumber === SUPER_OWNER) {
+        return { success: false, message: 'Super owner tidak bisa dihapus.' };
+    }
+
+    const initialLen = cache.owners.length;
+    cache.owners = cache.owners.filter(o => {
+        const ownerNumber = typeof o === 'object' ? o.number : o;
+        return normalizePhoneNumber(ownerNumber) !== cleanNumber;
+    });
+
+    if (cache.owners.length === initialLen) {
+        return { success: false, message: 'Owner tidak ditemukan.' };
+    }
+
+    syncDataFile(OWNER_FILE, cache.owners);
+
+    try {
+        const db = getPool();
+        await db.query('DELETE FROM owners WHERE number = ?', [cleanNumber]);
+    } catch (err) {
+        console.error('[database] Error deleting owner from MariaDB:', err.message);
+    }
+
+    return { success: true, message: `${cleanNumber} berhasil dihapus dari owner.`, owners: cache.owners };
+}
+
+// ====================================================
+// STATS REPOSITORY
+// ====================================================
+
+let statsFlushTimer = null;
+
+async function flushStatsToDb() {
+    try {
+        const db = getPool();
+        await db.query(
+            `UPDATE bot_stats
+             SET messages = ?, commands = ?, stickers = ?, brats = ?, command_usage_json = ?
+             WHERE id = 'main'`,
+            [
+                cache.stats.messages || 0,
+                cache.stats.commands || 0,
+                cache.stats.stickers || 0,
+                cache.stats.brats || 0,
+                JSON.stringify(cache.stats.commandUsage || {})
+            ]
+        );
+    } catch (err) {
+        console.error('[database] Error flushing stats to MariaDB:', err.message);
+    }
+}
+
+function scheduleStatsFlush() {
+    if (statsFlushTimer) return;
+    statsFlushTimer = setTimeout(() => {
+        statsFlushTimer = null;
+        flushStatsToDb();
+    }, 2000);
+}
+
+function getStats() {
+    return cache.stats;
+}
+
+function saveStats(stats) {
+    cache.stats = { ...cache.stats, ...stats };
+    syncDataFile(STATS_FILE, cache.stats);
+    scheduleStatsFlush();
+}
+
+function incrementMessageStats() {
+    cache.stats.messages = (cache.stats.messages || 0) + 1;
+    scheduleStatsFlush();
+}
+
+function incrementCommandStats(command) {
+    if (!command) return;
+    cache.stats.commands = (cache.stats.commands || 0) + 1;
+    if (!cache.stats.commandUsage) cache.stats.commandUsage = {};
+    cache.stats.commandUsage[command] = (cache.stats.commandUsage[command] || 0) + 1;
+    scheduleStatsFlush();
+}
+
+function incrementStickerStats() {
+    cache.stats.stickers = (cache.stats.stickers || 0) + 1;
+    scheduleStatsFlush();
+}
+
+function incrementBratStats() {
+    cache.stats.brats = (cache.stats.brats || 0) + 1;
+    scheduleStatsFlush();
+}
+
+// ====================================================
+// COMMAND LOGS REPOSITORY
+// ====================================================
+
+function getLogs() {
+    return cache.logs;
+}
+
+function logCommand(command, from, senderNumber, isGroupChat = false) {
+    const entry = {
+        command,
+        from,
+        sender: senderNumber || 'unknown',
+        type: isGroupChat ? 'group' : 'private',
+        timestamp: new Date().toISOString()
+    };
+
+    cache.logs.push(entry);
+    if (cache.logs.length > 5000) {
+        cache.logs.splice(0, cache.logs.length - 5000);
+    }
+    syncDataFile(LOG_FILE, cache.logs);
+
+    // Asynchronously insert log into MariaDB
+    try {
+        const db = getPool();
+        db.query(
+            `INSERT INTO command_logs (command, from_jid, sender, type, timestamp)
+             VALUES (?, ?, ?, ?, NOW())`,
+            [command, from, senderNumber || 'unknown', isGroupChat ? 'group' : 'private']
+        ).catch(err => console.error('[database] Error logging command to MariaDB:', err.message));
+    } catch {}
+}
+
+// ====================================================
+// WELCOME REPOSITORY
+// ====================================================
+
+function getWelcomeConfig() {
+    return cache.welcome;
+}
+
+async function saveWelcomeConfig(config) {
+    cache.welcome = { ...cache.welcome, ...config };
+    syncDataFile(WELCOME_FILE, cache.welcome);
+
+    try {
+        const db = getPool();
+        await db.query(
+            `INSERT INTO welcome_settings (id, enabled, text)
+             VALUES ('default', ?, ?)
+             ON DUPLICATE KEY UPDATE enabled = VALUES(enabled), text = VALUES(text)`,
+            [cache.welcome.enabled ? 1 : 0, cache.welcome.text]
+        );
+    } catch (err) {
+        console.error('[database] Error saving welcome config to MariaDB:', err.message);
+    }
+}
+
+// ====================================================
+// AUTOREPLIES REPOSITORY
+// ====================================================
+
+function getAutoreplies() {
+    return cache.autoreplies;
+}
+
+function normalizeTriggerList(triggerInput) {
+    if (!triggerInput) return [];
+    let cleaned = String(triggerInput).trim().replace(/^\{+|\}+$/g, '').trim();
+    const list = cleaned
+        .split(/[/,]+/)
+        .map(t => t.trim().replace(/^\{+|\}+$/g, '').trim())
+        .filter(Boolean);
+    return list;
+}
+
+function findAutoreply(trigger) {
+    if (!trigger) return null;
+    const normalized = trigger.trim().toLowerCase();
+
+    return cache.autoreplies.find(item => {
+        if (Array.isArray(item.triggers) && item.triggers.length > 0) {
+            if (item.triggers.some(t => t.toLowerCase() === normalized)) return true;
+        }
+        if (item.trigger?.toLowerCase() === normalized) return true;
+        if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+            const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+            if (parts.includes(normalized)) return true;
+        }
+        return false;
+    }) || null;
+}
+
+async function addAutoreply(triggerInput, response, createdBy = 'owner') {
+    if (!triggerInput || !response) {
+        return { success: false, message: 'Trigger dan respons wajib diisi.' };
+    }
+
+    const triggers = normalizeTriggerList(triggerInput);
+    if (triggers.length === 0) {
+        return { success: false, message: 'Format trigger tidak valid.' };
+    }
+
+    for (const t of triggers) {
+        const found = findAutoreply(t);
+        if (found) {
+            const label = Array.isArray(found.triggers) ? found.triggers.join(' / ') : found.trigger;
+            return {
+                success: false,
+                message: `Trigger "${t}" sudah terdaftar pada autoreply (${label}). Gunakan edit untuk mengubahnya.`
+            };
+        }
+    }
+
+    const primaryTrigger = triggers.join(' / ');
+    const now = new Date();
+
+    let insertId = null;
+    try {
+        const db = getPool();
+        const [res] = await db.query(
+            `INSERT INTO autoreplies (trigger_name, triggers_json, response, created_by, created_at)
+             VALUES (?, ?, ?, ?, ?)`,
+            [primaryTrigger, JSON.stringify(triggers), response.trim(), createdBy || 'owner', now]
+        );
+        insertId = res.insertId;
+    } catch (err) {
+        console.error('[database] Error inserting autoreply to MariaDB:', err.message);
+    }
+
+    const newItem = {
+        id: insertId,
+        trigger: primaryTrigger,
+        triggers: triggers,
+        response: response.trim(),
+        createdBy: createdBy || 'owner',
+        createdAt: now.toISOString()
+    };
+
+    cache.autoreplies.push(newItem);
+    syncDataFile(AUTOREPLY_FILE, cache.autoreplies);
+
+    return { success: true, message: `Autoreply untuk "${primaryTrigger}" berhasil ditambahkan.`, item: newItem };
+}
+
+async function editAutoreply(triggerInput, newResponse, updatedBy = 'owner') {
+    if (!triggerInput || !newResponse) {
+        return { success: false, message: 'Trigger dan respons baru wajib diisi.' };
+    }
+
+    const targets = normalizeTriggerList(triggerInput);
+    let foundIndex = -1;
+
+    for (const t of targets) {
+        const normalized = t.toLowerCase();
+        foundIndex = cache.autoreplies.findIndex(item => {
+            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
+            if (item.trigger?.toLowerCase() === normalized) return true;
+            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+                if (parts.includes(normalized)) return true;
+            }
+            return false;
+        });
+        if (foundIndex !== -1) break;
+    }
+
+    if (foundIndex === -1) {
+        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
+    }
+
+    const item = cache.autoreplies[foundIndex];
+    if (targets.length > 1) {
+        item.triggers = targets;
+        item.trigger = targets.join(' / ');
+    } else if (targets.length === 1 && !item.triggers?.some(tr => tr.toLowerCase() === targets[0].toLowerCase())) {
+        item.triggers = targets;
+        item.trigger = targets[0];
+    }
+    item.response = newResponse.trim();
+    item.updatedBy = updatedBy;
+    item.updatedAt = new Date().toISOString();
+
+    syncDataFile(AUTOREPLY_FILE, cache.autoreplies);
+
+    try {
+        const db = getPool();
+        if (item.id) {
+            await db.query(
+                `UPDATE autoreplies
+                 SET trigger_name = ?, triggers_json = ?, response = ?, updated_by = ?, updated_at = NOW()
+                 WHERE id = ?`,
+                [item.trigger, JSON.stringify(item.triggers), item.response, updatedBy, item.id]
+            );
+        } else {
+            await db.query(
+                `UPDATE autoreplies
+                 SET response = ?, updated_by = ?, updated_at = NOW()
+                 WHERE trigger_name = ?`,
+                [item.response, updatedBy, item.trigger]
+            );
+        }
+    } catch (err) {
+        console.error('[database] Error updating autoreply in MariaDB:', err.message);
+    }
+
+    const label = Array.isArray(item.triggers) ? item.triggers.join(' / ') : item.trigger;
+    return { success: true, message: `Autoreply untuk "${label}" berhasil diubah.`, item };
+}
+
+async function deleteAutoreply(triggerInput) {
+    if (!triggerInput) return { success: false, message: 'Trigger wajib diisi.' };
+
+    const targets = normalizeTriggerList(triggerInput);
+    let index = -1;
+
+    for (const t of targets) {
+        const normalized = t.toLowerCase();
+        index = cache.autoreplies.findIndex(item => {
+            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
+            if (item.trigger?.toLowerCase() === normalized) return true;
+            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+                if (parts.includes(normalized)) return true;
+            }
+            return false;
+        });
+        if (index !== -1) break;
+    }
+
+    if (index === -1) {
+        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
+    }
+
+    const removed = cache.autoreplies.splice(index, 1)[0];
+    syncDataFile(AUTOREPLY_FILE, cache.autoreplies);
+
+    try {
+        const db = getPool();
+        if (removed.id) {
+            await db.query('DELETE FROM autoreplies WHERE id = ?', [removed.id]);
+        } else {
+            await db.query('DELETE FROM autoreplies WHERE trigger_name = ?', [removed.trigger]);
+        }
+    } catch (err) {
+        console.error('[database] Error deleting autoreply from MariaDB:', err.message);
+    }
+
+    const label = Array.isArray(removed.triggers) ? removed.triggers.join(' / ') : removed.trigger;
+    return { success: true, message: `Autoreply untuk "${label}" berhasil dihapus.`, item: removed };
+}
+
+async function saveAutoreplies(list) {
+    if (!Array.isArray(list)) return;
+    cache.autoreplies = list;
+    syncDataFile(AUTOREPLY_FILE, list);
+
+    try {
+        const db = getPool();
+        for (const item of list) {
+            const trigName = item.trigger || (Array.isArray(item.triggers) ? item.triggers.join(' / ') : '');
+            const trigJson = JSON.stringify(Array.isArray(item.triggers) ? item.triggers : [trigName]);
+            if (item.id) {
+                await db.query(
+                    `INSERT INTO autoreplies (id, trigger_name, triggers_json, response, created_by, created_at, updated_by, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE trigger_name = VALUES(trigger_name), triggers_json = VALUES(triggers_json), response = VALUES(response), updated_by = VALUES(updated_by), updated_at = NOW()`,
+                    [item.id, trigName, trigJson, item.response, item.createdBy || 'owner', item.createdAt ? new Date(item.createdAt) : new Date(), item.updatedBy || null, item.updatedAt ? new Date(item.updatedAt) : null]
+                );
+            } else {
+                await db.query(
+                    `INSERT INTO autoreplies (trigger_name, triggers_json, response, created_by, created_at)
+                     VALUES (?, ?, ?, ?, NOW())`,
+                    [trigName, trigJson, item.response, item.createdBy || 'owner']
+                );
+            }
+        }
+    } catch (err) {
+        console.error('[database] Error saving autoreplies to MariaDB:', err.message);
+    }
+}
+
+// ====================================================
+// GROUPS REPOSITORY (PERSISTENT REGISTRATION)
+// ====================================================
+
+function getGroups() {
+    return cache.groups;
+}
+
+function getGroupById(groupId) {
+    if (!groupId) return null;
+    const targetId = normalizeJid(groupId);
+    return cache.groups.find(g => normalizeJid(g.id) === targetId) || null;
+}
+
+function isGroupInitialized(groupId) {
+    return Boolean(getGroupById(groupId));
+}
+
+async function addGroup({ id, name, groupName = '', initializedBy = '' }) {
+    const cleanId = normalizeJid(id);
+    const cleanName = String(name || '').trim();
+    const cleanGroupName = String(groupName || '').trim();
+
+    if (!cleanId) {
+        return { success: false, message: 'Group ID tidak valid.' };
+    }
+    if (!cleanName) {
+        return { success: false, message: 'Nama/alias grup wajib diisi.' };
+    }
+
+    const existing = getGroupById(cleanId);
+    if (existing) {
+        return {
+            success: false,
+            alreadyExists: true,
+            existingGroup: existing,
+            message: `Grup ini sudah diinisialisasi sebagai "${existing.name}".`
+        };
+    }
+
+    const now = new Date();
+    const newGroup = {
+        id: cleanId,
+        name: cleanName,
+        groupName: cleanGroupName,
+        initializedAt: now.toISOString(),
+        initializedBy: String(initializedBy || '').trim()
+    };
+
+    cache.groups.push(newGroup);
+    syncDataFile(GROUPS_FILE, { groups: cache.groups });
+
+    try {
+        const db = getPool();
+        await db.query(
+            `INSERT INTO bot_groups (id, name, group_name, initialized_at, initialized_by)
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE name = VALUES(name), group_name = VALUES(group_name)`,
+            [newGroup.id, newGroup.name, newGroup.groupName, now, newGroup.initializedBy]
+        );
+    } catch (err) {
+        console.error('[database] Error inserting group to MariaDB:', err.message);
+    }
+
+    return {
+        success: true,
+        alreadyExists: false,
+        group: newGroup,
+        message: `Grup berhasil diinisialisasi sebagai "${newGroup.name}".`
+    };
+}
+
+async function saveGroups(groups) {
+    const list = Array.isArray(groups) ? groups : [];
+    cache.groups = list;
+    syncDataFile(GROUPS_FILE, { groups: list });
+
+    try {
+        const db = getPool();
+        for (const g of list) {
+            if (!g?.id) continue;
+            await db.query(
+                `INSERT INTO bot_groups (id, name, group_name, initialized_at, initialized_by)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE name = VALUES(name), group_name = VALUES(group_name)`,
+                [g.id, g.name || 'Grup', g.groupName || '', g.initializedAt ? new Date(g.initializedAt) : new Date(), g.initializedBy || '']
+            );
+        }
+    } catch (err) {
+        console.error('[database] Error saving groups to MariaDB:', err.message);
+    }
+}
+
+// ====================================================
+// KOST REPOSITORY (MARIADB SINGLE SOURCE OF TRUTH)
+// ====================================================
 
 function cleanInstagramUsername(input) {
     if (!input) return null;
@@ -571,7 +1184,7 @@ function mapKostRow(row) {
 }
 
 async function generateNextKostIdFromDb() {
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
     const [rows] = await db.query(
         "SELECT id FROM kost WHERE id LIKE 'KST-%' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) DESC LIMIT 1"
@@ -587,7 +1200,7 @@ async function generateNextKostIdFromDb() {
 }
 
 async function getKostList(groupId = null) {
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
     const cleanGroupId = groupId ? normalizeJid(groupId) : null;
     let query = 'SELECT * FROM kost';
@@ -619,7 +1232,7 @@ async function getKostByStatus(statusOrGroup, groupIdOrStatus = null) {
         return getKostList(targetGroup);
     }
 
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
     const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
     let query = 'SELECT * FROM kost WHERE status = ?';
@@ -646,7 +1259,7 @@ async function getKostById(idOrGroup, groupIdOrId = null) {
     const cleanId = String(targetId).trim().toUpperCase();
     const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
 
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
     let query = 'SELECT * FROM kost WHERE id = ?';
     const params = [cleanId];
@@ -671,7 +1284,7 @@ async function searchKost(queryOrGroup, groupIdOrQuery = null) {
     const q = String(targetQuery).trim().toLowerCase();
     const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
 
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
     let sql = `SELECT * FROM kost WHERE (
         LOWER(name) LIKE ? OR 
@@ -693,7 +1306,7 @@ async function searchKost(queryOrGroup, groupIdOrQuery = null) {
 }
 
 async function addKost({ name, instagram = null, tiktok = null, whatsapp = null, addedBy = '', groupId = '' }) {
-    await ensureKostTable();
+    await ensureAllTables();
     const cleanName = String(name || '').trim();
     const cleanIg = cleanInstagramUsername(instagram);
     const cleanTt = cleanTiktokUsername(tiktok);
@@ -808,7 +1421,7 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
         return { success: false, message: 'ID kost wajib diisi.' };
     }
 
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
 
     const current = await getKostById(cleanId, cleanGroupId);
@@ -861,7 +1474,7 @@ async function deleteKost(idOrGroup, groupIdOrId = null) {
     const cleanId = String(targetId).trim().toUpperCase();
     const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
 
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
 
     const current = await getKostById(cleanId, cleanGroupId);
@@ -892,7 +1505,7 @@ async function updateKost(id, { name, instagram = undefined, tiktok = undefined,
     const cleanId = String(id).trim().toUpperCase();
     const cleanGroupId = groupId ? normalizeJid(groupId) : null;
 
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
 
     const current = await getKostById(cleanId, cleanGroupId);
@@ -926,7 +1539,7 @@ async function updateKost(id, { name, instagram = undefined, tiktok = undefined,
 }
 
 async function getKostStats(groupId = null) {
-    await ensureKostTable();
+    await ensureAllTables();
     const db = getPool();
     const cleanGroupId = groupId ? normalizeJid(groupId) : null;
 
@@ -950,82 +1563,13 @@ async function getKostStats(groupId = null) {
     };
 }
 
-// ----------------------------------------------------
-// GROUPS REPOSITORY (PERSISTENT REGISTRATION)
-// ----------------------------------------------------
-
-function getGroups() {
-    ensureDataFiles();
-    const data = readJSON(GROUPS_FILE, { groups: [] });
-    if (Array.isArray(data?.groups)) {
-        return data.groups;
-    }
-    return Array.isArray(data) ? data : [];
-}
-
-function saveGroups(groups) {
-    return writeJSON(GROUPS_FILE, {
-        groups: Array.isArray(groups) ? groups : []
-    });
-}
-
-function getGroupById(groupId) {
-    if (!groupId) return null;
-    const targetId = normalizeJid(groupId);
-    const groups = getGroups();
-    return groups.find(g => normalizeJid(g.id) === targetId) || null;
-}
-
-function isGroupInitialized(groupId) {
-    return Boolean(getGroupById(groupId));
-}
-
-function addGroup({ id, name, groupName = '', initializedBy = '' }) {
-    const cleanId = normalizeJid(id);
-    const cleanName = String(name || '').trim();
-    const cleanGroupName = String(groupName || '').trim();
-
-    if (!cleanId) {
-        return { success: false, message: 'Group ID tidak valid.' };
-    }
-    if (!cleanName) {
-        return { success: false, message: 'Nama/alias grup wajib diisi.' };
-    }
-
-    const existing = getGroupById(cleanId);
-    if (existing) {
-        return {
-            success: false,
-            alreadyExists: true,
-            existingGroup: existing,
-            message: `Grup ini sudah diinisialisasi sebagai "${existing.name}".`
-        };
-    }
-
-    const groups = getGroups();
-    const newGroup = {
-        id: cleanId,
-        name: cleanName,
-        groupName: cleanGroupName,
-        initializedAt: new Date().toISOString(),
-        initializedBy: String(initializedBy || '').trim()
-    };
-
-    groups.push(newGroup);
-    saveGroups(groups);
-
-    return {
-        success: true,
-        alreadyExists: false,
-        group: newGroup,
-        message: `Grup berhasil diinisialisasi sebagai "${newGroup.name}".`
-    };
-}
-
 module.exports = {
     DATA_DIR,
     SUPER_OWNER,
     ensureDataFiles,
+    ensureAllTables,
+    ensureKostTable: ensureAllTables,
+    refreshDatabaseCache,
 
     // Owners
     getOwners,
@@ -1034,6 +1578,7 @@ module.exports = {
     isSuperOwner,
     addOwner,
     deleteOwner,
+    updateOwner,
 
     // Stats
     getStats,
@@ -1042,6 +1587,7 @@ module.exports = {
     incrementCommandStats,
     incrementStickerStats,
     incrementBratStats,
+    flushStatsToDb,
 
     // Logs
     getLogs,
@@ -1061,7 +1607,6 @@ module.exports = {
 
     // Kost (MariaDB Single Source of Truth)
     getPool,
-    ensureKostTable,
     cleanInstagramUsername,
     formatInstagramUrl,
     cleanTiktokUsername,

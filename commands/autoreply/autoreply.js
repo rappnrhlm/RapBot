@@ -77,7 +77,7 @@ module.exports = {
                 return;
             }
 
-            const result = database.addAutoreply(trigger, response, senderNumber);
+            const result = await database.addAutoreply(trigger, response, senderNumber);
             if (!result.success) {
                 const warnMsg = `⚠️ ${result.message}`;
                 if (typeof reply === 'function') await reply(warnMsg);
@@ -105,7 +105,7 @@ module.exports = {
                 return;
             }
 
-            const result = database.editAutoreply(trigger, response, senderNumber);
+            const result = await database.editAutoreply(trigger, response, senderNumber);
             if (!result.success) {
                 const warnMsg = `❌ ${result.message}`;
                 if (typeof reply === 'function') await reply(warnMsg);
@@ -129,7 +129,7 @@ module.exports = {
                 return;
             }
 
-            const result = database.deleteAutoreply(trigger);
+            const result = await database.deleteAutoreply(trigger);
             if (!result.success) {
                 const warnMsg = `❌ ${result.message}`;
                 if (typeof reply === 'function') await reply(warnMsg);

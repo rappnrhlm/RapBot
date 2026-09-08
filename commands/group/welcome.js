@@ -30,7 +30,7 @@ module.exports = {
             }
 
             config.text = text;
-            database.saveWelcomeConfig(config);
+            await database.saveWelcomeConfig(config);
 
             const successMsg = '✅ Pesan welcome berhasil diubah.';
             if (typeof reply === 'function') {
@@ -61,7 +61,7 @@ Gunakan:
         }
 
         config.enabled = mode === 'on';
-        database.saveWelcomeConfig(config);
+        await database.saveWelcomeConfig(config);
 
         const toggleMsg = `✅ Auto welcome ${config.enabled ? 'diaktifkan 🟢' : 'dimatikan 🔴'}`;
         if (typeof reply === 'function') {

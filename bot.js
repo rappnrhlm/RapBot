@@ -85,9 +85,10 @@ async function connectToWhatsApp() {
     try {
         console.log('🚀 Memulai WhatsApp Bot...');
 
-        // 1. Pastikan folder data dan file database JSON siap
+        // 1. Inisialisasi koneksi MariaDB dan sinkronisasi seluruh tabel & cache
         database.ensureDataFiles();
-        console.log('✅ File database JSON siap.');
+        await database.ensureAllTables();
+        console.log('✅ MariaDB tables & low-latency cache siap.');
 
         // 2. Load command registry secara dinamis
         commandRegistry = loadCommands();

@@ -46,7 +46,7 @@ module.exports = {
         }
 
         // 5. Simpan registrasi grup secara persistent
-        const result = database.addGroup({
+        const result = await database.addGroup({
             id: from,
             name: aliasName,
             groupName: groupSubject,
