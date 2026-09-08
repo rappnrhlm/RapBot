@@ -243,28 +243,64 @@ function saveAutoreplies(list) {
     return writeJSON(AUTOREPLY_FILE, list);
 }
 
+function normalizeTriggerList(triggerInput) {
+    if (!triggerInput) return [];
+    // Hapus kurung kurawal pembungkus jika ada: { ... }
+    let cleaned = String(triggerInput).trim().replace(/^\{+|\}+$/g, '').trim();
+    // Split berdasarkan slash / atau koma ,
+    const list = cleaned
+        .split(/[/,]+/)
+        .map(t => t.trim().replace(/^\{+|\}+$/g, '').trim())
+        .filter(Boolean);
+    return list;
+}
+
 function findAutoreply(trigger) {
     if (!trigger) return null;
     const normalized = trigger.trim().toLowerCase();
     const list = getAutoreplies();
-    return list.find(item => item.trigger?.toLowerCase() === normalized) || null;
+
+    return list.find(item => {
+        if (Array.isArray(item.triggers) && item.triggers.length > 0) {
+            if (item.triggers.some(t => t.toLowerCase() === normalized)) return true;
+        }
+        if (item.trigger?.toLowerCase() === normalized) return true;
+        // Fallback jika item.trigger string mengandung / atau ,
+        if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+            const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+            if (parts.includes(normalized)) return true;
+        }
+        return false;
+    }) || null;
 }
 
-function addAutoreply(trigger, response, createdBy = 'owner') {
-    if (!trigger || !response) {
+function addAutoreply(triggerInput, response, createdBy = 'owner') {
+    if (!triggerInput || !response) {
         return { success: false, message: 'Trigger dan respons wajib diisi.' };
     }
 
-    const list = getAutoreplies();
-    const normalized = trigger.trim().toLowerCase();
-    const existingIndex = list.findIndex(item => item.trigger?.toLowerCase() === normalized);
-
-    if (existingIndex !== -1) {
-        return { success: false, message: `Trigger "${trigger}" sudah ada. Gunakan edit untuk mengubahnya.` };
+    const triggers = normalizeTriggerList(triggerInput);
+    if (triggers.length === 0) {
+        return { success: false, message: 'Format trigger tidak valid.' };
     }
 
+    // Periksa apakah ada trigger yang sudah terdaftar
+    for (const t of triggers) {
+        const found = findAutoreply(t);
+        if (found) {
+            const label = Array.isArray(found.triggers) ? found.triggers.join(' / ') : found.trigger;
+            return {
+                success: false,
+                message: `Trigger "${t}" sudah terdaftar pada autoreply (${label}). Gunakan edit untuk mengubahnya.`
+            };
+        }
+    }
+
+    const list = getAutoreplies();
+    const primaryTrigger = triggers.join(' / ');
     const newItem = {
-        trigger: trigger.trim(),
+        trigger: primaryTrigger,
+        triggers: triggers,
         response: response.trim(),
         createdBy: createdBy || 'owner',
         createdAt: new Date().toISOString()
@@ -272,44 +308,79 @@ function addAutoreply(trigger, response, createdBy = 'owner') {
 
     list.push(newItem);
     saveAutoreplies(list);
-    return { success: true, message: `Autoreply untuk "${trigger}" berhasil ditambahkan.`, item: newItem };
+    return { success: true, message: `Autoreply untuk "${primaryTrigger}" berhasil ditambahkan.`, item: newItem };
 }
 
-function editAutoreply(trigger, newResponse, updatedBy = 'owner') {
-    if (!trigger || !newResponse) {
+function editAutoreply(triggerInput, newResponse, updatedBy = 'owner') {
+    if (!triggerInput || !newResponse) {
         return { success: false, message: 'Trigger dan respons baru wajib diisi.' };
     }
 
+    const targets = normalizeTriggerList(triggerInput);
     const list = getAutoreplies();
-    const normalized = trigger.trim().toLowerCase();
-    const item = list.find(i => i.trigger?.toLowerCase() === normalized);
 
-    if (!item) {
-        return { success: false, message: `Trigger "${trigger}" tidak ditemukan.` };
+    let foundIndex = -1;
+    for (const t of targets) {
+        const normalized = t.toLowerCase();
+        foundIndex = list.findIndex(item => {
+            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
+            if (item.trigger?.toLowerCase() === normalized) return true;
+            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+                if (parts.includes(normalized)) return true;
+            }
+            return false;
+        });
+        if (foundIndex !== -1) break;
     }
 
+    if (foundIndex === -1) {
+        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
+    }
+
+    const item = list[foundIndex];
+    if (targets.length > 0) {
+        item.triggers = targets;
+        item.trigger = targets.join(' / ');
+    }
     item.response = newResponse.trim();
     item.updatedBy = updatedBy;
     item.updatedAt = new Date().toISOString();
 
     saveAutoreplies(list);
-    return { success: true, message: `Autoreply untuk "${trigger}" berhasil diubah.`, item };
+    const label = Array.isArray(item.triggers) ? item.triggers.join(' / ') : item.trigger;
+    return { success: true, message: `Autoreply untuk "${label}" berhasil diubah.`, item };
 }
 
-function deleteAutoreply(trigger) {
-    if (!trigger) return { success: false, message: 'Trigger wajib diisi.' };
+function deleteAutoreply(triggerInput) {
+    if (!triggerInput) return { success: false, message: 'Trigger wajib diisi.' };
 
+    const targets = normalizeTriggerList(triggerInput);
     const list = getAutoreplies();
-    const normalized = trigger.trim().toLowerCase();
-    const index = list.findIndex(i => i.trigger?.toLowerCase() === normalized);
 
-    if (index === -1) {
-        return { success: false, message: `Trigger "${trigger}" tidak ditemukan.` };
+    let index = -1;
+    for (const t of targets) {
+        const normalized = t.toLowerCase();
+        index = list.findIndex(item => {
+            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
+            if (item.trigger?.toLowerCase() === normalized) return true;
+            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+                if (parts.includes(normalized)) return true;
+            }
+            return false;
+        });
+        if (index !== -1) break;
     }
 
-    list.splice(index, 1);
+    if (index === -1) {
+        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
+    }
+
+    const removed = list.splice(index, 1)[0];
     saveAutoreplies(list);
-    return { success: true, message: `Autoreply untuk "${trigger}" berhasil dihapus.` };
+    const label = Array.isArray(removed.triggers) ? removed.triggers.join(' / ') : removed.trigger;
+    return { success: true, message: `Autoreply untuk "${label}" berhasil dihapus.`, item: removed };
 }
 
 // ----------------------------------------------------

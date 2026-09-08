@@ -85,7 +85,8 @@ module.exports = {
                 return;
             }
 
-            const succMsg = `✅ Autoreply untuk "${trigger}" berhasil ditambahkan!\n\n💬 *Balasan:*\n${response}`;
+            const label = result.item?.trigger || trigger;
+            const succMsg = `✅ Autoreply untuk "${label}" berhasil ditambahkan!\n\n💬 *Balasan:*\n${response}`;
             if (typeof reply === 'function') await reply(succMsg);
             else await sock.sendMessage(from, { text: succMsg }, { quoted: msg });
             return;
@@ -112,7 +113,8 @@ module.exports = {
                 return;
             }
 
-            const succMsg = `✅ Autoreply untuk "${trigger}" berhasil diperbarui!\n\n💬 *Balasan Baru:*\n${response}`;
+            const label = result.item?.trigger || trigger;
+            const succMsg = `✅ Autoreply untuk "${label}" berhasil diperbarui!\n\n💬 *Balasan Baru:*\n${response}`;
             if (typeof reply === 'function') await reply(succMsg);
             else await sock.sendMessage(from, { text: succMsg }, { quoted: msg });
             return;
@@ -135,7 +137,8 @@ module.exports = {
                 return;
             }
 
-            const succMsg = `✅ Autoreply untuk "${trigger}" berhasil dihapus!`;
+            const label = result.item?.trigger || trigger;
+            const succMsg = `✅ Autoreply untuk "${label}" berhasil dihapus!`;
             if (typeof reply === 'function') await reply(succMsg);
             else await sock.sendMessage(from, { text: succMsg }, { quoted: msg });
             return;
@@ -145,12 +148,16 @@ module.exports = {
 `🤖 *PANDUAN AUTOREPLY*
 
 !autoreply-add !trigger|respons
+!autoreply-add {!trig1/!trig2/!trig3}|respons
 !autoreply-list
 !autoreply-del !trigger
 !autoreply-edit !trigger|respons_baru
 
-💡 *Tips baris baru:*
-Kamu bisa tekan Enter langsung di WhatsApp atau ketik \\n di dalam pesan respons.`;
+💡 *Fitur Tambahan:*
+• *Multi-trigger / Alias:*
+  Contoh: !autoreply-add {!rekening/!rek/!norek}|Transfer ke BCA...
+• *Baris baru (Enter):*
+  Bisa tekan Enter langsung di WhatsApp atau ketik \\n`;
 
         if (typeof reply === 'function') await reply(helpMsg);
         else await sock.sendMessage(from, { text: helpMsg }, { quoted: msg });
