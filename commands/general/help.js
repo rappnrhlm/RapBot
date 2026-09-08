@@ -5,7 +5,60 @@ module.exports = {
     description: 'Menampilkan panduan lengkap seluruh perintah bot.',
     usage: '!help atau !help <command>',
 
-    async execute({ sock, msg, from, args, reply }) {
+    async execute({ sock, msg, from, senderNumber, args, reply, services, utils, isGroup: isGroupChat }) {
+        const database = services?.database || require('../../services/database');
+        const jidUtils = utils?.jid || require('../../utils/jid');
+
+        const inGroup = typeof isGroupChat === 'boolean' ? isGroupChat : jidUtils.isGroup(from);
+        const isOwner = database.isOwner(senderNumber);
+
+        let showKosAdmin = false;
+        let showKosPublic = false;
+
+        if (inGroup) {
+            const cleanFrom = jidUtils.normalizeJid(from);
+            const groupObj = database.getGroupById(cleanFrom);
+            const effectiveGroupId = database.resolveDataGroupId(cleanFrom);
+            const effectiveGroupObj = effectiveGroupId ? database.getGroupById(effectiveGroupId) : groupObj;
+
+            const isKosType = Boolean(
+                (groupObj && (groupObj.type === 'kos' || !groupObj.type)) ||
+                (effectiveGroupObj && (effectiveGroupObj.type === 'kos' || !effectiveGroupObj.type))
+            );
+
+            if (isKosType) {
+                const role = groupObj?.role || 'admin';
+                if (role === 'admin' || isOwner) {
+                    showKosAdmin = true;
+                    showKosPublic = true;
+                } else if (role === 'public') {
+                    showKosPublic = true;
+                }
+            }
+        } else {
+            // Private chat (DM ke bot)
+            if (isOwner) {
+                showKosAdmin = true;
+                showKosPublic = true;
+            }
+        }
+
+        const kosAdminCmds = new Set([
+            'kost', 'kos', 'kosts', 'kostdm', 'listkost',
+            'addkost',
+            'dm', 'dmpromosi', 'dmkost',
+            'sent', 'kirim', 'terkirim', 'marksent',
+            'delkost', 'hapuskost',
+            'listusul', 'usulan', 'daftar-usul', 'usulan-kost',
+            'acc', 'terimausul', 'setujuiusul', 'acc-usul',
+            'tolak', 'tolakusul', 'rejectusul', 'tolak-usul'
+        ]);
+
+        const kosPublicCmds = new Set([
+            'cari',
+            'usulkost', 'usul', 'suggest', 'daftarkost'
+        ]);
+
         const helps = {
             // General
             ping: '🏓 `!ping`\nCek apakah bot aktif dan responsif.',
@@ -65,10 +118,11 @@ module.exports = {
         };
 
         if (!args || !args[0]) {
-            const fullGuide =
-`╭━━━〔 📖 *PANDUAN LENGKAP BOT* 〕━━━╮
+            const sections = [];
 
-🏠 *BUKITTINGGI KOS (ADMIN)*
+            if (showKosAdmin) {
+                sections.push(
+`🏠 *BUKITTINGGI KOS (ADMIN)*
 │ \`!kost\` — Daftar kos (pending/sent/all)
 │ \`!kost dm\` — Format ringkas link untuk DM
 │ \`!dm <ID>\` — Link WA & balon template DM siap salin
@@ -78,50 +132,74 @@ module.exports = {
 │ \`!delkost <ID>\` — Hapus data kos
 │ \`!listusul\` — Daftar usulan kos dari warga
 │ \`!acc <ID>\` — Setujui usulan kos warga
-│ \`!tolak <ID>\` — Tolak usulan kos warga
+│ \`!tolak <ID>\` — Tolak usulan kos warga`
+                );
+            }
 
-🔍 *PUBLIK & WARGA*
+            if (showKosPublic) {
+                sections.push(
+`🔍 *PUBLIK & WARGA*
 │ \`!cari <keyword>\` — Cari kos berdasarkan nama/daerah
-│ \`!usulkost <Nama> > <kontak>\` — Usulkan info kos baru
+│ \`!usulkost <Nama> > <kontak>\` — Usulkan info kos baru`
+                );
+            }
 
-🎨 *STICKER & MEDIA*
+            sections.push(
+`🎨 *STICKER & MEDIA*
 │ \`!stiker\` — Ubah gambar jadi stiker (caption/reply)
 │ \`!smeme <atas|bawah>\` — Buat stiker meme teks
-│ \`!brat <teks>\` — Buat stiker Brat aesthetic
+│ \`!brat <teks>\` — Buat stiker Brat aesthetic`
+            );
 
-🤖 *AUTOREPLY (OWNER)*
+            if (isOwner) {
+                sections.push(
+`🤖 *AUTOREPLY (OWNER)*
 │ \`!autoreply-list\` — Lihat semua autoreply aktif
 │ \`!autoreply-add <trig>|<resp>\` — Tambah autoreply (multi-trigger)
 │ \`!autoreply-edit <trig>|<resp>\` — Ubah isi respons
-│ \`!autoreply-del <trig>\` — Hapus autoreply
+│ \`!autoreply-del <trig>\` — Hapus autoreply`
+                );
+            }
 
-👥 *GRUP & MEMBER*
+            sections.push(
+`👥 *GRUP & MEMBER*
 │ \`!initgroup <nama>\` — Inisialisasi grup di bot
 │ \`!groupinfo\` — Cek info & statistik grup
 │ \`!listadmin\` — Daftar admin grup
 │ \`!tagall\` — Mention seluruh member grup
 │ \`!hidetag <teks>\` — Mention tersembunyi
 │ \`!welcome on/off\` — Toggle sambutan member baru
-│ \`!setwelcome <teks>\` — Atur teks sambutan
+│ \`!setwelcome <teks>\` — Atur teks sambutan`
+            );
 
-👑 *ADMIN GRUP*
+            sections.push(
+`👑 *ADMIN GRUP*
 │ \`!add 628xxx\` — Tambah anggota ke grup
 │ \`!kick @user\` — Keluarkan anggota
 │ \`!promote @user\` — Angkat jadi admin
-│ \`!demote @user\` — Turunkan dari admin
+│ \`!demote @user\` — Turunkan dari admin`
+            );
 
-⚙️ *SISTEM & OWNER*
+            sections.push(
+`⚙️ *SISTEM & OWNER*
 │ \`!ping\` — Cek status & latency bot
 │ \`!stats\` — Pantau statistik bot & server STB
 │ \`!menu\` — Tampilan menu ringkas
 │ \`!owner list\` — Cek daftar owner bot
-│ \`!owner add/del\` — Tambah/hapus owner
+│ \`!owner add/del\` — Tambah/hapus owner`
+            );
+
+            const exampleTip = showKosAdmin ? '`!help addkost` atau `!help stiker`' : '`!help stiker` atau `!help groupinfo`';
+            const fullGuide =
+`╭━━━〔 📖 *PANDUAN LENGKAP BOT* 〕━━━╮
+
+${sections.join('\n\n')}
 
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯
 
 💡 *TIPS:*
 Ketik \`!help <nama_command>\` untuk panduan lebih detail.
-Contoh: \`!help addkost\` atau \`!help autoreply-add\``;
+Contoh: ${exampleTip}`;
 
             if (typeof reply === 'function') {
                 await reply(fullGuide);
@@ -132,6 +210,20 @@ Contoh: \`!help addkost\` atau \`!help autoreply-add\``;
         }
 
         const targetCmd = args[0].toLowerCase().replace(/^!/, '');
+
+        // Validasi pembatasan perintah kos untuk grup non-kos
+        if (kosAdminCmds.has(targetCmd) && !showKosAdmin) {
+            const notFoundText = `❌ Perintah \`!${targetCmd}\` hanya tersedia di grup internal admin Bukittinggi Kos.`;
+            if (typeof reply === 'function') return await reply(notFoundText);
+            return await sock.sendMessage(from, { text: notFoundText }, { quoted: msg });
+        }
+
+        if (kosPublicCmds.has(targetCmd) && !showKosPublic) {
+            const notFoundText = `❌ Perintah \`!${targetCmd}\` hanya tersedia di grup Bukittinggi Kos.`;
+            if (typeof reply === 'function') return await reply(notFoundText);
+            return await sock.sendMessage(from, { text: notFoundText }, { quoted: msg });
+        }
+
         const helpText = helps[targetCmd] || `❌ Help untuk \`!${targetCmd}\` tidak ditemukan.\n\nKetik \`!help\` untuk melihat seluruh daftar perintah.`;
 
         if (typeof reply === 'function') {
