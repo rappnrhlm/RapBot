@@ -29,7 +29,7 @@ module.exports = {
 `❌ Grup ini belum diinisialisasi.
 
 Gunakan:
-!initgroup <nama grup>`;
+\`!initgroup <nama grup>\``;
             return sendReply(uninitMsg);
         }
 
@@ -37,12 +37,12 @@ Gunakan:
             const targetId = args[0]?.trim();
             if (!targetId) {
                 const formatGuide =
-`❌ Format: !sent <ID>
+`❌ Format: \`!sent <ID>\`
 
 Contoh:
-!sent KST-000001
+\`!sent KST-000001\`
 
-💡 Gunakan !cari <nama> untuk melihat ID kost.`;
+💡 Gunakan \`!cari <nama>\` untuk melihat ID kost.`;
                 return sendReply(formatGuide);
             }
 

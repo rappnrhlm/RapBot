@@ -20,7 +20,7 @@ module.exports = {
         if (command === 'setwelcome') {
             const text = args.join(' ').trim();
             if (!text) {
-                const guide = '❌ Contoh:\n!setwelcome Halo @user, selamat datang di @group!';
+                const guide = '❌ Contoh:\n`!setwelcome Halo @user, selamat datang di @group!`';
                 if (typeof reply === 'function') {
                     await reply(guide);
                 } else {
@@ -48,9 +48,9 @@ module.exports = {
 `👋 Welcome saat ini: ${config.enabled ? 'AKTIF 🟢' : 'NONAKTIF 🔴'}
 
 Gunakan:
-!welcome on
-!welcome off
-!setwelcome <teks>`;
+\`!welcome on\`
+\`!welcome off\`
+\`!setwelcome <teks>\``;
 
             if (typeof reply === 'function') {
                 await reply(statusMsg);

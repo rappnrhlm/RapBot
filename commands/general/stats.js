@@ -19,14 +19,14 @@ module.exports = {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5);
 
-        let topCommands = '> Belum ada';
+        let topCommands = 'Belum ada';
         if (sorted.length) {
             topCommands = sorted
-                .map(([cmd, count], i) => `${i + 1}. !${cmd} — ${count}x`)
+                .map(([cmd, count], i) => `${i + 1}. \`!${cmd}\` — ${count}x`)
                 .join('\n');
         }
 
-        let serverDetails = '> ⚠️ Gagal mengambil info server';
+        let serverDetails = '⚠️ Gagal mengambil info server';
         if (server) {
             serverDetails =
 `Device: ${server.deviceName}

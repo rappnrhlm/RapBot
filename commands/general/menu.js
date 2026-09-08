@@ -20,33 +20,33 @@ module.exports = {
 ⚠️ Command di bawah khusus admin grup.
 
 👥 MEMBER
-│ !add 628xxxxxxxxxx
-│ !kick @user
-│ !kick → reply pesan
-│ !promote @user
-│ !promote → reply pesan
-│ !demote @user
-│ !demote → reply pesan
+│ \`!add 628xxxxxxxxxx\`
+│ \`!kick @user\`
+│ \`!kick\` → reply pesan
+│ \`!promote @user\`
+│ \`!promote\` → reply pesan
+│ \`!demote @user\`
+│ \`!demote\` → reply pesan
 
 📢 GROUP
-│ !tagall
-│ !hidetag <teks>
-│ !groupinfo
-│ !listadmin
+│ \`!tagall\`
+│ \`!hidetag <teks>\`
+│ \`!groupinfo\`
+│ \`!listadmin\`
 
 👋 WELCOME
-│ !welcome on
-│ !welcome off
-│ !setwelcome <teks>
+│ \`!welcome on\`
+│ \`!welcome off\`
+│ \`!setwelcome <teks>\`
 
 📊 BOT
-│ !stats
-│ !help <command>
+│ \`!stats\`
+│ \`!help <command>\`
 
 👑 OWNER
-│ !owner list
-│ !owner add <nomor>
-│ !owner delete <nomor>
+│ \`!owner list\`
+│ \`!owner add <nomor>\`
+│ \`!owner delete <nomor>\`
 
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
@@ -62,26 +62,26 @@ module.exports = {
 `╭━━━〔 🤖 BOT MENU 〕━━━╮
 
 👤 UMUM
-│ !ping
-│ !menu
-│ !help
-│ !stats
+│ \`!ping\`
+│ \`!menu\`
+│ \`!help\`
+│ \`!stats\`
 
 🎨 STICKER
-│ !stiker
-│ !smeme <teks atas|teks bawah>
-│ !brat <teks>
+│ \`!stiker\`
+│ \`!smeme <teks atas|teks bawah>\`
+│ \`!brat <teks>\`
 
 👥 GROUP
-│ !groupinfo
-│ !listadmin
-│ !tagall
-│ !hidetag <teks>
+│ \`!groupinfo\`
+│ \`!listadmin\`
+│ \`!tagall\`
+│ \`!hidetag <teks>\`
 
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
 💡 Mau lihat command khusus admin?
-Ketik !admin-menu`;
+Ketik \`!admin-menu\``;
 
         if (typeof reply === 'function') {
             await reply(generalText);

@@ -71,7 +71,7 @@ module.exports = {
             const response = parts.slice(1).join('|').trim();
 
             if (!trigger || !response) {
-                const guide = '❌ Contoh: !autoreply-add !alamat|Jl. Contoh No. 123\n\n💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n';
+                const guide = '❌ Contoh: `!autoreply-add !alamat|Jl. Contoh No. 123`\n\n💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n';
                 if (typeof reply === 'function') await reply(guide);
                 else await sock.sendMessage(from, { text: guide }, { quoted: msg });
                 return;
@@ -99,7 +99,7 @@ module.exports = {
             const response = parts.slice(1).join('|').trim();
 
             if (!trigger || !response) {
-                const guide = '❌ Contoh: !autoreply-edit !alamat|Jl. Contoh Baru\n\n💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n';
+                const guide = '❌ Contoh: `!autoreply-edit !alamat|Jl. Contoh Baru`\n\n💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n';
                 if (typeof reply === 'function') await reply(guide);
                 else await sock.sendMessage(from, { text: guide }, { quoted: msg });
                 return;
@@ -123,7 +123,7 @@ module.exports = {
         if (action === 'del' || action === 'delete') {
             const trigger = getRawPayload(body, command, action, args);
             if (!trigger) {
-                const guide = '❌ Contoh: !autoreply-del !alamat';
+                const guide = '❌ Contoh: `!autoreply-del !alamat`';
                 if (typeof reply === 'function') await reply(guide);
                 else await sock.sendMessage(from, { text: guide }, { quoted: msg });
                 return;
@@ -147,15 +147,15 @@ module.exports = {
         const helpMsg =
 `🤖 *PANDUAN AUTOREPLY*
 
-!autoreply-add !trigger|respons
-!autoreply-add {!trig1/!trig2/!trig3}|respons
-!autoreply-list
-!autoreply-del !trigger
-!autoreply-edit !trigger|respons_baru
+\`!autoreply-add !trigger|respons\`
+\`!autoreply-add {!trig1/!trig2/!trig3}|respons\`
+\`!autoreply-list\`
+\`!autoreply-del !trigger\`
+\`!autoreply-edit !trigger|respons_baru\`
 
 💡 *Fitur Tambahan:*
 • *Multi-trigger / Alias:*
-  Contoh: !autoreply-add {!rekening/!rek/!norek}|Transfer ke BCA...
+  Contoh: \`!autoreply-add {!rekening/!rek/!norek}|Transfer ke BCA...\`
 • *Baris baru (Enter):*
   Bisa tekan Enter langsung di WhatsApp atau ketik \\n`;
 

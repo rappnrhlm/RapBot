@@ -21,7 +21,7 @@ module.exports = {
         // 2. Validasi nama/alias grup
         const aliasName = args.join(' ').trim();
         if (!aliasName) {
-            const formatMsg = '❌ Format: !initgroup <nama>\n\nContoh:\n!initgroup Bukittinggi Kos';
+            const formatMsg = '❌ Format: `!initgroup <nama>`\n\nContoh:\n`!initgroup Bukittinggi Kos`';
             if (typeof reply === 'function') await reply(formatMsg);
             else await sock.sendMessage(from, { text: formatMsg }, { quoted: msg });
             return;

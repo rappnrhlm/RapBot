@@ -99,7 +99,7 @@ module.exports = {
 `❌ Grup ini belum diinisialisasi.
 
 Gunakan:
-!initgroup <nama grup>`;
+\`!initgroup <nama grup>\``;
             return sendReply(uninitMsg);
         }
 
@@ -115,9 +115,9 @@ Gunakan:
                     const guide =
 `❌ Format salah.
 Contoh:
-• *!addkost Kost Mawar > kostmawar* (Instagram)
-• *!addkost Kost Mawar > wa: 08123456789* (WhatsApp)
-• *!addkost Kost Mawar > ig: mawar | wa: 08123456789 | tt: mawarkos*`;
+• \`!addkost Kost Mawar > kostmawar\` (Instagram)
+• \`!addkost Kost Mawar > wa: 08123456789\` (WhatsApp)
+• \`!addkost Kost Mawar > ig: mawar | wa: 08123456789 | tt: mawarkos\``;
                     return sendReply(guide);
                 }
 
@@ -278,15 +278,15 @@ Contoh:
 
 💡 *PERINTAH TERSEDIA*
 
-> !kost dm
-> !kost all
-> !kost pending
-> !kost sent
-> !kost lengkap <ID>
-> !addkost <Nama> > <kontak (ig/wa/tt)>
-> !cari <kata kunci>
-> !sent <ID>
-> !delkost <ID>`;
+\`!kost dm\`
+\`!kost all\`
+\`!kost pending\`
+\`!kost sent\`
+\`!kost lengkap <ID>\`
+\`!addkost <Nama> > <kontak (ig/wa/tt)>\`
+\`!cari <kata kunci>\`
+\`!sent <ID>\`
+\`!delkost <ID>\``;
 
             return sendReply(text.trim());
         } catch (err) {

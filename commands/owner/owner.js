@@ -21,7 +21,7 @@ module.exports = {
 
         const subCommand = args.shift()?.toLowerCase();
         if (!subCommand) {
-            const usageGuide = '!owner list\n!owner add <nomor> [nama]\n!owner delete <nomor>';
+            const usageGuide = '`!owner list`\n`!owner add <nomor> [nama]`\n`!owner delete <nomor>`';
             if (typeof reply === 'function') {
                 await reply(usageGuide);
             } else {
@@ -59,7 +59,7 @@ module.exports = {
             const rawNumber = args[0];
             const cleanNumber = phoneUtils.normalizePhoneNumber(rawNumber);
             if (!cleanNumber) {
-                const helpMsg = '❌ Contoh: !owner add 628123456789 [nama]';
+                const helpMsg = '❌ Contoh: `!owner add 628123456789 [nama]`';
                 if (typeof reply === 'function') {
                     await reply(helpMsg);
                 } else {
@@ -94,7 +94,7 @@ module.exports = {
             const rawNumber = args[0];
             const cleanNumber = phoneUtils.normalizePhoneNumber(rawNumber);
             if (!cleanNumber) {
-                const helpMsg = '❌ Contoh: !owner delete 628123456789';
+                const helpMsg = '❌ Contoh: `!owner delete 628123456789`';
                 if (typeof reply === 'function') {
                     await reply(helpMsg);
                 } else {
