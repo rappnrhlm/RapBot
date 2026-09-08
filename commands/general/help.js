@@ -101,8 +101,8 @@ module.exports = {
 
             // Bukittinggi Kos
             initgroup: '👥 `!initgroup [admin|public] <nama> [--link <grup_induk>]`\nMendaftarkan grup ke database. Mendukung mode admin, publik dengan link data, atau `!initgroup list`.\nContoh:\n• Admin: `!initgroup admin Bukittinggi Kos`\n• Publik: `!initgroup public Komunitas Kos --link Bukittinggi Kos`\n• Daftar grup: `!initgroup list`',
-            kost: '🏠 *MANAJEMEN KOST: !kost*\n\n`!kost` atau `!kost pending` — Daftar kos yang belum di-DM\n`!kost sent` — Daftar kos yang sudah di-DM\n`!kost all` — Semua daftar kos\n`!kost dm` — Format ringkas & link langsung untuk DM IG/WA/TT\n`!kost dm <ID>` / `!dm <ID>` — Link prefilled & balon template DM siap salin\n`!kost lengkap <ID>` — Detail lengkap satu kos',
-            dm: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin untuk pemilik kos (Khusus Admin).\nContoh: `!dm 1` atau `!dm KST-000001`',
+            kost: '🏠 *MANAJEMEN KOST: !kost*\n\n`!kost` atau `!kost pending` — Daftar kos yang belum di-DM\n`!kost sent` — Daftar kos yang sudah di-DM\n`!kost all` — Semua daftar kos\n`!kost dm` — Format ringkas & link langsung untuk DM IG/WA/TT\n`!kost dm <ID>` / `!dm <ID>` — Link prefilled & balon template DM siap salin\n`!kost lengkap <ID>` — Detail lengkap satu kos (ID bisa: `12`, `KST-12`, `kst 12`, `KST-000012`)',
+            dm: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin untuk pemilik kos (Khusus Admin).\nFormat ID fleksibel: `!dm 12`, `!dm 000012`, `!dm KST-12`, `!dm kst 12`, `!dm KST-000012`.',
             dmpromosi: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin (alias dari !dm).',
             dmkost: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin (alias dari !dm).',
             addkost: '🏠 `!addkost <Nama Kost> > <kontak>`\nMenambahkan data kos ke database (khusus Admin).\nContoh:\n• `!addkost Kost Melati > kostmelati_bkt`\n• `!addkost Kost Mawar > wa: 08123456789`\n• `!addkost Kost Indah > ig: indah | wa: 08123456789 | tt: indahkos`',
@@ -111,9 +111,9 @@ module.exports = {
             listusul: '📥 `!listusul [pending|all|approved|rejected]`\nMenampilkan daftar usulan kos warga yang masuk (Khusus Admin).',
             acc: '✅ `!acc <ID Usulan>`\nMenyetujui usulan kos dari warga dan otomatis memasukkannya ke database (Khusus Admin).\nContoh: `!acc 1`',
             tolak: '❌ `!tolak <ID Usulan>`\nMenolak usulan kos dari warga (Khusus Admin).\nContoh: `!tolak 1`',
-            sent: '✅ `!sent <ID>` atau `!sent 2 sampai 20`\nMenandai status kos menjadi SENT (mendukung satu ID, daftar koma, atau range).\nContoh:\n• `!sent KST-000001` atau `!sent 1`\n• `!sent KST-000002 sampai KST-000020`\n• `!sent 2 - 20`\n• `!sent 1, 3, 5`',
+            sent: '✅ `!sent <ID>` atau `!sent 2 sampai 20`\nMenandai status kos menjadi SENT (mendukung satu ID, daftar koma, atau range).\nContoh:\n• `!sent 12` atau `!sent KST-12` atau `!sent KST-000012`\n• `!sent 2 sampai 20` atau `!sent 2 - 20`\n• `!sent 1, 3, 5`',
             kirim: '✅ `!sent <ID>`\nMenandai status kos menjadi SENT (alias dari !sent).',
-            delkost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database (Khusus Admin).\nContoh: `!delkost KST-000001`',
+            delkost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database (Khusus Admin).\nContoh: `!delkost 12` atau `!delkost KST-000012`',
             hapuskost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database (alias dari !delkost).'
         };
 

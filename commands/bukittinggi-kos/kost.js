@@ -209,13 +209,14 @@ Status: ⏳ PENDING`;
 
             // 3. KOST LENGKAP: !kost lengkap <ID>
             if (args[0]?.toLowerCase() === 'lengkap') {
-                const targetId = args[1]?.trim();
+                const targetId = args.slice(1).join(' ').trim();
                 if (!targetId) {
                     const formatGuide =
 `❌ Format: \`!kost lengkap <ID>\`
 
 Contoh:
-\`!kost lengkap KST-000001\`
+• \`!kost lengkap 12\`
+• \`!kost lengkap KST-000012\`
 
 💡 Gunakan \`!cari <nama>\` untuk melihat ID kost.`;
                     return sendReply(formatGuide);
@@ -223,7 +224,7 @@ Contoh:
 
                 const kost = await database.getKostById(targetId, from);
                 if (!kost) {
-                    return sendReply(`❌ Kost dengan ID ${targetId.toUpperCase()} tidak ditemukan.`);
+                    return sendReply(`❌ Kost dengan ID "${targetId}" tidak ditemukan.`);
                 }
 
                 const igUrl = kost.instagram ? database.formatInstagramUrl(kost.instagram) : '-';
@@ -275,8 +276,8 @@ Contoh:
                              ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase());
 
             if (isDmMode) {
-                // Jika user mengetik !kost dm <ID> (misal: !kost dm 1), alihkan ke perintah !dm
-                const possibleId = ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase()) ? args[1] : args[0];
+                // Jika user mengetik !kost dm <ID> (misal: !kost dm 1 atau !kost dm kst 12), alihkan ke perintah !dm
+                const possibleId = ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase()) ? args.slice(1).join(' ').trim() : args.join(' ').trim();
                 if (possibleId && !['all', 'sent', 'pending'].includes(possibleId.toLowerCase())) {
                     const dmCmd = require('./dm');
                     return await dmCmd.execute({ sock, msg, from, senderNumber, args: [possibleId], isGroup: inGroup, reply, services, utils });

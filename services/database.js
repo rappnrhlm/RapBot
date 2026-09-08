@@ -1384,7 +1384,7 @@ async function getKostById(idOrGroup, groupIdOrId = null) {
     }
 
     if (!targetId) return null;
-    const cleanId = String(targetId).trim().toUpperCase();
+    const cleanId = normalizeKostId(targetId) || String(targetId).trim().toUpperCase();
     const effectiveGroupId = resolveDataGroupId(targetGroup);
     const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
 
@@ -1544,7 +1544,7 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
         }
     }
 
-    const cleanId = String(targetId || '').trim().toUpperCase();
+    const cleanId = normalizeKostId(targetId) || String(targetId || '').trim().toUpperCase();
     const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
 
     if (!cleanId) {
@@ -1589,13 +1589,18 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
 }
 
 function normalizeKostId(input) {
-    if (!input) return null;
+    if (input === null || input === undefined) return null;
     let s = String(input).trim().toUpperCase();
-    const matchFull = s.match(/^KST-(\d+)$/i);
-    if (matchFull) return `KST-${matchFull[1].padStart(6, '0')}`;
-    const matchSpace = s.match(/^KST\s+(\d+)$/i);
-    if (matchSpace) return `KST-${matchSpace[1].padStart(6, '0')}`;
-    if (/^\d+$/.test(s)) return `KST-${s.padStart(6, '0')}`;
+    if (!s) return null;
+
+    // Match variations like: "KST-000012", "12", "000012", "KST-12", "KST 12", "kst12", "KST_12", "#12", "kost 12"
+    const match = s.match(/^(?:(?:KOST|KST|#)[\s\-_#]*)*(\d+)$/i);
+    if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > 0) {
+            return `KST-${String(num).padStart(6, '0')}`;
+        }
+    }
     return s;
 }
 
@@ -1603,27 +1608,31 @@ function parseKostIdTargets(rawInput) {
     if (!rawInput) return { type: 'none', ids: [] };
     let text = String(rawInput).trim();
 
-    // 1. Range syntax: "X sampai Y", "X hingga Y", "X s/d Y", "X sd Y", "X to Y", "X - Y"
+    // 1. Single ID check first (handles "12", "000012", "KST-12", "kst 12", "KST-000012", etc.)
+    const singleNorm = normalizeKostId(text);
+    if (singleNorm && /^KST-\d{6}$/.test(singleNorm)) {
+        return { type: 'single', ids: [singleNorm] };
+    }
+
+    // 2. Range syntax: "X sampai Y", "X hingga Y", "X s/d Y", "X sd Y", "X to Y", "X - Y"
     const rangeRegex = /^(.*?)\s+(?:sampai|hingga|s\/d|sd|to|-)\s+(.*)$/i;
     let rangeMatch = text.match(rangeRegex);
 
-    // Simple digits range like "2-20"
-    if (!rangeMatch && text.includes('-')) {
+    // Simple hyphen range like "2-20" or "KST-2 - KST-20"
+    if (!rangeMatch && /^\d+\s*-\s*\d+$/.test(text)) {
         const hyphenParts = text.split(/\s*-\s*/);
-        if (hyphenParts.length === 2 && /^\d+$/.test(hyphenParts[0]) && /^\d+$/.test(hyphenParts[1])) {
-            rangeMatch = [text, hyphenParts[0], hyphenParts[1]];
-        }
+        rangeMatch = [text, hyphenParts[0], hyphenParts[1]];
     }
 
     if (rangeMatch) {
         const left = rangeMatch[1].trim();
         const right = rangeMatch[2].trim();
-        const leftNumMatch = left.replace(/^KST[- ]*/i, '').trim();
-        const rightNumMatch = right.replace(/^KST[- ]*/i, '').trim();
+        const leftNorm = normalizeKostId(left);
+        const rightNorm = normalizeKostId(right);
 
-        if (/^\d+$/.test(leftNumMatch) && /^\d+$/.test(rightNumMatch)) {
-            let start = parseInt(leftNumMatch, 10);
-            let end = parseInt(rightNumMatch, 10);
+        if (leftNorm && rightNorm && /^KST-\d{6}$/.test(leftNorm) && /^KST-\d{6}$/.test(rightNorm)) {
+            let start = parseInt(leftNorm.slice(4), 10);
+            let end = parseInt(rightNorm.slice(4), 10);
             if (start > end) [start, end] = [end, start];
             if (end - start > 100) end = start + 100;
             const ids = [];
@@ -1634,17 +1643,23 @@ function parseKostIdTargets(rawInput) {
         }
     }
 
-    // 2. Multiple IDs separated by comma or space
-    const tokens = text.split(/[,|\s]+/).map(t => t.trim()).filter(Boolean);
-    if (tokens.length > 1) {
-        const ids = [...new Set(tokens.map(normalizeKostId).filter(Boolean))];
-        return { type: 'list', ids };
+    // 3. Comma or semicolon separated list (e.g. "1, 3, 5" or "KST-1, KST-3")
+    if (text.includes(',') || text.includes(';')) {
+        const rawTokens = text.split(/[,;]+/).map(t => t.trim()).filter(Boolean);
+        const ids = [...new Set(rawTokens.map(normalizeKostId).filter(id => id && /^KST-\d{6}$/.test(id)))];
+        if (ids.length > 0) {
+            return { type: ids.length === 1 ? 'single' : 'list', ids };
+        }
     }
 
-    // 3. Single ID
-    if (tokens.length === 1) {
-        const id = normalizeKostId(tokens[0]);
-        return { type: 'single', ids: id ? [id] : [] };
+    // 4. Space separated multiple IDs (e.g. "1 2 3" or "KST-1 KST-2")
+    const idRegex = /(?:(?:KOST|KST|#)[\s\-_#]*)*\d+/gi;
+    const matches = text.match(idRegex);
+    if (matches && matches.length > 0) {
+        const ids = [...new Set(matches.map(normalizeKostId).filter(id => id && /^KST-\d{6}$/.test(id)))];
+        if (ids.length > 0) {
+            return { type: ids.length === 1 ? 'single' : 'list', ids };
+        }
     }
 
     return { type: 'none', ids: [] };
@@ -1718,7 +1733,7 @@ async function deleteKost(idOrGroup, groupIdOrId = null) {
         return { success: false, message: 'ID kost wajib diisi.' };
     }
 
-    const cleanId = String(targetId).trim().toUpperCase();
+    const cleanId = normalizeKostId(targetId) || String(targetId).trim().toUpperCase();
     const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
 
     await ensureAllTables();
@@ -1749,7 +1764,7 @@ async function deleteKost(idOrGroup, groupIdOrId = null) {
 
 async function updateKost(id, { name, instagram = undefined, tiktok = undefined, whatsapp = undefined, status, groupId = null }) {
     if (!id) return { success: false, message: 'ID kost wajib diisi.' };
-    const cleanId = String(id).trim().toUpperCase();
+    const cleanId = normalizeKostId(id) || String(id).trim().toUpperCase();
     const cleanGroupId = groupId ? normalizeJid(groupId) : null;
 
     await ensureAllTables();

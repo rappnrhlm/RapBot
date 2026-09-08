@@ -30,7 +30,7 @@ module.exports = {
             return sendReply('❌ Perintah `!dm` hanya untuk grup internal admin.');
         }
 
-        const rawInput = args[0]?.trim();
+        const rawInput = args.join(' ').trim();
         if (!rawInput) {
             const formatGuide =
 `❌ *Format Perintah DM*
@@ -40,17 +40,17 @@ Gunakan:
 
 Contoh:
 • \`!dm 1\` atau \`!dm KST-000001\`
-• \`!dm 25\`
+• \`!dm 12\` atau \`!dm kst 12\`
 
 💡 *Tips:* Bot akan mengirim 2 balon chat. Balon kedua berisi teks template yang bisa langsung kamu tahan (long-press) dan salin ke Instagram!`;
             return sendReply(formatGuide);
         }
 
         const normalizedId = database.normalizeKostId(rawInput);
-        const kost = await database.getKostById(normalizedId, from);
+        const kost = await database.getKostById(normalizedId || rawInput, from);
 
         if (!kost) {
-            return sendReply(`❌ Kost dengan ID "${rawInput}" (${normalizedId}) tidak ditemukan di database.`);
+            return sendReply(`❌ Kost dengan ID "${rawInput}" (${normalizedId || rawInput}) tidak ditemukan di database.`);
         }
 
         const igUrl = kost.instagram ? database.formatInstagramUrl(kost.instagram) : '-';
@@ -79,6 +79,10 @@ Setelah selesai di-DM, tandai dengan:
 
         // 2. Kirim Pesan 2 (Balon chat mandiri hanya berisi teks template)
         const personalizedTemplate = dmTemplate.generateDmText(kost.name);
-        await sock.sendMessage(from, { text: personalizedTemplate });
+        if (sock && typeof sock.sendMessage === 'function') {
+            await sock.sendMessage(from, { text: personalizedTemplate });
+        } else {
+            await sendReply(personalizedTemplate);
+        }
     }
 };

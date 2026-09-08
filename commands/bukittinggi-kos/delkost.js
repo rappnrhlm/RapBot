@@ -40,13 +40,14 @@ Gunakan:
         }
 
         try {
-            const targetId = args[0]?.trim();
+            const targetId = args.join(' ').trim();
             if (!targetId) {
                 const formatGuide =
 `❌ Format: \`!delkost <ID>\`
 
 Contoh:
-\`!delkost KST-000001\`
+• \`!delkost 12\`
+• \`!delkost KST-000012\`
 
 💡 Gunakan \`!cari <nama>\` untuk melihat ID kost.`;
                 return sendReply(formatGuide);
@@ -55,7 +56,7 @@ Contoh:
             const result = await database.deleteKost(targetId, from);
 
             if (result.notFound) {
-                return sendReply(`❌ Kost dengan ID ${targetId.toUpperCase()} tidak ditemukan.`);
+                return sendReply(`❌ Kost dengan ID "${targetId}" tidak ditemukan.`);
             }
 
             if (!result.success) {
