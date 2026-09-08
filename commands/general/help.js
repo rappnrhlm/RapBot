@@ -48,7 +48,10 @@ module.exports = {
 
             // Bukittinggi Kos
             initgroup: '👥 `!initgroup [admin|public] <nama> [--link <grup_induk>]`\nMendaftarkan grup ke database. Mendukung mode admin, publik dengan link data, atau `!initgroup list`.\nContoh:\n• Admin: `!initgroup admin Bukittinggi Kos`\n• Publik: `!initgroup public Komunitas Kos --link Bukittinggi Kos`\n• Daftar grup: `!initgroup list`',
-            kost: '🏠 *MANAJEMEN KOST: !kost*\n\n`!kost` atau `!kost pending` — Daftar kos yang belum di-DM\n`!kost sent` — Daftar kos yang sudah di-DM\n`!kost all` — Semua daftar kos\n`!kost dm` — Format ringkas & link langsung untuk DM IG/WA/TT\n`!kost lengkap <ID>` — Detail lengkap satu kos',
+            kost: '🏠 *MANAJEMEN KOST: !kost*\n\n`!kost` atau `!kost pending` — Daftar kos yang belum di-DM\n`!kost sent` — Daftar kos yang sudah di-DM\n`!kost all` — Semua daftar kos\n`!kost dm` — Format ringkas & link langsung untuk DM IG/WA/TT\n`!kost dm <ID>` / `!dm <ID>` — Link prefilled & balon template DM siap salin\n`!kost lengkap <ID>` — Detail lengkap satu kos',
+            dm: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin untuk pemilik kos (Khusus Admin).\nContoh: `!dm 1` atau `!dm KST-000001`',
+            dmpromosi: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin (alias dari !dm).',
+            dmkost: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin (alias dari !dm).',
             addkost: '🏠 `!addkost <Nama Kost> > <kontak>`\nMenambahkan data kos ke database (khusus Admin).\nContoh:\n• `!addkost Kost Melati > kostmelati_bkt`\n• `!addkost Kost Mawar > wa: 08123456789`\n• `!addkost Kost Indah > ig: indah | wa: 08123456789 | tt: indahkos`',
             cari: '🔍 `!cari <keyword>`\nMencari data kos (aktif di grup Admin & Publik).\nContoh: `!cari birugo` atau `!cari 0812`',
             usulkost: '📥 `!usulkost <Nama> > <Kontak>`\nMengusulkan data kos baru dari grup publik untuk direview oleh admin.\nContoh:\n`!usulkost Kost Melati > wa: 08123456789`\n`!usulkost Kost Flamboyan > ig: flamboyankos`',
@@ -68,6 +71,7 @@ module.exports = {
 🏠 *BUKITTINGGI KOS (ADMIN)*
 │ \`!kost\` — Daftar kos (pending/sent/all)
 │ \`!kost dm\` — Format ringkas link untuk DM
+│ \`!dm <ID>\` — Link WA & balon template DM siap salin
 │ \`!kost lengkap <ID>\` — Detail lengkap data kos
 │ \`!addkost <Nama> > <kontak>\` — Tambah data kos (IG/WA/TT)
 │ \`!sent <ID/range>\` — Tandai kos sudah di-DM (dukung range)

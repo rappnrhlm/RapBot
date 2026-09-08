@@ -46,10 +46,40 @@ module.exports = {
                 return;
             }
 
-            let text = '📋 *DAFTAR AUTOREPLY*\n\n';
-            list.forEach((item, index) => {
-                text += `${index + 1}. *${item.trigger}*\n${item.response}\n\n`;
-            });
+            const globalList = list.filter(item => !item.groupId);
+            const groupScopedList = list.filter(item => Boolean(item.groupId));
+
+            let text = '📋 *DAFTAR PESAN AUTOREPLY*\n\n';
+
+            // 1. Global Section
+            text += '🌐 *AUTOREPLY GLOBAL (SEMUA CHAT)*\n';
+            if (globalList.length === 0) {
+                text += '_Tidak ada autoreply global._\n\n';
+            } else {
+                globalList.forEach((item, index) => {
+                    text += `${index + 1}. *${item.trigger}*\n${item.response}\n\n`;
+                });
+            }
+
+            // 2. Group-Scoped Section
+            if (groupScopedList.length > 0) {
+                text += '────────────────────\n👥 *AUTOREPLY KHUSUS GRUP*\n\n';
+                const byGroup = new Map();
+                for (const item of groupScopedList) {
+                    if (!byGroup.has(item.groupId)) byGroup.set(item.groupId, []);
+                    byGroup.get(item.groupId).push(item);
+                }
+
+                for (const [gid, items] of byGroup.entries()) {
+                    const groupObj = database.getGroupById(gid);
+                    const gName = groupObj ? groupObj.name : gid;
+                    const isCurrent = gid === from ? ' *(Grup Ini)*' : '';
+                    text += `📂 *Grup: ${gName}*${isCurrent}\n`;
+                    items.forEach((item, idx) => {
+                        text += `  ${idx + 1}. *${item.trigger}*\n  ${item.response}\n\n`;
+                    });
+                }
+            }
 
             if (typeof reply === 'function') await reply(text.trim());
             else await sock.sendMessage(from, { text: text.trim() }, { quoted: msg });
@@ -65,19 +95,35 @@ module.exports = {
         }
 
         if (action === 'add') {
-            const raw = getRawPayload(body, command, action, args);
+            let raw = getRawPayload(body, command, action, args);
+            let targetGroupId = null;
+
+            if (/--global/i.test(raw)) {
+                raw = raw.replace(/--global/i, '').trim();
+                targetGroupId = null;
+            } else if (from && from.endsWith('@g.us')) {
+                targetGroupId = from;
+            }
+
             const parts = raw.split('|');
             const trigger = parts[0]?.trim();
             const response = parts.slice(1).join('|').trim();
 
             if (!trigger || !response) {
-                const guide = '❌ Contoh: `!autoreply-add !alamat|Jl. Contoh No. 123`\n\n💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n';
+                const guide =
+`❌ *Format Autoreply Salah*
+
+Contoh:
+• Khusus grup ini: \`!autoreply-add !aturan|Dilarang spam\`
+• Berlaku global: \`!autoreply-add !rekening|BCA 123456 --global\`
+
+💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n`;
                 if (typeof reply === 'function') await reply(guide);
                 else await sock.sendMessage(from, { text: guide }, { quoted: msg });
                 return;
             }
 
-            const result = await database.addAutoreply(trigger, response, senderNumber);
+            const result = await database.addAutoreply(trigger, response, senderNumber, targetGroupId);
             if (!result.success) {
                 const warnMsg = `⚠️ ${result.message}`;
                 if (typeof reply === 'function') await reply(warnMsg);
@@ -86,7 +132,8 @@ module.exports = {
             }
 
             const label = result.item?.trigger || trigger;
-            const succMsg = `✅ Autoreply untuk "${label}" berhasil ditambahkan!\n\n💬 *Balasan:*\n${response}`;
+            const scopeLabel = targetGroupId ? `khusus grup ini` : `global (semua chat)`;
+            const succMsg = `✅ Autoreply untuk "${label}" berhasil ditambahkan (${scopeLabel})!\n\n💬 *Balasan:*\n${response}`;
             if (typeof reply === 'function') await reply(succMsg);
             else await sock.sendMessage(from, { text: succMsg }, { quoted: msg });
             return;

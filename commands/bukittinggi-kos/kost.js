@@ -275,6 +275,14 @@ Contoh:
                              ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase());
 
             if (isDmMode) {
+                // Jika user mengetik !kost dm <ID> (misal: !kost dm 1), alihkan ke perintah !dm
+                const possibleId = ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase()) ? args[1] : args[0];
+                if (possibleId && !['all', 'sent', 'pending'].includes(possibleId.toLowerCase())) {
+                    const dmCmd = require('./dm');
+                    return await dmCmd.execute({ sock, msg, from, senderNumber, args: [possibleId], isGroup: inGroup, reply, services, utils });
+                }
+
+                const dmTemplate = require('../../utils/dmTemplate');
                 let filterStatus = 'pending';
                 if (['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase())) {
                     if (args[1]?.toLowerCase() === 'all' || args[1]?.toLowerCase() === 'sent') {
@@ -292,11 +300,19 @@ Contoh:
 
                 let text = `📋 *DAFTAR KOST ${filterStatus.toUpperCase()} (LINK DM)*\nTotal: ${list.length}\n\n`;
                 list.forEach((k, idx) => {
-                    const contacts = getContactDisplayLines(k, database, '   ');
-                    text += `${idx + 1}. *${k.name}* (${k.id})\n${contacts}\n\n`;
+                    let contactLines = [];
+                    if (k.instagram) contactLines.push(`   📸 IG: ${database.formatInstagramUrl(k.instagram)}`);
+                    if (k.whatsapp) {
+                        const waDirect = dmTemplate.generateWhatsappDmUrl(k.whatsapp, k.name);
+                        contactLines.push(`   💬 WA (Auto Teks): ${waDirect}`);
+                    }
+                    if (k.tiktok) contactLines.push(`   🎵 TT: ${database.formatTiktokUrl(k.tiktok)}`);
+                    if (contactLines.length === 0) contactLines.push('   ℹ️ -');
+
+                    text += `${idx + 1}. *${k.name}* (\`${k.id}\`)\n${contactLines.join('\n')}\n\n`;
                 });
 
-                text += `────────────────────\n💡 Setelah di-DM, tandai sent:\n\`!sent <ID>\``;
+                text += `────────────────────\n💡 *Trik Cepat Cina:*\n• Ketik \`!dm <ID>\` (contoh: \`!dm 1\`) untuk mendapatkan balon chat teks template siap salin ke Instagram.\n• Setelah selesai di-DM, tandai sent:\n\`!sent <ID>\` atau \`!sent 1 sampai 10\``;
                 return sendReply(text.trim());
             }
 

@@ -237,8 +237,8 @@ async function handleSingleMessage(sock, msg, registry) {
 
         // 2. If command not found in registry, check autoreply
         const autoreplyMatch =
-            database.findAutoreply(body) ||
-            database.findAutoreply(`${PREFIX}${commandName}`);
+            database.findAutoreply(body, from) ||
+            database.findAutoreply(`${PREFIX}${commandName}`, from);
 
         if (autoreplyMatch) {
             database.incrementCommandStats('autoreply');
@@ -252,7 +252,7 @@ async function handleSingleMessage(sock, msg, registry) {
     }
 
     // Optional: check non-prefix autoreply (e.g. exact phrase trigger)
-    const exactMatch = database.findAutoreply(body);
+    const exactMatch = database.findAutoreply(body, from);
     if (exactMatch) {
         database.incrementCommandStats('autoreply');
         database.logCommand(`autoreply:${exactMatch.trigger}`, from, senderNumber, isGroupChat);

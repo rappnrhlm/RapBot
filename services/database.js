@@ -257,6 +257,10 @@ async function ensureAllTables() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    try {
+        await db.query(`ALTER TABLE autoreplies ADD COLUMN IF NOT EXISTS group_id VARCHAR(100) NULL DEFAULT NULL AFTER response`);
+    } catch {}
+
     // 4. Table: owners (Super Owner & Bot Owners)
     await db.query(`
         CREATE TABLE IF NOT EXISTS owners (
@@ -505,7 +509,7 @@ async function refreshDatabaseCache() {
         }
 
         // 3. Refresh Autoreplies
-        const [autoRows] = await db.query('SELECT id, trigger_name, triggers_json, response, created_by, created_at, updated_by, updated_at FROM autoreplies ORDER BY id ASC');
+        const [autoRows] = await db.query('SELECT id, trigger_name, triggers_json, response, group_id, created_by, created_at, updated_by, updated_at FROM autoreplies ORDER BY id ASC');
         cache.autoreplies = autoRows.map(r => {
             let triggers = [];
             try {
@@ -518,6 +522,7 @@ async function refreshDatabaseCache() {
                 trigger: r.trigger_name,
                 triggers,
                 response: r.response,
+                groupId: r.group_id || null,
                 createdBy: r.created_by,
                 createdAt: r.created_at,
                 updatedBy: r.updated_by,
@@ -863,11 +868,12 @@ function normalizeTriggerList(triggerInput) {
     return list;
 }
 
-function findAutoreply(trigger) {
+function findAutoreply(trigger, groupId = null) {
     if (!trigger) return null;
     const normalized = trigger.trim().toLowerCase();
+    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
 
-    return cache.autoreplies.find(item => {
+    function matches(item) {
         if (Array.isArray(item.triggers) && item.triggers.length > 0) {
             if (item.triggers.some(t => t.toLowerCase() === normalized)) return true;
         }
@@ -877,22 +883,32 @@ function findAutoreply(trigger) {
             if (parts.includes(normalized)) return true;
         }
         return false;
-    }) || null;
+    }
+
+    // 1. Jika di dalam grup, cek autoreply khusus grup ini terlebih dahulu
+    if (cleanGroupId) {
+        const groupMatch = cache.autoreplies.find(item => item.groupId && normalizeJid(item.groupId) === cleanGroupId && matches(item));
+        if (groupMatch) return groupMatch;
+    }
+
+    // 2. Jika tidak ada match khusus grup, ambil autoreply global (tanpa group_id)
+    return cache.autoreplies.find(item => !item.groupId && matches(item)) || null;
 }
 
-async function addAutoreply(triggerInput, response, createdBy = 'owner') {
+async function addAutoreply(triggerInput, response, createdBy = 'owner', groupId = null) {
     if (!triggerInput || !response) {
         return { success: false, message: 'Trigger dan respons wajib diisi.' };
     }
 
+    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
     const triggers = normalizeTriggerList(triggerInput);
     if (triggers.length === 0) {
         return { success: false, message: 'Format trigger tidak valid.' };
     }
 
     for (const t of triggers) {
-        const found = findAutoreply(t);
-        if (found) {
+        const found = findAutoreply(t, cleanGroupId);
+        if (found && ((!cleanGroupId && !found.groupId) || (cleanGroupId && found.groupId === cleanGroupId))) {
             const label = Array.isArray(found.triggers) ? found.triggers.join(' / ') : found.trigger;
             return {
                 success: false,
@@ -908,9 +924,9 @@ async function addAutoreply(triggerInput, response, createdBy = 'owner') {
     try {
         const db = getPool();
         const [res] = await db.query(
-            `INSERT INTO autoreplies (trigger_name, triggers_json, response, created_by, created_at)
-             VALUES (?, ?, ?, ?, ?)`,
-            [primaryTrigger, JSON.stringify(triggers), response.trim(), createdBy || 'owner', now]
+            `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, created_by, created_at)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [primaryTrigger, JSON.stringify(triggers), response.trim(), cleanGroupId, createdBy || 'owner', now]
         );
         insertId = res.insertId;
     } catch (err) {
@@ -922,6 +938,7 @@ async function addAutoreply(triggerInput, response, createdBy = 'owner') {
         trigger: primaryTrigger,
         triggers: triggers,
         response: response.trim(),
+        groupId: cleanGroupId,
         createdBy: createdBy || 'owner',
         createdAt: now.toISOString()
     };
@@ -1051,16 +1068,16 @@ async function saveAutoreplies(list) {
             const trigJson = JSON.stringify(Array.isArray(item.triggers) ? item.triggers : [trigName]);
             if (item.id) {
                 await db.query(
-                    `INSERT INTO autoreplies (id, trigger_name, triggers_json, response, created_by, created_at, updated_by, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE trigger_name = VALUES(trigger_name), triggers_json = VALUES(triggers_json), response = VALUES(response), updated_by = VALUES(updated_by), updated_at = NOW()`,
-                    [item.id, trigName, trigJson, item.response, item.createdBy || 'owner', item.createdAt ? new Date(item.createdAt) : new Date(), item.updatedBy || null, item.updatedAt ? new Date(item.updatedAt) : null]
+                    `INSERT INTO autoreplies (id, trigger_name, triggers_json, response, group_id, created_by, created_at, updated_by, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE trigger_name = VALUES(trigger_name), triggers_json = VALUES(triggers_json), response = VALUES(response), group_id = VALUES(group_id), updated_by = VALUES(updated_by), updated_at = NOW()`,
+                    [item.id, trigName, trigJson, item.response, item.groupId || null, item.createdBy || 'owner', item.createdAt ? new Date(item.createdAt) : new Date(), item.updatedBy || null, item.updatedAt ? new Date(item.updatedAt) : null]
                 );
             } else {
                 await db.query(
-                    `INSERT INTO autoreplies (trigger_name, triggers_json, response, created_by, created_at)
-                     VALUES (?, ?, ?, ?, NOW())`,
-                    [trigName, trigJson, item.response, item.createdBy || 'owner']
+                    `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, created_by, created_at)
+                     VALUES (?, ?, ?, ?, ?, NOW())`,
+                    [trigName, trigJson, item.response, item.groupId || null, item.createdBy || 'owner']
                 );
             }
         }
