@@ -23,7 +23,7 @@ module.exports = {
     description: 'Mengatur autoreply otomatis (Khusus Owner).',
     usage: '!autoreply-add !trigger|respons | !autoreply-list | !autoreply-del !trigger | !autoreply-edit !trigger|respons_baru',
 
-    async execute({ sock, msg, from, senderNumber, command, args, reply, services, body }) {
+    async execute({ sock, msg, from, senderNumber, command, args, reply, services, body, isGroup: isGroupChat, utils }) {
         const database = services?.database || require('../../services/database');
 
         let action = '';
@@ -46,8 +46,13 @@ module.exports = {
                 return;
             }
 
+            const jidUtils = utils?.jid || require('../../utils/jid');
+            const inGroup = typeof isGroupChat === 'boolean' ? isGroupChat : jidUtils.isGroup(from);
+            const cleanFrom = jidUtils.normalizeJid(from);
+            const effectiveGroupId = inGroup ? database.resolveDataGroupId(cleanFrom) : null;
+            const showAllGroups = Boolean(args && args.includes('--all') && isOwner);
+
             const globalList = list.filter(item => !item.groupId);
-            const groupScopedList = list.filter(item => Boolean(item.groupId));
 
             let text = '📋 *DAFTAR PESAN AUTOREPLY*\n\n';
 
@@ -62,22 +67,43 @@ module.exports = {
             }
 
             // 2. Group-Scoped Section
-            if (groupScopedList.length > 0) {
-                text += '────────────────────\n👥 *AUTOREPLY KHUSUS GRUP*\n\n';
-                const byGroup = new Map();
-                for (const item of groupScopedList) {
-                    if (!byGroup.has(item.groupId)) byGroup.set(item.groupId, []);
-                    byGroup.get(item.groupId).push(item);
-                }
+            if (inGroup && !showAllGroups) {
+                // HANYA tampilkan autoreply khusus grup ini (atau grup induknya jika terhubung)
+                const currentGroupList = list.filter(item => {
+                    if (!item.groupId) return false;
+                    const norm = jidUtils.normalizeJid(item.groupId);
+                    return norm === cleanFrom || (effectiveGroupId && norm === effectiveGroupId);
+                });
 
-                for (const [gid, items] of byGroup.entries()) {
-                    const groupObj = database.getGroupById(gid);
-                    const gName = groupObj ? groupObj.name : gid;
-                    const isCurrent = gid === from ? ' *(Grup Ini)*' : '';
-                    text += `📂 *Grup: ${gName}*${isCurrent}\n`;
-                    items.forEach((item, idx) => {
+                if (currentGroupList.length > 0) {
+                    const groupObj = database.getGroupById(cleanFrom) || (effectiveGroupId ? database.getGroupById(effectiveGroupId) : null);
+                    const groupDisplayName = groupObj ? groupObj.name : 'Grup Ini';
+
+                    text += `────────────────────\n👥 *AUTOREPLY KHUSUS GRUP (${groupDisplayName})*\n\n`;
+                    currentGroupList.forEach((item, idx) => {
                         text += `  ${idx + 1}. *${item.trigger}*\n  ${item.response}\n\n`;
                     });
+                }
+            } else {
+                // Di private chat / PC atau jika owner menjalankan --all
+                const groupScopedList = list.filter(item => Boolean(item.groupId));
+                if (groupScopedList.length > 0) {
+                    text += '────────────────────\n👥 *AUTOREPLY KHUSUS GRUP*\n\n';
+                    const byGroup = new Map();
+                    for (const item of groupScopedList) {
+                        if (!byGroup.has(item.groupId)) byGroup.set(item.groupId, []);
+                        byGroup.get(item.groupId).push(item);
+                    }
+
+                    for (const [gid, items] of byGroup.entries()) {
+                        const groupObj = database.getGroupById(gid);
+                        const gName = groupObj ? groupObj.name : gid;
+                        const isCurrent = gid === cleanFrom ? ' *(Grup Ini)*' : '';
+                        text += `📂 *Grup: ${gName}*${isCurrent}\n`;
+                        items.forEach((item, idx) => {
+                            text += `  ${idx + 1}. *${item.trigger}*\n  ${item.response}\n\n`;
+                        });
+                    }
                 }
             }
 
