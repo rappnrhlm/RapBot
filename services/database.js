@@ -13,6 +13,7 @@ const WELCOME_FILE = path.join(DATA_DIR, 'welcome.json');
 const AUTOREPLY_FILE = path.join(DATA_DIR, 'autoreplies.json');
 const KOST_FILE = path.join(DATA_DIR, 'kost.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
+const SUBMISSIONS_FILE = path.join(DATA_DIR, 'kost_submissions.json');
 
 const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '6285195532009');
 
@@ -20,6 +21,10 @@ const INITIAL_GROUP = {
     id: '120363429518970623@g.us',
     name: 'Bukittinggi Kos',
     groupName: 'admin @bukittinggikos',
+    type: 'kos',
+    role: 'admin',
+    parentGroupId: null,
+    settings: {},
     initializedAt: '2026-09-07T14:38:00.333Z',
     initializedBy: '6285195532009'
 };
@@ -68,6 +73,7 @@ const cache = {
         commandUsage: {}
     },
     logs: [],
+    submissions: [],
     initialized: false
 };
 
@@ -109,6 +115,11 @@ function initLocalCache() {
         if (Array.isArray(rawLogs)) {
             cache.logs = rawLogs;
         }
+
+        const rawSubmissions = readJSON(SUBMISSIONS_FILE, null);
+        if (Array.isArray(rawSubmissions)) {
+            cache.submissions = rawSubmissions;
+        }
     } catch (err) {
         console.warn('[database] Warning: error initializing local cache:', err.message);
     }
@@ -127,6 +138,7 @@ function ensureDataFiles() {
     if (!fs.existsSync(AUTOREPLY_FILE)) writeJSON(AUTOREPLY_FILE, cache.autoreplies);
     if (!fs.existsSync(GROUPS_FILE)) writeJSON(GROUPS_FILE, { groups: cache.groups });
     if (!fs.existsSync(KOST_FILE)) writeJSON(KOST_FILE, []);
+    if (!fs.existsSync(SUBMISSIONS_FILE)) writeJSON(SUBMISSIONS_FILE, []);
 }
 
 initLocalCache();
@@ -198,8 +210,35 @@ async function ensureAllTables() {
             id VARCHAR(100) NOT NULL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             group_name VARCHAR(255) DEFAULT '',
+            type VARCHAR(50) NOT NULL DEFAULT 'kos',
+            role VARCHAR(20) NOT NULL DEFAULT 'admin',
+            parent_group_id VARCHAR(100) DEFAULT NULL,
+            settings_json TEXT DEFAULT NULL,
             initialized_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             initialized_by VARCHAR(100) DEFAULT '',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    try {
+        await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS type VARCHAR(50) NOT NULL DEFAULT 'kos' AFTER name`);
+        await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'admin' AFTER type`);
+        await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS parent_group_id VARCHAR(100) NULL DEFAULT NULL AFTER role`);
+        await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS settings_json TEXT NULL DEFAULT NULL AFTER parent_group_id`);
+    } catch {}
+
+    // 2b. Table: kost_submissions (Crowdsourcing Usul Kos)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS kost_submissions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            group_id VARCHAR(100) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            contacts_raw TEXT NOT NULL,
+            submitted_by VARCHAR(100) NOT NULL,
+            submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            reviewed_by VARCHAR(100) DEFAULT NULL,
+            reviewed_at DATETIME DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
@@ -424,16 +463,45 @@ async function refreshDatabaseCache() {
         }
 
         // 2. Refresh Groups
-        const [groupRows] = await db.query('SELECT id, name, group_name, initialized_at, initialized_by FROM bot_groups');
+        const [groupRows] = await db.query('SELECT id, name, group_name, type, role, parent_group_id, settings_json, initialized_at, initialized_by FROM bot_groups');
         if (groupRows.length > 0) {
-            cache.groups = groupRows.map(r => ({
-                id: r.id,
-                name: r.name,
-                groupName: r.group_name || '',
-                initializedAt: r.initialized_at,
-                initializedBy: r.initialized_by || ''
-            }));
+            cache.groups = groupRows.map(r => {
+                let settings = {};
+                try {
+                    settings = typeof r.settings_json === 'string' ? JSON.parse(r.settings_json) : (r.settings_json || {});
+                } catch {}
+                return {
+                    id: r.id,
+                    name: r.name,
+                    groupName: r.group_name || '',
+                    type: r.type || 'kos',
+                    role: r.role || 'admin',
+                    parentGroupId: r.parent_group_id || null,
+                    settings: settings || {},
+                    initializedAt: r.initialized_at,
+                    initializedBy: r.initialized_by || ''
+                };
+            });
             syncDataFile(GROUPS_FILE, { groups: cache.groups });
+        }
+
+        // 2b. Refresh Kost Submissions
+        try {
+            const [subRows] = await db.query('SELECT id, group_id, name, contacts_raw, submitted_by, submitted_at, status, reviewed_by, reviewed_at FROM kost_submissions ORDER BY id DESC');
+            cache.submissions = subRows.map(r => ({
+                id: r.id,
+                groupId: r.group_id,
+                name: r.name,
+                contactsRaw: r.contacts_raw,
+                submittedBy: r.submitted_by,
+                submittedAt: r.submitted_at,
+                status: r.status,
+                reviewedBy: r.reviewed_by,
+                reviewedAt: r.reviewed_at
+            }));
+            syncDataFile(SUBMISSIONS_FILE, cache.submissions);
+        } catch (subErr) {
+            console.warn('[database] Warning reading submissions from MariaDB:', subErr.message);
         }
 
         // 3. Refresh Autoreplies
@@ -1019,10 +1087,24 @@ function isGroupInitialized(groupId) {
     return Boolean(getGroupById(groupId));
 }
 
-async function addGroup({ id, name, groupName = '', initializedBy = '' }) {
+function resolveDataGroupId(groupId) {
+    if (!groupId) return null;
+    const clean = normalizeJid(groupId);
+    const g = cache.groups.find(x => normalizeJid(x.id) === clean);
+    if (g && g.parentGroupId) {
+        return normalizeJid(g.parentGroupId);
+    }
+    return clean;
+}
+
+async function addGroup({ id, name, groupName = '', type = 'kos', role = 'admin', parentGroupId = null, settings = {}, initializedBy = '' }) {
     const cleanId = normalizeJid(id);
     const cleanName = String(name || '').trim();
     const cleanGroupName = String(groupName || '').trim();
+    const cleanType = String(type || 'kos').trim().toLowerCase();
+    const cleanRole = String(role || 'admin').trim().toLowerCase();
+    const cleanParentGroupId = parentGroupId ? normalizeJid(parentGroupId) : null;
+    const cleanSettings = settings && typeof settings === 'object' ? settings : {};
 
     if (!cleanId) {
         return { success: false, message: 'Group ID tidak valid.' };
@@ -1046,6 +1128,10 @@ async function addGroup({ id, name, groupName = '', initializedBy = '' }) {
         id: cleanId,
         name: cleanName,
         groupName: cleanGroupName,
+        type: cleanType,
+        role: cleanRole,
+        parentGroupId: cleanParentGroupId,
+        settings: cleanSettings,
         initializedAt: now.toISOString(),
         initializedBy: String(initializedBy || '').trim()
     };
@@ -1056,10 +1142,10 @@ async function addGroup({ id, name, groupName = '', initializedBy = '' }) {
     try {
         const db = getPool();
         await db.query(
-            `INSERT INTO bot_groups (id, name, group_name, initialized_at, initialized_by)
-             VALUES (?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE name = VALUES(name), group_name = VALUES(group_name)`,
-            [newGroup.id, newGroup.name, newGroup.groupName, now, newGroup.initializedBy]
+            `INSERT INTO bot_groups (id, name, group_name, type, role, parent_group_id, settings_json, initialized_at, initialized_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE name = VALUES(name), group_name = VALUES(group_name), type = VALUES(type), role = VALUES(role), parent_group_id = VALUES(parent_group_id), settings_json = VALUES(settings_json)`,
+            [newGroup.id, newGroup.name, newGroup.groupName, newGroup.type, newGroup.role, newGroup.parentGroupId, JSON.stringify(newGroup.settings), now, newGroup.initializedBy]
         );
     } catch (err) {
         console.error('[database] Error inserting group to MariaDB:', err.message);
@@ -1069,7 +1155,7 @@ async function addGroup({ id, name, groupName = '', initializedBy = '' }) {
         success: true,
         alreadyExists: false,
         group: newGroup,
-        message: `Grup berhasil diinisialisasi sebagai "${newGroup.name}".`
+        message: `Grup berhasil diinisialisasi sebagai "${newGroup.name}" (${newGroup.role.toUpperCase()}).`
     };
 }
 
@@ -1202,7 +1288,8 @@ async function generateNextKostIdFromDb() {
 async function getKostList(groupId = null) {
     await ensureAllTables();
     const db = getPool();
-    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
+    const effectiveGroupId = resolveDataGroupId(groupId);
+    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
     let query = 'SELECT * FROM kost';
     const params = [];
     if (cleanGroupId) {
@@ -1234,7 +1321,8 @@ async function getKostByStatus(statusOrGroup, groupIdOrStatus = null) {
 
     await ensureAllTables();
     const db = getPool();
-    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+    const effectiveGroupId = resolveDataGroupId(targetGroup);
+    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
     let query = 'SELECT * FROM kost WHERE status = ?';
     const params = [s];
     if (cleanGroupId) {
@@ -1257,7 +1345,8 @@ async function getKostById(idOrGroup, groupIdOrId = null) {
 
     if (!targetId) return null;
     const cleanId = String(targetId).trim().toUpperCase();
-    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+    const effectiveGroupId = resolveDataGroupId(targetGroup);
+    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
 
     await ensureAllTables();
     const db = getPool();
@@ -1282,7 +1371,8 @@ async function searchKost(queryOrGroup, groupIdOrQuery = null) {
 
     if (!targetQuery) return [];
     const q = String(targetQuery).trim().toLowerCase();
-    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+    const effectiveGroupId = resolveDataGroupId(targetGroup);
+    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
 
     await ensureAllTables();
     const db = getPool();
@@ -1680,9 +1770,159 @@ async function getKostStats(groupId = null) {
     };
 }
 
+// ====================================================
+// KOST SUBMISSIONS REPOSITORY (CROWDSOURCING)
+// ====================================================
+
+async function addKostSubmission({ groupId, name, contactsRaw, submittedBy = '' }) {
+    await ensureAllTables();
+    const cleanGroupId = groupId ? normalizeJid(groupId) : '';
+    const cleanName = String(name || '').trim();
+    const cleanContacts = String(contactsRaw || '').trim();
+    const cleanSubmitter = String(submittedBy || '').trim();
+
+    if (!cleanName || !cleanContacts) {
+        return { success: false, message: 'Nama kos dan kontak wajib diisi.' };
+    }
+
+    const db = getPool();
+    const now = new Date();
+    const [result] = await db.query(
+        `INSERT INTO kost_submissions (group_id, name, contacts_raw, submitted_by, submitted_at, status)
+         VALUES (?, ?, ?, ?, ?, 'pending')`,
+        [cleanGroupId, cleanName, cleanContacts, cleanSubmitter, now]
+    );
+
+    const submission = {
+        id: result.insertId,
+        groupId: cleanGroupId,
+        name: cleanName,
+        contactsRaw: cleanContacts,
+        submittedBy: cleanSubmitter,
+        submittedAt: now.toISOString(),
+        status: 'pending',
+        reviewedBy: null,
+        reviewedAt: null
+    };
+
+    cache.submissions.unshift(submission);
+    syncDataFile(SUBMISSIONS_FILE, cache.submissions);
+
+    return {
+        success: true,
+        submission
+    };
+}
+
+async function getKostSubmissions({ groupId = null, status = 'pending' } = {}) {
+    await ensureAllTables();
+    const db = getPool();
+    let query = 'SELECT * FROM kost_submissions';
+    const params = [];
+    const conditions = [];
+
+    if (status && status !== 'all') {
+        conditions.push('status = ?');
+        params.push(status);
+    }
+    if (groupId) {
+        conditions.push('group_id = ?');
+        params.push(normalizeJid(groupId));
+    }
+
+    if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+    }
+    query += ' ORDER BY id DESC';
+
+    const [rows] = await db.query(query, params);
+    return rows.map(r => ({
+        id: r.id,
+        groupId: r.group_id,
+        name: r.name,
+        contactsRaw: r.contacts_raw,
+        submittedBy: r.submitted_by,
+        submittedAt: r.submitted_at,
+        status: r.status,
+        reviewedBy: r.reviewed_by,
+        reviewedAt: r.reviewed_at
+    }));
+}
+
+async function getKostSubmissionById(id) {
+    const cleanId = Number(id);
+    if (!cleanId || isNaN(cleanId)) return null;
+    await ensureAllTables();
+    const db = getPool();
+    const [rows] = await db.query('SELECT * FROM kost_submissions WHERE id = ?', [cleanId]);
+    if (rows.length === 0) return null;
+    const r = rows[0];
+    return {
+        id: r.id,
+        groupId: r.group_id,
+        name: r.name,
+        contactsRaw: r.contacts_raw,
+        submittedBy: r.submitted_by,
+        submittedAt: r.submitted_at,
+        status: r.status,
+        reviewedBy: r.reviewed_by,
+        reviewedAt: r.reviewed_at
+    };
+}
+
+async function reviewKostSubmission(id, newStatus, reviewerNumber = '') {
+    await ensureAllTables();
+    const cleanId = Number(id);
+    if (!cleanId || isNaN(cleanId)) {
+        return { success: false, message: 'ID usulan tidak valid.' };
+    }
+    const cleanStatus = ['approved', 'rejected'].includes(newStatus) ? newStatus : 'pending';
+
+    const db = getPool();
+    const [rows] = await db.query('SELECT * FROM kost_submissions WHERE id = ?', [cleanId]);
+    if (rows.length === 0) {
+        return { success: false, message: `Usulan #${cleanId} tidak ditemukan.` };
+    }
+
+    const sub = rows[0];
+    if (sub.status !== 'pending') {
+        return { success: false, message: `Usulan #${cleanId} sudah di-${sub.status} sebelumnya.` };
+    }
+
+    const now = new Date();
+    await db.query(
+        `UPDATE kost_submissions 
+         SET status = ?, reviewed_by = ?, reviewed_at = ?
+         WHERE id = ?`,
+        [cleanStatus, reviewerNumber || 'admin', now, cleanId]
+    );
+
+    // Update in-memory cache
+    const item = cache.submissions.find(s => Number(s.id) === cleanId);
+    if (item) {
+        item.status = cleanStatus;
+        item.reviewedBy = reviewerNumber || 'admin';
+        item.reviewedAt = now.toISOString();
+        syncDataFile(SUBMISSIONS_FILE, cache.submissions);
+    }
+
+    return {
+        success: true,
+        status: cleanStatus,
+        submission: {
+            id: sub.id,
+            groupId: sub.group_id,
+            name: sub.name,
+            contactsRaw: sub.contacts_raw,
+            submittedBy: sub.submitted_by
+        }
+    };
+}
+
 module.exports = {
     DATA_DIR,
     SUPER_OWNER,
+    SUBMISSIONS_FILE,
     ensureDataFiles,
     ensureAllTables,
     ensureKostTable: ensureAllTables,
@@ -1752,5 +1992,12 @@ module.exports = {
     saveGroups,
     getGroupById,
     isGroupInitialized,
-    addGroup
+    resolveDataGroupId,
+    addGroup,
+
+    // Submissions
+    addKostSubmission,
+    getKostSubmissions,
+    getKostSubmissionById,
+    reviewKostSubmission
 };

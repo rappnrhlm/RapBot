@@ -6,6 +6,7 @@ const jsonUtils = require('../utils/json');
 const phoneUtils = require('../utils/phone');
 const jidUtils = require('../utils/jid');
 const groupUtils = require('../utils/group');
+const cooldownUtils = require('../utils/cooldown');
 
 const PREFIX = process.env.BOT_PREFIX || '!';
 const BOT_START_TIME = Math.floor(Date.now() / 1000);
@@ -256,6 +257,36 @@ async function handleSingleMessage(sock, msg, registry) {
         database.incrementCommandStats('autoreply');
         database.logCommand(`autoreply:${exactMatch.trigger}`, from, senderNumber, isGroupChat);
         await sock.sendMessage(from, { text: exactMatch.response }, { quoted: msg });
+        return;
+    }
+
+    // Auto-Helper: deteksi pertanyaan natural seputar info kos di grup publik
+    if (isGroupChat) {
+        const groupInfo = database.getGroupById(from);
+        if (groupInfo && (groupInfo.role === 'public' || groupInfo.settings?.autoHelper)) {
+            const lowerBody = body.toLowerCase();
+            const isKostInquiry =
+                /(info|cari|ada|rekomendasi|spill|minta)\s+(kos|kost|kontrakan|sewa)/i.test(lowerBody) ||
+                /(kos|kost|kontrakan)\s+(putri|putra|cowok|cewek|pasutri|murah|birugo|dekat|uin|unp)/i.test(lowerBody);
+
+            if (isKostInquiry) {
+                const cd = cooldownUtils.checkCooldown(`autohelp:${from}`, 180); // Maksimal 1x tiap 3 menit per grup
+                if (cd.allowed) {
+                    const tip =
+`💡 *Tips Pencarian Kos Otomatis*
+Halo kak! Kamu bisa langsung cari kos dengan ketik:
+\`!cari <kata kunci>\`
+
+_Contoh:_
+• \`!cari birugo\`
+• \`!cari putri\`
+• \`!cari dekat uin\`
+
+📱 Info & update kos: *@bukittinggikos*`;
+                    await sock.sendMessage(from, { text: tip }, { quoted: msg }).catch(() => {});
+                }
+            }
+        }
     }
 }
 

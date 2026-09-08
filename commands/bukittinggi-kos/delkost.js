@@ -33,6 +33,12 @@ Gunakan:
             return sendReply(uninitMsg);
         }
 
+        // 3. Validasi peran grup: khusus grup internal admin
+        const groupInfo = database.getGroupById(from);
+        if (groupInfo && groupInfo.role === 'public') {
+            return sendReply('❌ Perintah ini khusus untuk grup internal admin.');
+        }
+
         try {
             const targetId = args[0]?.trim();
             if (!targetId) {

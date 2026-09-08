@@ -103,9 +103,16 @@ Gunakan:
             return sendReply(uninitMsg);
         }
 
+        const registeredGroup = database.getGroupById(from);
+        const isPublicGroup = registeredGroup?.role === 'public';
+
         try {
             // 1. ADD KOST: !addkost <Nama Kost> > <kontak (ig/wa/tt)>
             if (command === 'addkost') {
+                if (isPublicGroup) {
+                    return sendReply('❌ Perintah `!addkost` hanya untuk grup internal admin.\n\n💡 Ingin mengusulkan info kos baru? Gunakan:\n`!usulkost <Nama> > <Kontak>`');
+                }
+
                 const raw = args.join(' ').trim();
                 const parts = raw.split('>');
                 const name = parts[0]?.trim();
@@ -153,16 +160,42 @@ Status: ⏳ PENDING`;
             if (command === 'cari') {
                 const query = args.join(' ').trim();
                 if (!query) {
-                    const guide = '❌ Masukkan kata kunci pencarian.\nContoh: *!cari mawar* atau *!cari 0812*';
+                    const guide = '❌ Masukkan kata kunci pencarian.\nContoh: `!cari mawar` atau `!cari birugo`';
                     return sendReply(guide);
+                }
+
+                // Cooldown check for public groups
+                if (isPublicGroup) {
+                    const cooldownUtils = require('../../utils/cooldown');
+                    const cdKey = `cari:${from}:${senderNumber || 'anon'}`;
+                    const cdDuration = registeredGroup?.settings?.cooldownSeconds || 10;
+                    const cd = cooldownUtils.checkCooldown(cdKey, cdDuration);
+                    if (!cd.allowed) {
+                        return sendReply(`⏳ Mohon tunggu *${cd.remainingSeconds} detik* sebelum mencari lagi untuk mencegah spam.`);
+                    }
                 }
 
                 const results = await database.searchKost(query, from);
                 if (!results.length) {
-                    const emptyMsg = `🔎 Tidak ditemukan kost dengan kata kunci "${query}".`;
+                    const emptyMsg = `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
                     return sendReply(emptyMsg);
                 }
 
+                // Format untuk grup publik
+                if (isPublicGroup) {
+                    const maxRes = registeredGroup?.settings?.maxSearchResults || 5;
+                    const displayList = results.slice(0, maxRes);
+                    let text = `🔎 *HASIL PENCARIAN KOS*\nKata kunci: *${query}*\n\nDitemukan: ${results.length} kos${results.length > maxRes ? ` (menampilkan ${maxRes} teratas)` : ''}\n\n`;
+                    displayList.forEach((k, idx) => {
+                        const contacts = getContactDisplayLines(k, database, '   ');
+                        text += `${idx + 1}. *${k.name}*\n${contacts}\n\n`;
+                    });
+
+                    text += `────────────────────\n📱 Official Instagram: *@bukittinggikos*\n💡 Punya info kos baru? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
+                    return sendReply(text.trim());
+                }
+
+                // Format untuk grup admin
                 let text = `🔎 *HASIL PENCARIAN*\nKata kunci: ${query}\n\nDitemukan: ${results.length}\n\n`;
                 results.forEach((k, idx) => {
                     const statusBadge = (k.status || 'pending').toLowerCase() === 'sent' ? '✅ SENT' : '⏳ PENDING';
@@ -170,8 +203,7 @@ Status: ⏳ PENDING`;
                     text += `${idx + 1}. *${k.name}*\n   🆔 ${k.id}\n${contacts}\n   📌 ${statusBadge}\n\n`;
                 });
 
-                text += `────────────────────\n\n💡 Gunakan:\n!kost lengkap <ID>\n!sent <ID>\n!delkost <ID>`;
-
+                text += `────────────────────\n\n💡 Gunakan:\n\`!kost lengkap <ID>\`\n\`!sent <ID>\`\n\`!delkost <ID>\``;
                 return sendReply(text.trim());
             }
 
@@ -180,12 +212,12 @@ Status: ⏳ PENDING`;
                 const targetId = args[1]?.trim();
                 if (!targetId) {
                     const formatGuide =
-`❌ Format: !kost lengkap <ID>
+`❌ Format: \`!kost lengkap <ID>\`
 
 Contoh:
-!kost lengkap KST-000001
+\`!kost lengkap KST-000001\`
 
-💡 Gunakan !cari <nama> untuk melihat ID kost.`;
+💡 Gunakan \`!cari <nama>\` untuk melihat ID kost.`;
                     return sendReply(formatGuide);
                 }
 
@@ -194,12 +226,26 @@ Contoh:
                     return sendReply(`❌ Kost dengan ID ${targetId.toUpperCase()} tidak ditemukan.`);
                 }
 
-                const registeredGroup = database.getGroupById(from);
-                const groupName = registeredGroup?.name || 'Bukittinggi Kos';
-                const statusBadge = (kost.status || 'pending').toLowerCase() === 'sent' ? '✅ SENT' : '⏳ PENDING';
                 const igUrl = kost.instagram ? database.formatInstagramUrl(kost.instagram) : '-';
                 const waUrl = kost.whatsapp ? database.formatWhatsappUrl(kost.whatsapp) : '-';
                 const ttUrl = kost.tiktok ? database.formatTiktokUrl(kost.tiktok) : '-';
+
+                if (isPublicGroup) {
+                    const publicDetail =
+`🏠 *DETAIL KOST*
+
+🏠 Nama: *${kost.name}*
+📸 Instagram: ${igUrl}
+💬 WhatsApp: ${waUrl}
+🎵 TikTok: ${ttUrl}
+
+────────────────────
+📱 Official Instagram: *@bukittinggikos*`;
+                    return sendReply(publicDetail);
+                }
+
+                const groupName = registeredGroup?.name || 'Bukittinggi Kos';
+                const statusBadge = (kost.status || 'pending').toLowerCase() === 'sent' ? '✅ SENT' : '⏳ PENDING';
                 const sentByDisplay = kost.sentBy ? kost.sentBy : '-';
                 const sentAtDisplay = kost.sentAt ? database.formatIndonesianDateTime(kost.sentAt) : '-';
 
@@ -217,6 +263,11 @@ Contoh:
 👥 Group: ${groupName}`;
 
                 return sendReply(detailText);
+            }
+
+            // Grup publik dilarang mengakses daftar list admin (!kost, !kost dm, !kost all, dll)
+            if (isPublicGroup) {
+                return sendReply('❌ Perintah daftar kost lengkap hanya untuk grup internal admin.\n\n💡 Gunakan `!cari <kata kunci>` untuk mencari kos yang tersedia.');
             }
 
             // 4. DAFTAR RINGKAS / OUTPUT SEDERHANA UNTUK DM: !kost dm / !kost ringkas / !kost simple
@@ -245,7 +296,7 @@ Contoh:
                     text += `${idx + 1}. *${k.name}* (${k.id})\n${contacts}\n\n`;
                 });
 
-                text += `────────────────────\n💡 Setelah di-DM, tandai sent:\n!sent <ID>`;
+                text += `────────────────────\n💡 Setelah di-DM, tandai sent:\n\`!sent <ID>\``;
                 return sendReply(text.trim());
             }
 
@@ -263,7 +314,6 @@ Contoh:
                 return sendReply(emptyMsg);
             }
 
-            const registeredGroup = database.getGroupById(from);
             const groupAlias = registeredGroup?.name ? registeredGroup.name.toUpperCase() : 'BUKITTINGGI KOS';
             let text = `🏠 *DAFTAR KOST ${groupAlias}* (${filter.toUpperCase()})\nTotal: ${list.length}\n\n`;
 
