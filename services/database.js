@@ -259,6 +259,9 @@ async function ensureAllTables() {
 
     try {
         await db.query(`ALTER TABLE autoreplies ADD COLUMN IF NOT EXISTS group_id VARCHAR(100) NULL DEFAULT NULL AFTER response`);
+        await db.query(`ALTER TABLE autoreplies ADD COLUMN IF NOT EXISTS media_path VARCHAR(255) NULL DEFAULT NULL AFTER group_id`);
+        await db.query(`ALTER TABLE autoreplies ADD COLUMN IF NOT EXISTS media_type VARCHAR(50) NULL DEFAULT NULL AFTER media_path`);
+        await db.query(`ALTER TABLE autoreplies ADD COLUMN IF NOT EXISTS owner_only TINYINT(1) DEFAULT 0 AFTER media_type`);
     } catch {}
 
     // 4. Table: owners (Super Owner & Bot Owners)
@@ -364,13 +367,16 @@ async function autoSeedTablesIfEmpty(db) {
                     const trigName = item.trigger || (Array.isArray(item.triggers) ? item.triggers.join(' / ') : '!help');
                     const trigJson = JSON.stringify(Array.isArray(item.triggers) ? item.triggers : [trigName]);
                     await db.query(
-                        `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, created_by, created_at, updated_by, updated_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                        `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, media_path, media_type, owner_only, created_by, created_at, updated_by, updated_at)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             trigName,
                             trigJson,
                             item.response || '',
                             item.groupId || null,
+                            item.mediaPath || null,
+                            item.mediaType || null,
+                            item.ownerOnly ? 1 : 0,
                             item.createdBy || 'owner',
                             item.createdAt ? new Date(item.createdAt) : new Date(),
                             item.updatedBy || null,
@@ -510,7 +516,7 @@ async function refreshDatabaseCache() {
         }
 
         // 3. Refresh Autoreplies
-        const [autoRows] = await db.query('SELECT id, trigger_name, triggers_json, response, group_id, created_by, created_at, updated_by, updated_at FROM autoreplies ORDER BY id ASC');
+        const [autoRows] = await db.query('SELECT id, trigger_name, triggers_json, response, group_id, media_path, media_type, owner_only, created_by, created_at, updated_by, updated_at FROM autoreplies ORDER BY id ASC');
         cache.autoreplies = autoRows.map(r => {
             let triggers = [];
             try {
@@ -524,6 +530,9 @@ async function refreshDatabaseCache() {
                 triggers,
                 response: r.response,
                 groupId: r.group_id || null,
+                mediaPath: r.media_path || null,
+                mediaType: r.media_type || null,
+                ownerOnly: Boolean(r.owner_only),
                 createdBy: r.created_by,
                 createdAt: r.created_at,
                 updatedBy: r.updated_by,
@@ -901,12 +910,16 @@ function findAutoreply(trigger, groupId = null) {
     return cache.autoreplies.find(item => !item.groupId && matches(item)) || null;
 }
 
-async function addAutoreply(triggerInput, response, createdBy = 'owner', groupId = null) {
-    if (!triggerInput || !response) {
-        return { success: false, message: 'Trigger dan respons wajib diisi.' };
+async function addAutoreply(triggerInput, response, createdBy = 'owner', groupId = null, mediaInfo = null, ownerOnly = false) {
+    if (!triggerInput || (!response && !mediaInfo)) {
+        return { success: false, message: 'Trigger dan respons/media wajib diisi.' };
     }
 
     const cleanGroupId = groupId ? normalizeJid(groupId) : null;
+    const cleanMediaPath = mediaInfo?.path || null;
+    const cleanMediaType = mediaInfo?.type || (cleanMediaPath ? 'image' : null);
+    const isOwnerOnly = Boolean(ownerOnly);
+
     const triggers = normalizeTriggerList(triggerInput);
     if (triggers.length === 0) {
         return { success: false, message: 'Format trigger tidak valid.' };
@@ -925,14 +938,15 @@ async function addAutoreply(triggerInput, response, createdBy = 'owner', groupId
 
     const primaryTrigger = triggers.join(' / ');
     const now = new Date();
+    const cleanResponse = String(response || '').trim();
 
     let insertId = null;
     try {
         const db = getPool();
         const [res] = await db.query(
-            `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, created_by, created_at)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [primaryTrigger, JSON.stringify(triggers), response.trim(), cleanGroupId, createdBy || 'owner', now]
+            `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, media_path, media_type, owner_only, created_by, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [primaryTrigger, JSON.stringify(triggers), cleanResponse, cleanGroupId, cleanMediaPath, cleanMediaType, isOwnerOnly ? 1 : 0, createdBy || 'owner', now]
         );
         insertId = res.insertId;
     } catch (err) {
@@ -943,8 +957,11 @@ async function addAutoreply(triggerInput, response, createdBy = 'owner', groupId
         id: insertId,
         trigger: primaryTrigger,
         triggers: triggers,
-        response: response.trim(),
+        response: cleanResponse,
         groupId: cleanGroupId,
+        mediaPath: cleanMediaPath,
+        mediaType: cleanMediaType,
+        ownerOnly: isOwnerOnly,
         createdBy: createdBy || 'owner',
         createdAt: now.toISOString()
     };
@@ -1074,16 +1091,16 @@ async function saveAutoreplies(list) {
             const trigJson = JSON.stringify(Array.isArray(item.triggers) ? item.triggers : [trigName]);
             if (item.id) {
                 await db.query(
-                    `INSERT INTO autoreplies (id, trigger_name, triggers_json, response, group_id, created_by, created_at, updated_by, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE trigger_name = VALUES(trigger_name), triggers_json = VALUES(triggers_json), response = VALUES(response), group_id = VALUES(group_id), updated_by = VALUES(updated_by), updated_at = NOW()`,
-                    [item.id, trigName, trigJson, item.response, item.groupId || null, item.createdBy || 'owner', item.createdAt ? new Date(item.createdAt) : new Date(), item.updatedBy || null, item.updatedAt ? new Date(item.updatedAt) : null]
+                    `INSERT INTO autoreplies (id, trigger_name, triggers_json, response, group_id, media_path, media_type, owner_only, created_by, created_at, updated_by, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE trigger_name = VALUES(trigger_name), triggers_json = VALUES(triggers_json), response = VALUES(response), group_id = VALUES(group_id), media_path = VALUES(media_path), media_type = VALUES(media_type), owner_only = VALUES(owner_only), updated_by = VALUES(updated_by), updated_at = NOW()`,
+                    [item.id, trigName, trigJson, item.response, item.groupId || null, item.mediaPath || null, item.mediaType || null, item.ownerOnly ? 1 : 0, item.createdBy || 'owner', item.createdAt ? new Date(item.createdAt) : new Date(), item.updatedBy || null, item.updatedAt ? new Date(item.updatedAt) : null]
                 );
             } else {
                 await db.query(
-                    `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, created_by, created_at)
-                     VALUES (?, ?, ?, ?, ?, NOW())`,
-                    [trigName, trigJson, item.response, item.groupId || null, item.createdBy || 'owner']
+                    `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, media_path, media_type, owner_only, created_by, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+                    [trigName, trigJson, item.response, item.groupId || null, item.mediaPath || null, item.mediaType || null, item.ownerOnly ? 1 : 0, item.createdBy || 'owner']
                 );
             }
         }

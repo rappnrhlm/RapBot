@@ -172,11 +172,11 @@ async function handleSingleMessage(sock, msg, registry) {
     const isGroupChat = jidUtils.isGroup(from);
     const senderNumber = await jidUtils.resolveSenderNumber(sock, msg, from);
     const botNumber = jidUtils.getJidNumber(sock?.user?.id);
+    const isOwner = database.isOwner(senderNumber, botNumber);
 
     // Private Chat (DM) Gatekeeper: Only owners can interact with the bot in private chat
     if (!isGroupChat) {
-        const isOwnerSender = database.isOwner(senderNumber, botNumber);
-        if (!isOwnerSender) {
+        if (!isOwner) {
             if (body.startsWith(PREFIX)) {
                 console.log(`[MessageHandler] ⛔ DM ditolak dari non-owner: ${senderNumber || 'unknown'} (${from})`);
                 await sock.sendMessage(
@@ -241,9 +241,27 @@ async function handleSingleMessage(sock, msg, registry) {
             database.findAutoreply(`${PREFIX}${commandName}`, from);
 
         if (autoreplyMatch) {
+            if (autoreplyMatch.ownerOnly && !isOwner) {
+                console.log(`[MessageHandler] ⛔ Autoreply ${autoreplyMatch.trigger} ditolak (khusus owner) dari ${senderNumber}`);
+                return;
+            }
             database.incrementCommandStats('autoreply');
             database.logCommand(`autoreply:${autoreplyMatch.trigger}`, from, senderNumber, isGroupChat);
-            await sock.sendMessage(from, { text: autoreplyMatch.response }, { quoted: msg });
+
+            if (autoreplyMatch.mediaPath && fs.existsSync(autoreplyMatch.mediaPath)) {
+                try {
+                    const imageBuffer = fs.readFileSync(autoreplyMatch.mediaPath);
+                    await sock.sendMessage(from, {
+                        image: imageBuffer,
+                        caption: autoreplyMatch.response || ''
+                    }, { quoted: msg });
+                } catch (imgErr) {
+                    console.error('[MessageHandler] Gagal mengirim media autoreply:', imgErr);
+                    await sock.sendMessage(from, { text: autoreplyMatch.response || '' }, { quoted: msg });
+                }
+            } else {
+                await sock.sendMessage(from, { text: autoreplyMatch.response || '' }, { quoted: msg });
+            }
             return;
         }
 
@@ -254,9 +272,27 @@ async function handleSingleMessage(sock, msg, registry) {
     // Optional: check non-prefix autoreply (e.g. exact phrase trigger)
     const exactMatch = database.findAutoreply(body, from);
     if (exactMatch) {
+        if (exactMatch.ownerOnly && !isOwner) {
+            console.log(`[MessageHandler] ⛔ Autoreply ${exactMatch.trigger} ditolak (khusus owner) dari ${senderNumber}`);
+            return;
+        }
         database.incrementCommandStats('autoreply');
         database.logCommand(`autoreply:${exactMatch.trigger}`, from, senderNumber, isGroupChat);
-        await sock.sendMessage(from, { text: exactMatch.response }, { quoted: msg });
+
+        if (exactMatch.mediaPath && fs.existsSync(exactMatch.mediaPath)) {
+            try {
+                const imageBuffer = fs.readFileSync(exactMatch.mediaPath);
+                await sock.sendMessage(from, {
+                    image: imageBuffer,
+                    caption: exactMatch.response || ''
+                }, { quoted: msg });
+            } catch (imgErr) {
+                console.error('[MessageHandler] Gagal mengirim media autoreply:', imgErr);
+                await sock.sendMessage(from, { text: exactMatch.response || '' }, { quoted: msg });
+            }
+        } else {
+            await sock.sendMessage(from, { text: exactMatch.response || '' }, { quoted: msg });
+        }
         return;
     }
 

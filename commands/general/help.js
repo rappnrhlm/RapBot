@@ -94,7 +94,7 @@ module.exports = {
 
             // Autoreply
             autoreply: '🤖 `!autoreply list` | `!autoreply-add` | `!autoreply-edit` | `!autoreply-del`\nPengaturan pesan balasan otomatis bot (Khusus Owner).',
-            'autoreply-add': '🤖 `!autoreply-add <trigger>|<respons>`\nMenambahkan respons otomatis baru (Khusus Owner).\nContoh multi-trigger:\n`!autoreply-add {!rekening/!rek/!norek}|Transfer BCA: 8456243687`\n💡 Mendukung enter langsung atau `\\n`.',
+            'autoreply-add': '🤖 `!autoreply-add <trigger>|<respons>`\nMenambahkan respons otomatis baru (Khusus Owner).\nContoh multi-trigger:\n`!autoreply-add {!rekening/!rek/!norek}|Transfer BCA: 8456243687`\n🖼️ *Media:* Kirim/reply gambar untuk membuat autoreply bergambar.\n🔒 *Khusus Owner:* Tambahkan `--owner` di akhir respons (contoh: `!autoreply-add !qris|Scan QRIS di atas --owner --global`).\n💡 Mendukung enter langsung atau `\\n`.',
             'autoreply-list': '📋 `!autoreply-list`\nMenampilkan seluruh pesan balasan otomatis yang terdaftar di database.',
             'autoreply-edit': '✏️ `!autoreply-edit <trigger>|<respons baru>`\nMengubah balasan autoreply yang sudah terdaftar (Khusus Owner).',
             'autoreply-del': '🗑️ `!autoreply-del <trigger>`\nMenghapus autoreply dari database (Khusus Owner).',

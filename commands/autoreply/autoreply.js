@@ -1,3 +1,7 @@
+const fs = require('fs');
+const path = require('path');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+
 function getRawPayload(body, command, action, args) {
     if (body) {
         let text = body.trim();
@@ -56,13 +60,22 @@ module.exports = {
 
             let text = '📋 *DAFTAR PESAN AUTOREPLY*\n\n';
 
+            const formatItem = (item, idx) => {
+                const badges = [];
+                if (item.ownerOnly) badges.push('🔒 _(Khusus Owner)_');
+                if (item.mediaPath) badges.push('🖼️ _(Gambar)_');
+                const badgeStr = badges.length > 0 ? ` ${badges.join(' ')}` : '';
+                const responseStr = item.response ? `\n${item.response}` : (item.mediaPath ? '\n_(Hanya Gambar)_' : '');
+                return `${idx + 1}. *${item.trigger}*${badgeStr}${responseStr}\n\n`;
+            };
+
             // 1. Global Section
             text += '🌐 *AUTOREPLY GLOBAL (SEMUA CHAT)*\n';
             if (globalList.length === 0) {
                 text += '_Tidak ada autoreply global._\n\n';
             } else {
                 globalList.forEach((item, index) => {
-                    text += `${index + 1}. *${item.trigger}*\n${item.response}\n\n`;
+                    text += formatItem(item, index);
                 });
             }
 
@@ -81,7 +94,7 @@ module.exports = {
 
                     text += `────────────────────\n👥 *AUTOREPLY KHUSUS GRUP (${groupDisplayName})*\n\n`;
                     currentGroupList.forEach((item, idx) => {
-                        text += `  ${idx + 1}. *${item.trigger}*\n  ${item.response}\n\n`;
+                        text += formatItem(item, idx);
                     });
                 }
             } else {
@@ -101,7 +114,7 @@ module.exports = {
                         const isCurrent = gid === cleanFrom ? ' *(Grup Ini)*' : '';
                         text += `📂 *Grup: ${gName}*${isCurrent}\n`;
                         items.forEach((item, idx) => {
-                            text += `  ${idx + 1}. *${item.trigger}*\n  ${item.response}\n\n`;
+                            text += formatItem(item, idx);
                         });
                     }
                 }
@@ -124,6 +137,48 @@ module.exports = {
             let raw = getRawPayload(body, command, action, args);
             let targetGroupId = null;
 
+            // Deteksi media gambar (kirim langsung atau quote/reply gambar)
+            const imageMsg =
+                msg?.message?.imageMessage ||
+                msg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+
+            let mediaInfo = null;
+            if (imageMsg) {
+                try {
+                    const stream = await downloadContentFromMessage(imageMsg, 'image');
+                    let buffer = Buffer.alloc(0);
+                    for await (const chunk of stream) {
+                        buffer = Buffer.concat([buffer, chunk]);
+                    }
+
+                    const mediaDir = path.join(__dirname, '../../data/media/autoreply');
+                    if (!fs.existsSync(mediaDir)) {
+                        fs.mkdirSync(mediaDir, { recursive: true });
+                    }
+
+                    const fileName = `autoreply_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+                    const filePath = path.join(mediaDir, fileName);
+                    fs.writeFileSync(filePath, buffer);
+
+                    mediaInfo = {
+                        path: filePath,
+                        type: 'image'
+                    };
+                } catch (mediaErr) {
+                    console.error('[commands/autoreply] Gagal mengunduh gambar autoreply:', mediaErr);
+                    const errMsg = '❌ Gagal mengunduh gambar untuk autoreply.';
+                    if (typeof reply === 'function') await reply(errMsg);
+                    else await sock.sendMessage(from, { text: errMsg }, { quoted: msg });
+                    return;
+                }
+            }
+
+            let isOwnerOnly = false;
+            if (/--owner(?:-only)?/i.test(raw)) {
+                raw = raw.replace(/--owner(?:-only)?/i, '').trim();
+                isOwnerOnly = true;
+            }
+
             if (/--global/i.test(raw)) {
                 raw = raw.replace(/--global/i, '').trim();
                 targetGroupId = null;
@@ -135,13 +190,15 @@ module.exports = {
             const trigger = parts[0]?.trim();
             const response = parts.slice(1).join('|').trim();
 
-            if (!trigger || !response) {
+            if (!trigger || (!response && !mediaInfo)) {
                 const guide =
 `❌ *Format Autoreply Salah*
 
 Contoh:
-• Khusus grup ini: \`!autoreply-add !aturan|Dilarang spam\`
-• Berlaku global: \`!autoreply-add !rekening|BCA 123456 --global\`
+• Teks biasa: \`!autoreply-add !aturan|Dilarang spam\`
+• Global: \`!autoreply-add !rekening|BCA 123456 --global\`
+• Khusus Owner (misal QRIS): Kirim/reply gambar lalu ketik:
+  \`!autoreply-add !qris|Silakan scan QRIS di atas --owner --global\`
 
 💡 Untuk baris baru, kamu bisa tekan Enter langsung atau ketik \\n`;
                 if (typeof reply === 'function') await reply(guide);
@@ -149,7 +206,7 @@ Contoh:
                 return;
             }
 
-            const result = await database.addAutoreply(trigger, response, senderNumber, targetGroupId);
+            const result = await database.addAutoreply(trigger, response, senderNumber, targetGroupId, mediaInfo, isOwnerOnly);
             if (!result.success) {
                 const warnMsg = `⚠️ ${result.message}`;
                 if (typeof reply === 'function') await reply(warnMsg);
@@ -159,7 +216,13 @@ Contoh:
 
             const label = result.item?.trigger || trigger;
             const scopeLabel = targetGroupId ? `khusus grup ini` : `global (semua chat)`;
-            const succMsg = `✅ Autoreply untuk "${label}" berhasil ditambahkan (${scopeLabel})!\n\n💬 *Balasan:*\n${response}`;
+            const ownerBadge = isOwnerOnly ? ` 🔒 *[Khusus Owner]*` : ``;
+            const mediaBadge = mediaInfo ? ` 🖼️ *[Disertai Gambar]*` : ``;
+
+            let succMsg = `✅ Autoreply untuk "${label}" berhasil ditambahkan (${scopeLabel})${ownerBadge}${mediaBadge}!`;
+            if (response) {
+                succMsg += `\n\n💬 *Balasan:*\n${response}`;
+            }
             if (typeof reply === 'function') await reply(succMsg);
             else await sock.sendMessage(from, { text: succMsg }, { quoted: msg });
             return;
