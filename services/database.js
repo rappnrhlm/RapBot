@@ -364,12 +364,13 @@ async function autoSeedTablesIfEmpty(db) {
                     const trigName = item.trigger || (Array.isArray(item.triggers) ? item.triggers.join(' / ') : '!help');
                     const trigJson = JSON.stringify(Array.isArray(item.triggers) ? item.triggers : [trigName]);
                     await db.query(
-                        `INSERT INTO autoreplies (trigger_name, triggers_json, response, created_by, created_at, updated_by, updated_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        `INSERT INTO autoreplies (trigger_name, triggers_json, response, group_id, created_by, created_at, updated_by, updated_at)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             trigName,
                             trigJson,
                             item.response || '',
+                            item.groupId || null,
                             item.createdBy || 'owner',
                             item.createdAt ? new Date(item.createdAt) : new Date(),
                             item.updatedBy || null,
@@ -885,9 +886,14 @@ function findAutoreply(trigger, groupId = null) {
         return false;
     }
 
-    // 1. Jika di dalam grup, cek autoreply khusus grup ini terlebih dahulu
+    // 1. Jika di dalam grup, cek autoreply khusus grup ini terlebih dahulu (termasuk grup induk jika grup publik terhubung)
     if (cleanGroupId) {
-        const groupMatch = cache.autoreplies.find(item => item.groupId && normalizeJid(item.groupId) === cleanGroupId && matches(item));
+        const effectiveGroupId = resolveDataGroupId(cleanGroupId);
+        const groupMatch = cache.autoreplies.find(item => {
+            if (!item.groupId) return false;
+            const norm = normalizeJid(item.groupId);
+            return (norm === cleanGroupId || (effectiveGroupId && norm === effectiveGroupId)) && matches(item);
+        });
         if (groupMatch) return groupMatch;
     }
 
