@@ -45,6 +45,16 @@ async function getGroupMetadata(sock, from, msg = null) {
 
 async function requireAdmin(sock, from, msg, metadata, senderJid = null) {
     const sender = senderJid || msg?.key?.participant || msg?.key?.participantAlt || from;
+    const senderNum = getJidNumber(sender);
+    const botNum = getJidNumber(sock?.user?.id);
+
+    try {
+        const database = require('../services/database');
+        if (database.isOwner(senderNum, botNum)) {
+            return true;
+        }
+    } catch (_) {}
+
     const participant = findParticipant(metadata, sender);
 
     if (!isAdmin(participant)) {
