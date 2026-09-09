@@ -5,7 +5,7 @@ module.exports = {
     description: 'Mengatur fitur pesan selamat datang otomatis di grup.',
     usage: '!welcome on/off atau !setwelcome <teks>',
 
-    async execute({ sock, msg, from, command, args, reply, utils, services, isGroup: isGroupChat }) {
+    async execute({ sock, msg, from, command, args, reply, utils, services, isGroup: isGroupChat, body }) {
         const groupUtils = utils?.group || require('../../utils/group');
         const database = services?.database || require('../../services/database');
         const jidUtils = utils?.jid || require('../../utils/jid');
@@ -41,7 +41,16 @@ module.exports = {
         const config = database.getWelcomeConfig(targetGroupId);
 
         if (command === 'setwelcome') {
-            let text = args.join(' ').trim();
+            // Ambil dari body asli agar line breaks / paragraf tidak hilang karena split(/\s+/)
+            let text = '';
+            if (body) {
+                text = String(body).replace(/^\S+\s*/, '').trim();
+            } else {
+                text = (args || []).join(' ').trim();
+            }
+
+            // Dukung juga literal \n jika user mengetik \n
+            text = text.replace(/\\n/g, '\n');
             if (!text) {
                 const guide =
 `❌ *Format Salah*
