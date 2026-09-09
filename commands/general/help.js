@@ -85,8 +85,8 @@ module.exports = {
             kick: '🔨 `!kick @user`\nMengeluarkan anggota dari grup (Khusus Admin). Bisa juga reply pesan target lalu ketik `!kick`.',
             promote: '👑 `!promote @user`\nMenaikkan anggota menjadi admin grup (Khusus Admin).',
             demote: '⬇️ `!demote @user`\nMenurunkan admin menjadi anggota biasa (Khusus Admin).',
-            welcome: '👋 `!welcome on` atau `!welcome off`\nMengaktifkan atau mematikan fitur pesan sambutan otomatis untuk anggota baru.',
-            setwelcome: '✏️ `!setwelcome <teks>`\nMengatur teks sambutan grup. Gunakan variabel `@user` dan `@group`.\nContoh: `!setwelcome Selamat datang @user di @group!`',
+            welcome: '👋 `!welcome [on|off|reset]`\nMengatur sambutan otomatis khusus grup ini. Gunakan `!welcome` untuk cek status, `!welcome on/off`, atau `!welcome reset` untuk kembali ke default global.',
+            setwelcome: '✏️ `!setwelcome <teks>`\nMengatur teks sambutan khusus grup ini (bisa dipisah tiap grup). Tag: `@user`, `@group`, `@desc`, `@count`, `@date`, `@time`.\nContoh: `!setwelcome Selamat datang @user di *@group*! Jangan lupa baca deskripsi ya.`',
 
             // Owner
             owner: '👑 `!owner list` | `!owner add <nomor>` | `!owner delete <nomor>`\nManajemen daftar owner bot (Khusus Super Owner).',

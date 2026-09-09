@@ -14,10 +14,10 @@ async function handleWelcome(sock, update) {
     const { id, participants, action } = update;
     if (action !== 'add' || !participants?.length) return;
 
-    const config = database.getWelcomeConfig();
-    if (!config || !config.enabled) return;
-
     const groupId = typeof id === 'object' ? (id.id || id.jid || String(id)) : String(id);
+
+    const config = database.getWelcomeConfig(groupId);
+    if (!config || !config.enabled) return;
 
     let metadata;
     try {
@@ -28,6 +28,21 @@ async function handleWelcome(sock, update) {
     }
 
     const groupName = metadata?.subject || 'Grup';
+    const groupDesc = metadata?.desc ? String(metadata.desc).trim() : '-';
+    const memberCount = metadata?.participants?.length ? String(metadata.participants.length) : '-';
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString('id-ID', {
+        timeZone: 'Asia/Jakarta',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) + ' WIB';
 
     for (const rawParticipant of participants) {
         const participantJid = extractParticipantJid(rawParticipant);
@@ -54,7 +69,12 @@ async function handleWelcome(sock, update) {
 
         const text = String(template)
             .replace(/@user/g, `@${number}`)
-            .replace(/@group/g, groupName);
+            .replace(/@group/g, groupName)
+            .replace(/@desc/g, groupDesc)
+            .replace(/@count/g, memberCount)
+            .replace(/@members/g, memberCount)
+            .replace(/@date/g, dateStr)
+            .replace(/@time/g, timeStr);
 
         const mentions = [participantJid];
         if (displayJid && displayJid !== participantJid && !mentions.includes(displayJid)) {

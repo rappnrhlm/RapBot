@@ -11,8 +11,9 @@ module.exports = {
         const jidUtils = utils?.jid || require('../../utils/jid');
 
         const inGroup = typeof isGroupChat === 'boolean' ? isGroupChat : jidUtils.isGroup(from);
+        let metadata = null;
         if (inGroup) {
-            const metadata = await groupUtils.getGroupMetadata(sock, from, msg);
+            metadata = await groupUtils.getGroupMetadata(sock, from, msg);
             if (!metadata) return;
 
             const isAdmin = await groupUtils.requireAdmin(sock, from, msg, metadata);
@@ -30,20 +31,31 @@ module.exports = {
             }
         }
 
-        const config = database.getWelcomeConfig();
+        const targetGroupId = inGroup ? from : 'default';
+        const groupName = metadata?.subject || 'Global Default';
+
+        const senderNum = jidUtils.getJidNumber(msg?.key?.participant || from);
+        const botNum = jidUtils.getJidNumber(sock?.user?.id);
+        const isOwner = database.isOwner(senderNum, botNum);
+
+        const config = database.getWelcomeConfig(targetGroupId);
 
         if (command === 'setwelcome') {
-            const text = args.join(' ').trim();
+            let text = args.join(' ').trim();
             if (!text) {
                 const guide =
 `❌ *Format Salah*
 
-Contoh:
-\`!setwelcome Halo @user, selamat datang di @group!\`
+Contoh Penggunaan:
+\`!setwelcome Halo @user 👋 Selamat datang di *@group*!\`
 
-💡 *Variabel:*
-• \`@user\` : Tag member baru
-• \`@group\` : Nama grup`;
+💡 *Tag Otomatis yang Tersedia:*
+• \`@user\` : Tag/mention member baru
+• \`@group\` : Nama grup ini
+• \`@desc\` : Deskripsi grup
+• \`@count\` : Jumlah anggota grup
+• \`@date\` : Tanggal bergabung
+• \`@time\` : Waktu bergabung (WIB)`;
                 if (typeof reply === 'function') {
                     await reply(guide);
                 } else {
@@ -52,16 +64,28 @@ Contoh:
                 return;
             }
 
-            config.text = text;
-            await database.saveWelcomeConfig(config);
+            let isGlobal = !inGroup;
+            if (text.includes('--global')) {
+                if (isOwner) {
+                    isGlobal = true;
+                    text = text.replace(/--global/g, '').trim();
+                }
+            }
 
+            await database.saveWelcomeConfig({ text }, isGlobal ? 'default' : targetGroupId);
+
+            const scopeLabel = isGlobal ? 'Default Global 🌐' : `Grup *${groupName}* 🏷️`;
             const successMsg =
-`✅ *Pesan welcome berhasil diubah!*
+`✅ *Pesan welcome berhasil diatur!*
+• Lingkup: ${scopeLabel}
 
-📝 *Teks Baru:*
+📝 *Teks Sambutan:*
 ${text}
 
-💡 Pastikan status sudah aktif dengan ketik: \`!welcome on\``;
+💡 *Tips:*
+• Pastikan status welcome sudah aktif dengan ketik \`!welcome on\`.
+• Gunakan \`!welcome reset\` jika ingin kembali ke pesan default global.`;
+
             if (typeof reply === 'function') {
                 await reply(successMsg);
             } else {
@@ -72,34 +96,61 @@ ${text}
 
         // command === 'welcome'
         const mode = args[0]?.toLowerCase();
-        if (mode !== 'on' && mode !== 'off') {
-            const statusMsg =
-`👋 *Status Welcome Message:*
-• Status: ${config.enabled ? 'AKTIF 🟢' : 'NONAKTIF 🔴'}
-• Teks Saat Ini:
-"${config.text || 'Default'}"
 
-💡 *Gunakan:*
-• \`!welcome on\` — Aktifkan
-• \`!welcome off\` — Nonaktifkan
-• \`!setwelcome <teks>\` — Ubah teks sambutan`;
+        // 1. Reset per-group custom welcome back to global default
+        if (mode === 'reset') {
+            if (!inGroup) {
+                const resetErr = '❌ Reset hanya bisa digunakan di dalam grup.';
+                return typeof reply === 'function' ? await reply(resetErr) : await sock.sendMessage(from, { text: resetErr }, { quoted: msg });
+            }
+
+            await database.resetWelcomeConfig(targetGroupId);
+            const resetMsg =
+`🔄 *Pesan welcome untuk grup ini berhasil di-reset ke DEFAULT GLOBAL 🌐*
+
+Grup ini sekarang akan menggunakan pengaturan dan teks welcome default.`;
+            return typeof reply === 'function' ? await reply(resetMsg) : await sock.sendMessage(from, { text: resetMsg }, { quoted: msg });
+        }
+
+        // 2. Toggle on / off
+        if (mode === 'on' || mode === 'off') {
+            const enabled = mode === 'on';
+            await database.saveWelcomeConfig({ enabled }, targetGroupId);
+
+            const scopeLabel = inGroup ? `untuk grup *${groupName}*` : 'default global';
+            const toggleMsg = `✅ Auto welcome ${scopeLabel} ${enabled ? 'diaktifkan 🟢' : 'dimatikan 🔴'}`;
 
             if (typeof reply === 'function') {
-                await reply(statusMsg);
+                await reply(toggleMsg);
             } else {
-                await sock.sendMessage(from, { text: statusMsg }, { quoted: msg });
+                await sock.sendMessage(from, { text: toggleMsg }, { quoted: msg });
             }
             return;
         }
 
-        config.enabled = mode === 'on';
-        await database.saveWelcomeConfig(config);
+        // 3. Status check (!welcome)
+        const scopeStatus = config.isCustom ? 'Khusus Grup Ini 🏷️' : 'Default Global 🌐';
+        const statusMsg =
+`👋 *Status Welcome Message:*
+• Grup: *${groupName}*
+• Mode: ${scopeStatus}
+• Status: ${config.enabled ? 'AKTIF 🟢' : 'NONAKTIF 🔴'}
+• Teks Saat Ini:
+"${config.text || 'Default'}"
 
-        const toggleMsg = `✅ Auto welcome ${config.enabled ? 'diaktifkan 🟢' : 'dimatikan 🔴'}`;
+💡 *Perintah Tersedia:*
+• \`!welcome on\` — Aktifkan untuk grup ini
+• \`!welcome off\` — Nonaktifkan untuk grup ini
+• \`!setwelcome <teks>\` — Atur teks khusus grup ini
+• \`!welcome reset\` — Kembalikan ke teks default global
+
+🏷️ *Tag Tersedia:*
+\`@user\`, \`@group\`, \`@desc\`, \`@count\`, \`@date\`, \`@time\``;
+
         if (typeof reply === 'function') {
-            await reply(toggleMsg);
+            await reply(statusMsg);
         } else {
-            await sock.sendMessage(from, { text: toggleMsg }, { quoted: msg });
+            await sock.sendMessage(from, { text: statusMsg }, { quoted: msg });
         }
     }
 };

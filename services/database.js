@@ -64,6 +64,7 @@ const cache = {
     groups: [],
     autoreplies: [],
     welcome: { ...DEFAULT_WELCOME },
+    groupWelcomes: {},
     stats: {
         messages: 0,
         commands: 0,
@@ -103,7 +104,13 @@ function initLocalCache() {
 
         const rawWelcome = readJSON(WELCOME_FILE, null);
         if (rawWelcome && typeof rawWelcome === 'object') {
-            cache.welcome = { ...DEFAULT_WELCOME, ...rawWelcome };
+            if (rawWelcome.groups && typeof rawWelcome.groups === 'object') {
+                cache.welcome = { ...DEFAULT_WELCOME, ...(rawWelcome.default || {}) };
+                cache.groupWelcomes = { ...rawWelcome.groups };
+            } else {
+                cache.welcome = { ...DEFAULT_WELCOME, ...rawWelcome };
+                cache.groupWelcomes = {};
+            }
         }
 
         const rawStats = readJSON(STATS_FILE, null);
@@ -277,12 +284,13 @@ async function ensureAllTables() {
     // 5. Table: welcome_settings (Greeting Configuration)
     await db.query(`
         CREATE TABLE IF NOT EXISTS welcome_settings (
-            id VARCHAR(50) NOT NULL PRIMARY KEY DEFAULT 'default',
+            id VARCHAR(128) NOT NULL PRIMARY KEY DEFAULT 'default',
             enabled TINYINT(1) NOT NULL DEFAULT 1,
             text TEXT NOT NULL,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
+    await db.query("ALTER TABLE welcome_settings MODIFY id VARCHAR(128) NOT NULL").catch(() => {});
 
     // 6. Table: bot_stats (Bot Usage Counters)
     await db.query(`
@@ -541,15 +549,24 @@ async function refreshDatabaseCache() {
         });
         syncDataFile(AUTOREPLY_FILE, cache.autoreplies);
 
-        // 4. Refresh Welcome
-        const [welcomeRows] = await db.query("SELECT enabled, text FROM welcome_settings WHERE id = 'default'");
-        if (welcomeRows.length > 0) {
-            cache.welcome = {
-                enabled: Boolean(welcomeRows[0].enabled),
-                text: welcomeRows[0].text
+        // 4. Refresh Welcome (default & per-group)
+        const [welcomeRows] = await db.query("SELECT id, enabled, text FROM welcome_settings");
+        cache.groupWelcomes = {};
+        for (const row of welcomeRows) {
+            const rowData = {
+                enabled: Boolean(row.enabled),
+                text: row.text
             };
-            syncDataFile(WELCOME_FILE, cache.welcome);
+            if (row.id === 'default') {
+                cache.welcome = rowData;
+            } else {
+                cache.groupWelcomes[normalizeJid(row.id)] = rowData;
+            }
         }
+        syncDataFile(WELCOME_FILE, {
+            default: cache.welcome,
+            groups: cache.groupWelcomes
+        });
 
         // 5. Refresh Stats
         const [statsRows] = await db.query("SELECT messages, commands, stickers, brats, started_at, command_usage_json FROM bot_stats WHERE id = 'main'");
@@ -839,25 +856,68 @@ function logCommand(command, from, senderNumber, isGroupChat = false) {
 // WELCOME REPOSITORY
 // ====================================================
 
-function getWelcomeConfig() {
-    return cache.welcome;
+function getWelcomeConfig(groupId = null) {
+    if (!groupId || groupId === 'default') {
+        return { ...cache.welcome, isCustom: false };
+    }
+    const cleanId = normalizeJid(groupId);
+    if (cache.groupWelcomes && cache.groupWelcomes[cleanId]) {
+        return { ...cache.groupWelcomes[cleanId], isCustom: true };
+    }
+    return { ...cache.welcome, isCustom: false };
 }
 
-async function saveWelcomeConfig(config) {
-    cache.welcome = { ...cache.welcome, ...config };
-    syncDataFile(WELCOME_FILE, cache.welcome);
+async function saveWelcomeConfig(config, groupId = null) {
+    const isGlobal = !groupId || groupId === 'default';
+    const targetId = isGlobal ? 'default' : normalizeJid(groupId);
+
+    if (isGlobal) {
+        cache.welcome = { ...cache.welcome, ...config };
+    } else {
+        if (!cache.groupWelcomes) cache.groupWelcomes = {};
+        const current = cache.groupWelcomes[targetId] || cache.welcome;
+        cache.groupWelcomes[targetId] = { ...current, ...config };
+    }
+
+    syncDataFile(WELCOME_FILE, {
+        default: cache.welcome,
+        groups: cache.groupWelcomes || {}
+    });
 
     try {
         const db = getPool();
+        const saveTarget = isGlobal ? cache.welcome : cache.groupWelcomes[targetId];
         await db.query(
             `INSERT INTO welcome_settings (id, enabled, text)
-             VALUES ('default', ?, ?)
+             VALUES (?, ?, ?)
              ON DUPLICATE KEY UPDATE enabled = VALUES(enabled), text = VALUES(text)`,
-            [cache.welcome.enabled ? 1 : 0, cache.welcome.text]
+            [targetId, saveTarget.enabled ? 1 : 0, saveTarget.text]
         );
     } catch (err) {
         console.error('[database] Error saving welcome config to MariaDB:', err.message);
     }
+
+    return getWelcomeConfig(targetId);
+}
+
+async function resetWelcomeConfig(groupId) {
+    if (!groupId || groupId === 'default') return false;
+    const cleanId = normalizeJid(groupId);
+    if (cache.groupWelcomes) {
+        delete cache.groupWelcomes[cleanId];
+    }
+    syncDataFile(WELCOME_FILE, {
+        default: cache.welcome,
+        groups: cache.groupWelcomes || {}
+    });
+
+    try {
+        const db = getPool();
+        await db.query("DELETE FROM welcome_settings WHERE id = ?", [cleanId]);
+    } catch (err) {
+        console.error('[database] Error deleting group welcome config from MariaDB:', err.message);
+    }
+    return true;
 }
 
 // ====================================================
@@ -2008,6 +2068,7 @@ module.exports = {
     // Welcome
     getWelcomeConfig,
     saveWelcomeConfig,
+    resetWelcomeConfig,
 
     // Autoreply
     getAutoreplies,
