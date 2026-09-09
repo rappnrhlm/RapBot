@@ -5,6 +5,7 @@ module.exports = {
     description: 'Mengatur fitur pesan selamat datang otomatis di grup.',
     usage: '!welcome on/off atau !setwelcome <teks>',
 
+    async execute({ sock, msg, from, command, args, reply, utils, services, isGroup: isGroupChat }) {
         const groupUtils = utils?.group || require('../../utils/group');
         const database = services?.database || require('../../services/database');
         const jidUtils = utils?.jid || require('../../utils/jid');
