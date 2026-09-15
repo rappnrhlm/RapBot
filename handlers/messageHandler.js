@@ -297,7 +297,13 @@ async function handleSingleMessage(sock, msg, registry) {
             return;
         }
 
-        // Unknown command starting with prefix - silently ignore or no action
+        // 3. Perintah tidak dikenal dengan prefix ! (Beri tahu user dengan sopan)
+        try {
+            const unknownReply = `❓ Perintah *${PREFIX}${commandName}* tidak ditemukan.\n\nKetik *${PREFIX}help* atau *${PREFIX}menu* untuk melihat daftar perintah yang tersedia.`;
+            await sock.sendMessage(from, { text: unknownReply }, { quoted: msg });
+        } catch (unknownErr) {
+            console.warn('[MessageHandler] Gagal mengirim balasan unknown command:', unknownErr.message);
+        }
         return;
     }
 
