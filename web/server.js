@@ -224,18 +224,32 @@ app.get('/api/groups', async (req, res) => {
         const enrichedRegistered = rawGroups.map(g => {
             const cleanId = normalizeJid(g.id);
             initializedJids.add(cleanId);
+            const parentGid = g.parentGroupId || g.parentId || null;
             let parentName = null;
-            if (g.parentGroupId) {
-                const parent = database.getGroupById(g.parentGroupId);
-                parentName = parent ? parent.name : g.parentGroupId;
+            if (parentGid) {
+                const parent = database.getGroupById(parentGid);
+                parentName = parent ? parent.name : parentGid;
             }
             const disc = discovered.find(d => normalizeJid(d.id) === cleanId);
+
+            // Normalize role: "admin" / "indukan" / "master" -> "indukan"; "public" / "cabang" -> "cabang"
+            const rawRole = (g.role || 'admin').toLowerCase();
+            const isCabang = rawRole === 'cabang' || rawRole === 'public' || Boolean(parentGid);
+            const normalizedRole = isCabang ? 'cabang' : 'indukan';
+
             return {
                 ...g,
+                id: cleanId,
+                name: g.name || disc?.subject || 'Grup WhatsApp',
                 groupName: g.groupName || disc?.subject || '',
+                role: normalizedRole,
+                originalRole: rawRole,
+                parentId: parentGid,
+                parentGroupId: parentGid,
                 parentGroupName: parentName,
                 isInitialized: true,
-                participantsCount: disc?.participantsCount || null
+                isUndefined: false,
+                participantsCount: disc?.participantsCount || g.participantsCount || null
             };
         });
 
@@ -243,14 +257,17 @@ app.get('/api/groups', async (req, res) => {
         const uninitialized = discovered
             .filter(d => d?.id && !initializedJids.has(normalizeJid(d.id)))
             .map(d => ({
-                id: d.id,
+                id: normalizeJid(d.id),
                 name: d.subject || 'Grup WhatsApp',
                 groupName: d.subject || '',
                 type: 'undefined',
-                role: 'uninitialized',
+                role: 'undefined',
+                originalRole: 'uninitialized',
+                parentId: null,
                 parentGroupId: null,
                 parentGroupName: null,
                 isInitialized: false,
+                isUndefined: true,
                 participantsCount: d.participantsCount || 0,
                 lastSeen: d.lastSeen || null
             }));
@@ -262,7 +279,8 @@ app.get('/api/groups', async (req, res) => {
             total: allGroups.length,
             initializedCount: enrichedRegistered.length,
             uninitializedCount: uninitialized.length,
-            groups: allGroups
+            groups: allGroups,
+            data: allGroups
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -607,10 +625,7 @@ app.get('/api/kost', async (req, res) => {
 
         let list = [];
         if (q) {
-            list = await database.searchKost(q, gid);
-            if (status && status !== 'all') {
-                list = list.filter(k => (k.status || 'pending').toLowerCase() === status.toLowerCase());
-            }
+            list = await database.searchKost(q, gid, { status: status && status !== 'all' ? status : null });
         } else if (status && status !== 'all') {
             list = await database.getKostByStatus(status, gid);
         } else {
@@ -623,7 +638,8 @@ app.get('/api/kost', async (req, res) => {
             success: true,
             stats,
             total: list.length,
-            data: list
+            data: list,
+            kost: list
         });
     } catch (err) {
         console.error('[web/server] Error GET /api/kost:', err);
@@ -640,7 +656,7 @@ app.get('/api/kost/:id', async (req, res) => {
         if (!item) {
             return res.status(404).json({ success: false, message: 'Kost tidak ditemukan.' });
         }
-        res.json({ success: true, data: item });
+        res.json({ success: true, data: item, kost: item });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Gagal mengambil detail kost.' });
     }
@@ -649,18 +665,24 @@ app.get('/api/kost/:id', async (req, res) => {
 // Add kost
 app.post('/api/kost', async (req, res) => {
     try {
-        const { name, instagram, tiktok, whatsapp, groupId, addedBy, pin } = req.body;
+        const { name, instagram, tiktok, whatsapp, status, groupId, addedBy, pin } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
+        const ig = instagram !== undefined ? instagram : req.body.contact?.instagram;
+        const tt = tiktok !== undefined ? tiktok : req.body.contact?.tiktok;
+        const wa = whatsapp !== undefined ? whatsapp : req.body.contact?.whatsapp;
+        const stat = status || 'pending';
+
         const result = await database.addKost({
             name,
-            instagram,
-            tiktok,
-            whatsapp,
+            instagram: ig,
+            tiktok: tt,
+            whatsapp: wa,
+            status: stat,
             groupId,
             addedBy: addedBy || 'web-admin'
         });
@@ -687,11 +709,15 @@ app.put('/api/kost/:id', async (req, res) => {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
+        const ig = instagram !== undefined ? instagram : req.body.contact?.instagram;
+        const tt = tiktok !== undefined ? tiktok : req.body.contact?.tiktok;
+        const wa = whatsapp !== undefined ? whatsapp : req.body.contact?.whatsapp;
+
         const result = await database.updateKost(id, {
             name,
-            instagram,
-            tiktok,
-            whatsapp,
+            instagram: ig,
+            tiktok: tt,
+            whatsapp: wa,
             status,
             groupId
         });
@@ -707,15 +733,27 @@ app.put('/api/kost/:id', async (req, res) => {
     }
 });
 
-// Mark kost sent
+// Mark kost sent / toggle status
 app.post('/api/kost/:id/sent', async (req, res) => {
     try {
         const { id } = req.params;
-        const { sentBy, groupId, pin } = req.body;
+        const { sentBy, groupId, pin, sent, status } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        if (sent === false || status === 'pending') {
+            const result = await database.updateKost(id, { status: 'pending', groupId });
+            if (!result.success) {
+                return res.status(result.notFound ? 404 : 400).json(result);
+            }
+            return res.json({
+                success: true,
+                message: 'Status kost berhasil diubah menjadi draft / pending.',
+                data: result.data
+            });
         }
 
         const result = await database.markKostSent(id, groupId, sentBy || 'web-admin');
@@ -725,12 +763,12 @@ app.post('/api/kost/:id/sent', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Status kost berhasil diubah menjadi sent.',
+            message: 'Status kost berhasil diubah menjadi sent (sudah diposting).',
             data: result.data
         });
     } catch (err) {
         console.error('[web/server] Error POST /api/kost/:id/sent:', err);
-        res.status(500).json({ success: false, message: 'Gagal menandai status sent.' });
+        res.status(500).json({ success: false, message: 'Gagal memperbarui status publikasi kost.' });
     }
 });
 
@@ -884,7 +922,9 @@ app.delete('/api/autoreplies/:keyword', async (req, res) => {
 
 app.get('/api/welcome', (req, res) => {
     try {
-        res.json({ success: true, config: database.getWelcomeConfig() });
+        const { groupId } = req.query;
+        const config = database.getWelcomeConfig(groupId || null);
+        res.json({ success: true, config, welcome: config, data: config });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -892,19 +932,26 @@ app.get('/api/welcome', (req, res) => {
 
 app.post('/api/welcome', async (req, res) => {
     try {
-        const { config, pin } = req.body;
+        const { config, pin, groupId, enabled, text, mediaPath } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
-        if (!config || typeof config !== 'object') {
+        const configObj = (config && typeof config === 'object') ? config : {
+            enabled: enabled !== undefined ? Boolean(enabled) : true,
+            text: text !== undefined ? String(text) : '',
+            mediaPath: mediaPath || ''
+        };
+
+        if (typeof configObj !== 'object') {
             return res.status(400).json({ success: false, message: 'Config tidak valid.' });
         }
 
-        await database.saveWelcomeConfig(config);
-        res.json({ success: true, message: 'Konfigurasi welcome berhasil disimpan.' });
+        const targetGroupId = groupId || req.body.group_id || (config && config.groupId) || null;
+        const saved = await database.saveWelcomeConfig(configObj, targetGroupId);
+        res.json({ success: true, message: 'Konfigurasi welcome berhasil disimpan.', config: saved, welcome: saved, data: saved });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

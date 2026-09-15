@@ -175,13 +175,17 @@ Status: ⏳ PENDING`;
                     }
                 }
 
-                const results = await database.searchKost(query, from);
+                // Publik hanya dapat mencari data kost yang SUDAH DI-POST (sent/published)
+                const results = isPublicGroup
+                    ? await database.searchKost(query, from, { status: 'sent' })
+                    : await database.searchKost(query, from);
+
                 if (!results.length) {
                     const emptyMsg = `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
                     return sendReply(emptyMsg);
                 }
 
-                // Format untuk grup publik
+                // Format untuk grup publik (Hanya kost yang sudah dipost)
                 if (isPublicGroup) {
                     const maxRes = registeredGroup?.settings?.maxSearchResults || 5;
                     const displayList = results.slice(0, maxRes);
@@ -195,10 +199,11 @@ Status: ⏳ PENDING`;
                     return sendReply(text.trim());
                 }
 
-                // Format untuk grup admin
-                let text = `🔎 *HASIL PENCARIAN*\nKata kunci: ${query}\n\nDitemukan: ${results.length}\n\n`;
+                // Format untuk grup admin (Menampilkan status: SUDAH DIPOST vs PROSPEK/PENDING)
+                let text = `🔎 *HASIL PENCARIAN (ADMIN)*\nKata kunci: ${query}\n\nDitemukan: ${results.length}\n\n`;
                 results.forEach((k, idx) => {
-                    const statusBadge = (k.status || 'pending').toLowerCase() === 'sent' ? '✅ SENT' : '⏳ PENDING';
+                    const isPublished = (k.status || 'pending').toLowerCase() === 'sent';
+                    const statusBadge = isPublished ? '✅ SUDAH DIPOST' : '⏳ PROSPEK / PENDING';
                     const contacts = getContactDisplayLines(k, database, '   ');
                     text += `${idx + 1}. *${k.name}*\n   🆔 ${k.id}\n${contacts}\n   📌 ${statusBadge}\n\n`;
                 });
@@ -223,8 +228,8 @@ Contoh:
                 }
 
                 const kost = await database.getKostById(targetId, from);
-                if (!kost) {
-                    return sendReply(`❌ Kost dengan ID "${targetId}" tidak ditemukan.`);
+                if (!kost || (isPublicGroup && (kost.status || 'pending').toLowerCase() !== 'sent')) {
+                    return sendReply(`❌ Kost dengan ID "${targetId}" tidak ditemukan atau belum dipublikasikan.`);
                 }
 
                 const igUrl = kost.instagram ? database.formatInstagramUrl(kost.instagram) : '-';
@@ -246,12 +251,13 @@ Contoh:
                 }
 
                 const groupName = registeredGroup?.name || 'Bukittinggi Kos';
-                const statusBadge = (kost.status || 'pending').toLowerCase() === 'sent' ? '✅ SENT' : '⏳ PENDING';
+                const isPublished = (kost.status || 'pending').toLowerCase() === 'sent';
+                const statusBadge = isPublished ? '✅ SUDAH DIPOST' : '⏳ PROSPEK / PENDING';
                 const sentByDisplay = kost.sentBy ? kost.sentBy : '-';
                 const sentAtDisplay = kost.sentAt ? database.formatIndonesianDateTime(kost.sentAt) : '-';
 
                 const detailText =
-`🏠 *DETAIL KOST*
+`🏠 *DETAIL KOST (ADMIN VIEW)*
 
 🆔 ID: ${kost.id}
 🏠 Nama: ${kost.name}
@@ -259,9 +265,9 @@ Contoh:
 💬 WhatsApp: ${waUrl}
 🎵 TikTok: ${ttUrl}
 📌 Status: ${statusBadge}
-👤 Sent By: ${sentByDisplay}
-🕒 Sent At: ${sentAtDisplay}
-👥 Group: ${groupName}`;
+👤 Dipost Oleh: ${sentByDisplay}
+🕒 Waktu Dipost: ${sentAtDisplay}
+👥 Grup: ${groupName}`;
 
                 return sendReply(detailText);
             }

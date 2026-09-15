@@ -56,15 +56,20 @@ module.exports = {
 `❌ *Format Salah*
 
 Contoh Penggunaan:
-\`!setwelcome Halo @user 👋 Selamat datang di *@group*!\`
+\`!setwelcome Halo {user}!, selamat datang di grup *{group}*
+
+> waktu bergabung: {time}
+> tanggal bergabung: {date}
+
+Silahkan kirim perintah !menu untuk melihat fitur Bot\`
 
 💡 *Tag Otomatis yang Tersedia:*
-• \`@user\` : Tag/mention member baru
-• \`@group\` : Nama grup ini
-• \`@desc\` : Deskripsi grup
-• \`@count\` : Jumlah anggota grup
-• \`@date\` : Tanggal bergabung
-• \`@time\` : Waktu bergabung (WIB)`;
+• \`{user}\` / \`@user\` : Tag/mention member baru
+• \`{group}\` / \`@group\` : Nama grup ini
+• \`{desc}\` / \`@desc\` : Deskripsi grup
+• \`{count}\` / \`@count\` : Jumlah anggota grup
+• \`{date}\` / \`@date\` : Tanggal bergabung
+• \`{time}\` / \`@time\` : Waktu bergabung (WIB)`;
                 if (typeof reply === 'function') {
                     await reply(guide);
                 } else {

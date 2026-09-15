@@ -532,12 +532,12 @@
                 <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
                         <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
-                            <i data-lucide="database" class="w-3.5 h-3.5"></i>
-                            <span>Listing Data (<span id="modListingCount">0</span>)</span>
+                            <i data-lucide="building" class="w-3.5 h-3.5"></i>
+                            <span>Modul Iklan & Kos (<span id="modListingCount">0</span>)</span>
                         </button>
                         <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
                             <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
-                            <span>Usulan Warga (<span id="modSubCount">0</span>)</span>
+                            <span>Kotak Usulan (<span id="modSubCount">0</span>)</span>
                         </button>
                         <button onclick="switchModSubTab('features')" id="modSubTab-features" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
@@ -559,14 +559,14 @@
                     <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
                         <div class="relative flex-1 max-w-md">
                             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama item, deskripsi, atau kontak..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama iklan, detail, kontak WhatsApp/IG..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                <button onclick="filterKostStatus('all')" id="filterKost-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua</button>
-                                <button onclick="filterKostStatus('pending')" id="filterKost-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Belum Kirim</button>
-                                <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Terkirim</button>
+                                <button onclick="filterKostStatus('all')" id="filterKost-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Data</button>
+                                <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟢 Sudah Diposting (Publik)</button>
+                                <button onclick="filterKostStatus('pending')" id="filterKost-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟡 Penawaran Iklan (Admin)</button>
                             </div>
 
                             <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
@@ -852,10 +852,10 @@
                         <input type="text" id="kostTiktok" placeholder="@username" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Publikasi</label>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Visibilitas</label>
                         <select id="kostStatus" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
-                            <option value="pending">Pending (Belum Terkirim)</option>
-                            <option value="sent">Terkirim (Sudah Dipublikasikan)</option>
+                            <option value="sent">🟢 Sudah Diposting / Tayang (Publik Bisa Cari)</option>
+                            <option value="pending">🟡 Proses Penawaran / Ajakan Iklan (Draft Admin)</option>
                         </select>
                     </div>
                 </div>
@@ -1616,9 +1616,13 @@
                 const matchQuery = (g.name || '').toLowerCase().includes(q) || (g.id || '').toLowerCase().includes(q);
                 if (!matchQuery) return false;
 
-                if (activeGroupRoleFilter === 'indukan') return g.role === 'indukan';
-                if (activeGroupRoleFilter === 'cabang') return g.role === 'cabang';
-                if (activeGroupRoleFilter === 'undefined') return g.isUndefined === true;
+                const isUndef = g.isUndefined === true || g.isInitialized === false || g.role === 'uninitialized' || g.role === 'undefined';
+                const isCabang = !isUndef && (g.role === 'cabang' || g.role === 'public' || Boolean(g.parentId || g.parentGroupId));
+                const isIndukan = !isUndef && !isCabang && (g.role === 'indukan' || g.role === 'admin' || g.role === 'master' || (!g.parentId && !g.parentGroupId));
+
+                if (activeGroupRoleFilter === 'indukan') return isIndukan;
+                if (activeGroupRoleFilter === 'cabang') return isCabang;
+                if (activeGroupRoleFilter === 'undefined') return isUndef;
                 return true;
             });
             renderGroupsList();
@@ -1773,9 +1777,13 @@
         function populateParentSelects() {
             const regSelect = document.getElementById('regGroupParent');
             const linkSelect = document.getElementById('linkTargetParentSelect');
-            const indukanGroups = rawGroupsData.filter(g => g.role === 'indukan' && !g.isUndefined);
+            const indukanGroups = rawGroupsData.filter(g => {
+                const isUndef = g.isUndefined === true || g.isInitialized === false || g.role === 'uninitialized' || g.role === 'undefined';
+                const isCabang = !isUndef && (g.role === 'cabang' || g.role === 'public' || Boolean(g.parentId || g.parentGroupId));
+                return !isUndef && !isCabang;
+            });
 
-            let optionsHtml = '<option value="">-- Tidak Terhubung / Mandiri --</option>';
+            let optionsHtml = '<option value="">-- Tidak Terhubung / Mandiri (Indukan) --</option>';
             indukanGroups.forEach(p => {
                 optionsHtml += `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)}</option>`;
             });
@@ -2033,14 +2041,14 @@
                             <td class="py-3 px-4 text-xs space-x-2">${contacts.join(' ') || '—'}</td>
                             <td class="py-3 px-4">
                                 ${isSent ? `
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">TERKIRIM</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">🟢 SUDAH DIPOSTING</span>
                                 ` : `
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">PENDING</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">🟡 PROSPEK PENAWARAN</span>
                                 `}
                             </td>
                             <td class="py-3 px-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <button onclick="toggleKostSent('${escapeHtml(k.id)}', ${!isSent})" title="${isSent ? 'Tandai Pending' : 'Tandai Terkirim'}" class="p-1.5 rounded-lg border ${isSent ? 'border-amber-200 text-amber-600' : 'border-emerald-200 text-emerald-600'} hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    <button onclick="toggleKostSent('${escapeHtml(k.id)}', ${!isSent})" title="${isSent ? 'Tandai Sebagai Prospek / Belum Dipost' : 'Tandai Sudah Diposting'}" class="p-1.5 rounded-lg border ${isSent ? 'border-amber-200 text-amber-600' : 'border-emerald-200 text-emerald-600'} hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                                         <i data-lucide="${isSent ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
                                     </button>
                                     <button onclick="editKostModal('${escapeHtml(k.id)}')" title="Edit Data" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
@@ -2063,7 +2071,7 @@
                                     <th class="py-3 px-4">#ID</th>
                                     <th class="py-3 px-4">NAMA ITEM & DETAIL</th>
                                     <th class="py-3 px-4">KONTAK / SOSIAL MEDIA</th>
-                                    <th class="py-3 px-4">STATUS</th>
+                                    <th class="py-3 px-4">STATUS VISIBILITAS</th>
                                     <th class="py-3 px-4 text-right">AKSI</th>
                                 </tr>
                             </thead>
@@ -2081,7 +2089,7 @@
                             <div class="space-y-1.5">
                                 <div class="flex items-start justify-between gap-2">
                                     <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(k.name)}</h6>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${isSent ? 'TERKIRIM' : 'PENDING'}</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'}">${isSent ? '🟢 SUDAH DIPOST' : '🟡 PROSPEK'}</span>
                                 </div>
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(k.description || 'Tidak ada deskripsi')}</p>
                             </div>
@@ -2168,6 +2176,9 @@
                 name,
                 description,
                 status,
+                whatsapp,
+                instagram,
+                tiktok,
                 contact: { whatsapp, instagram, tiktok }
             };
 
@@ -2201,11 +2212,11 @@
                 const res = await fetch(`/api/kost/${encodeURIComponent(id)}/sent`, {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ sent: makeSent })
+                    body: JSON.stringify({ sent: makeSent, status: makeSent ? 'sent' : 'pending' })
                 });
                 const result = await res.json();
                 if (result.success) {
-                    showToast(makeSent ? 'Status diubah ke Terkirim.' : 'Status diubah ke Pending.', 'success');
+                    showToast(makeSent ? 'Status diubah: Sudah Diposting 🟢' : 'Status diubah: Prospek Penawaran 🟡', 'success');
                     loadKostList();
                     fetchStatus();
                 } else {
@@ -2508,11 +2519,12 @@
             try {
                 const res = await fetch('/api/welcome');
                 const data = await res.json();
-                if (data.success && data.welcome) {
+                const cfg = data.config || data.welcome || data.data;
+                if (cfg) {
                     const en = document.getElementById('welcomeEnabled');
                     const txt = document.getElementById('welcomeText');
-                    if (en) en.checked = Boolean(data.welcome.enabled);
-                    if (txt) txt.value = data.welcome.text || '';
+                    if (en) en.checked = Boolean(cfg.enabled);
+                    if (txt) txt.value = cfg.text || '';
                 }
             } catch {}
         }
@@ -2527,7 +2539,11 @@
                 const res = await fetch('/api/welcome', {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ enabled, text })
+                    body: JSON.stringify({
+                        config: { enabled, text },
+                        enabled,
+                        text
+                    })
                 });
                 const result = await res.json();
                 if (result.success) {

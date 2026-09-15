@@ -1589,9 +1589,16 @@ async function getKostById(idOrGroup, groupIdOrId = null) {
     return rows.length > 0 ? mapKostRow(rows[0]) : null;
 }
 
-async function searchKost(queryOrGroup, groupIdOrQuery = null) {
+async function searchKost(queryOrGroup, groupIdOrQuery = null, options = {}) {
     let targetQuery = queryOrGroup;
     let targetGroup = groupIdOrQuery;
+    let targetStatus = null;
+
+    if (typeof options === 'string') {
+        targetStatus = options;
+    } else if (options && typeof options === 'object') {
+        targetStatus = options.status || (options.onlySent ? 'sent' : null);
+    }
 
     if (typeof queryOrGroup === 'string' && queryOrGroup.endsWith('@g.us')) {
         targetGroup = queryOrGroup;
@@ -1619,21 +1626,28 @@ async function searchKost(queryOrGroup, groupIdOrQuery = null) {
         sql += ' AND group_id = ?';
         params.push(cleanGroupId);
     }
+
+    if (targetStatus && targetStatus !== 'all') {
+        sql += ' AND status = ?';
+        params.push(targetStatus.toLowerCase());
+    }
+
     sql += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
     const [rows] = await db.query(sql, params);
     return rows.map(mapKostRow);
 }
 
-async function addKost({ name, instagram = null, tiktok = null, whatsapp = null, addedBy = '', groupId = '' }) {
+async function addKost({ name, instagram = null, tiktok = null, whatsapp = null, status = 'pending', addedBy = '', groupId = '' }) {
     await ensureAllTables();
     const cleanName = String(name || '').trim();
     const cleanIg = cleanInstagramUsername(instagram);
     const cleanTt = cleanTiktokUsername(tiktok);
     const cleanWa = cleanWhatsappNumber(whatsapp);
     const cleanGroupId = groupId ? normalizeJid(groupId) : '';
+    const cleanStatus = (status && String(status).toLowerCase() === 'sent') ? 'sent' : 'pending';
 
     if (!cleanName) {
-        return { success: false, message: 'Nama kost wajib diisi.' };
+        return { success: false, message: 'Nama kost/item wajib diisi.' };
     }
     if (!cleanIg && !cleanTt && !cleanWa) {
         return { success: false, message: 'Minimal salah satu kontak (Instagram, TikTok, atau WhatsApp) wajib diisi.' };
@@ -1676,11 +1690,12 @@ async function addKost({ name, instagram = null, tiktok = null, whatsapp = null,
 
     const nextId = await generateNextKostIdFromDb();
     const now = new Date();
+    const isSent = cleanStatus === 'sent';
 
     await db.query(
         `INSERT INTO kost (id, group_id, name, instagram, tiktok, whatsapp, status, added_by, created_at, sent_by, sent_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, NULL, NULL)`,
-        [nextId, cleanGroupId, cleanName, cleanIg, cleanTt, cleanWa, addedBy || null, now]
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [nextId, cleanGroupId, cleanName, cleanIg, cleanTt, cleanWa, cleanStatus, addedBy || null, now, isSent ? (addedBy || 'admin') : null, isSent ? now : null]
     );
 
     const newRecord = {
@@ -1692,15 +1707,15 @@ async function addKost({ name, instagram = null, tiktok = null, whatsapp = null,
         instagram: cleanIg,
         tiktok: cleanTt,
         whatsapp: cleanWa,
-        status: 'pending',
+        status: cleanStatus,
         addedBy: addedBy || null,
         added_by: addedBy || null,
         createdAt: now.toISOString(),
         created_at: now.toISOString(),
-        sentBy: null,
-        sent_by: null,
-        sentAt: null,
-        sent_at: null
+        sentBy: isSent ? (addedBy || 'admin') : null,
+        sent_by: isSent ? (addedBy || 'admin') : null,
+        sentAt: isSent ? now.toISOString() : null,
+        sent_at: isSent ? now.toISOString() : null
     };
 
     return {

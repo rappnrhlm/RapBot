@@ -63,18 +63,17 @@ async function handleWelcome(sock, update) {
         }
 
         const template = config.text ||
-            '👋 Selamat datang @user di *@group*!\n\n' +
+            '👋 Selamat datang {user} di *{group}*!\n\n' +
             'Semoga betah di sini 🤙\n' +
             'Ketik !menu untuk melihat fitur bot.';
 
         const text = String(template)
-            .replace(/@user/g, `@${number}`)
-            .replace(/@group/g, groupName)
-            .replace(/@desc/g, groupDesc)
-            .replace(/@count/g, memberCount)
-            .replace(/@members/g, memberCount)
-            .replace(/@date/g, dateStr)
-            .replace(/@time/g, timeStr);
+            .replace(/(\{user\}|@user)/gi, `@${number}`)
+            .replace(/(\{group\}|@group)/gi, groupName)
+            .replace(/(\{desc\}|@desc)/gi, groupDesc)
+            .replace(/(\{count\}|@count|\{members\}|@members)/gi, memberCount)
+            .replace(/(\{date\}|@date)/gi, dateStr)
+            .replace(/(\{time\}|@time)/gi, timeStr);
 
         const mentions = [participantJid];
         if (displayJid && displayJid !== participantJid && !mentions.includes(displayJid)) {
