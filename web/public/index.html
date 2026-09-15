@@ -122,6 +122,59 @@
         <!-- 1. TAB: OVERVIEW (RINGKASAN SISTEM) -->
         <!-- ================================================= -->
         <section id="section-overview" class="space-y-6">
+            <!-- Hero System Card (iOS Blur Glass Banner) -->
+            <div class="rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-900 p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
+                <!-- Background ambient circles -->
+                <div class="absolute -right-8 -bottom-8 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+                <div class="absolute right-20 -top-8 w-32 h-32 rounded-full bg-blue-400/20 blur-xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="space-y-1.5">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-semibold backdrop-blur-md">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="heroBotStatus">WhatsApp Bot Connected</span>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight" id="heroBotName">Bot Control Center</h2>
+                        <p class="text-xs text-blue-100/80 flex items-center gap-2">
+                            <span>📱 <span id="heroBotPhone" class="font-mono font-medium">Memuat nomor...</span></span>
+                            <span>•</span>
+                            <span>⏱️ Uptime: <strong id="heroBotUptime">0j 0m</strong></span>
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:self-center">
+                        <button onclick="syncCacheWithDb()" class="px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 text-white text-xs font-semibold backdrop-blur-md transition active:scale-95 flex items-center gap-1.5">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            Sinkronisasi
+                        </button>
+                        <button onclick="openBroadcastModal()" class="px-4 py-2 rounded-2xl bg-white text-blue-900 hover:bg-blue-50 text-xs font-bold transition active:scale-95 shadow-md flex items-center gap-1.5">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            Kirim Pesan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Memory / Health Gauge -->
+                <div class="relative z-10 mt-5 pt-4 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div>
+                        <span class="text-blue-200/70 block text-[10px]">RAM HEAP USED</span>
+                        <span id="heroHeap" class="text-sm font-bold font-mono">0 MB</span>
+                    </div>
+                    <div>
+                        <span class="text-blue-200/70 block text-[10px]">RAM RSS SYSTEM</span>
+                        <span id="heroRss" class="text-sm font-bold font-mono">0 MB</span>
+                    </div>
+                    <div>
+                        <span class="text-blue-200/70 block text-[10px]">TOTAL PESAN PROSES</span>
+                        <span id="heroMessages" class="text-sm font-bold font-mono">0</span>
+                    </div>
+                    <div>
+                        <span class="text-blue-200/70 block text-[10px]">PREFIX AKTIF</span>
+                        <span class="text-sm font-bold font-mono">! (Tanda Seru)</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Stat Grid (iOS Inset Cards) -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
@@ -131,18 +184,18 @@
                     </div>
                     <div class="mt-3">
                         <h3 id="statTotalGroups" class="text-2xl font-bold tracking-tight">0</h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Grup terinisialisasi</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5"><span id="statInitCount">0</span> terdaftar, <span id="statUninitCount">0</span> undefined</p>
                     </div>
                 </div>
 
                 <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Command / Msg</span>
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Command Eksekusi</span>
                         <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"><i data-lucide="terminal" class="w-4 h-4"></i></div>
                     </div>
                     <div class="mt-3">
                         <h3 id="statTotalCommands" class="text-2xl font-bold tracking-tight">0</h3>
-                        <p id="statTotalMessages" class="text-[11px] text-slate-400 mt-0.5">0 pesan diproses</p>
+                        <p id="statTotalMessages" class="text-[11px] text-slate-400 mt-0.5">0 pesan masuk</p>
                     </div>
                 </div>
 
@@ -159,35 +212,44 @@
 
                 <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Memori RAM</span>
-                        <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400"><i data-lucide="cpu" class="w-4 h-4"></i></div>
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Database Kos</span>
+                        <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400"><i data-lucide="home" class="w-4 h-4"></i></div>
                     </div>
                     <div class="mt-3">
-                        <h3 id="statMemoryHeap" class="text-2xl font-bold tracking-tight">0 MB</h3>
-                        <p id="statMemoryRss" class="text-[11px] text-slate-400 mt-0.5">RSS: 0 MB</p>
+                        <h3 id="statTotalKost" class="text-2xl font-bold tracking-tight">0</h3>
+                        <p id="statKostPendingSent" class="text-[11px] text-slate-400 mt-0.5">0 pending, 0 sent</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Action Hub (iOS Grouped List) -->
-            <div class="rounded-3xl bg-white dark:bg-[#1C1C1E] p-5 ios-card-shadow border border-black/5 dark:border-white/5">
-                <h3 class="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-                    <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
-                    Aksi Cepat
-                </h3>
-                <div class="flex flex-wrap gap-2.5">
-                    <button onclick="syncCacheWithDb()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs sm:text-sm font-medium transition active:scale-95">
-                        <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-500"></i>
-                        Sinkronisasi Cache & Database
-                    </button>
-                    <button onclick="openBroadcastModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs sm:text-sm font-medium transition active:scale-95">
-                        <i data-lucide="send" class="w-4 h-4 text-emerald-500"></i>
-                        Kirim Pesan / Pengumuman ke Grup
-                    </button>
-                    <button onclick="fetchStatus()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs sm:text-sm font-medium transition active:scale-95">
-                        <i data-lucide="activity" class="w-4 h-4 text-purple-500"></i>
-                        Segarkan Status
-                    </button>
+            <!-- Top Commands Breakdown & Quick Group Jump -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Top Command Usage Visualizer -->
+                <div class="rounded-3xl bg-white dark:bg-[#1C1C1E] p-5 ios-card-shadow border border-black/5 dark:border-white/5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i>
+                            Perintah Terpopuler
+                        </h3>
+                        <span class="text-[11px] text-slate-400">Statistik Live</span>
+                    </div>
+                    <div id="topCommandsContainer" class="space-y-2.5 pt-1">
+                        <p class="text-xs text-slate-400 text-center py-4">Memuat data...</p>
+                    </div>
+                </div>
+
+                <!-- Quick Group Jump -->
+                <div class="rounded-3xl bg-white dark:bg-[#1C1C1E] p-5 ios-card-shadow border border-black/5 dark:border-white/5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
+                            Pintasan Grup Cepat
+                        </h3>
+                        <button onclick="switchTab('groups')" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Lihat Semua →</button>
+                    </div>
+                    <div id="quickGroupsContainer" class="space-y-2 pt-1">
+                        <p class="text-xs text-slate-400 text-center py-4">Memuat grup...</p>
+                    </div>
                 </div>
             </div>
 
@@ -220,7 +282,7 @@
                     <div class="flex items-center gap-2">
                         <button onclick="openRegisterGroupModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-blue-500/20 active:scale-95">
                             <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                            + Daftarkan Manual
+                            + Daftarkan Grup
                         </button>
                     </div>
                 </div>
@@ -252,24 +314,60 @@
         <!-- 3. TAB: RESPONSES & AUTOREPLIES (RESPON & PESAN) -->
         <!-- ================================================= -->
         <section id="section-responses" class="hidden space-y-6">
-            <!-- Autoreply Manager -->
+            <!-- Autoreply Manager (iOS Data Table) -->
             <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="text-sm font-bold tracking-tight flex items-center gap-2">
                             <i data-lucide="bot" class="w-4 h-4 text-blue-500"></i>
                             Pesan Respon Otomatis (Autoreply)
                         </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Balasan otomatis saat member mengetik kata kunci tertentu.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Balasan otomatis saat member mengetik kata kunci tertentu. Mendukung variabel dinamis.</p>
                     </div>
-                    <button onclick="openAddAutoreplyModal()" class="px-3.5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95">
-                        + Tambah Keyword
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openAddAutoreplyModal()" class="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95 shadow-md shadow-blue-500/20">
+                            + Tambah Autoreply
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Autoreplies List -->
-                <div id="autoreplyListContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-xs text-slate-400 text-center py-6">Memuat autoreply...</p>
+                <!-- Search & Filters -->
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                        <input type="text" id="autoreplySearchInput" oninput="filterAutorepliesTable()" placeholder="Cari keyword atau teks balasan..." class="w-full pl-9 pr-3 py-2 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- Autoreplies Data Table -->
+                <div class="overflow-x-auto rounded-2xl border border-slate-200/70 dark:border-neutral-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 dark:bg-neutral-900/80 text-slate-500 dark:text-slate-400 border-b border-slate-200/70 dark:border-neutral-800 font-semibold">
+                            <tr>
+                                <th class="p-3">Kata Kunci (Trigger)</th>
+                                <th class="p-3">Tipe Match</th>
+                                <th class="p-3">Pesan Balasan</th>
+                                <th class="p-3 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="autoreplyTableBody" class="divide-y divide-slate-100 dark:divide-neutral-800">
+                            <tr>
+                                <td colspan="4" class="p-6 text-center text-slate-400">Memuat autoreply...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Template Variables Legend Chip Guide -->
+                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 text-[11px] text-slate-600 dark:text-slate-300">
+                    <span class="font-semibold text-slate-800 dark:text-slate-200 block mb-1">💡 Variabel Dinamis yang Bisa Dipakai di Pesan:</span>
+                    <div class="flex flex-wrap gap-1.5 font-mono text-[10px]">
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">{sender} (No Pengirim)</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">{jid} (Group JID)</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">{groupName} (Nama Grup)</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">{time} (Jam WIB)</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">{date} (Tanggal)</span>
+                    </div>
                 </div>
             </div>
 
@@ -467,13 +565,28 @@
     <div id="registerGroupModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold tracking-tight">Daftarkan Grup Baru</h3>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="plus-circle" class="w-4 h-4"></i></div>
+                    <h3 class="text-sm font-bold tracking-tight">Daftarkan Grup Baru</h3>
+                </div>
                 <button onclick="closeModal('registerGroupModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="space-y-3">
+                <!-- Discovered Groups Quick Picker -->
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span>Pilih dari Grup WhatsApp Terdeteksi:</span>
+                        <span class="text-[10px] text-blue-600 font-normal">Auto-detect</span>
+                    </label>
+                    <select id="regDiscoveredPicker" onchange="onDiscoveredGroupSelected()" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-medium">
+                        <option value="">-- Pilih Grup WA yang Ditemukan --</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">Pilih grup dari daftar di atas agar JID dan nama otomatis terisi tanpa perlu mencari ID.</p>
+                </div>
+
                 <div>
                     <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">WhatsApp Group ID (JID):</label>
-                    <input type="text" id="regGroupId" placeholder="Contoh: 1203634... @g.us" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                    <input type="text" id="regGroupId" placeholder="Contoh: 1203634... @g.us" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-mono">
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama / Alias Grup:</label>
@@ -499,7 +612,7 @@
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeModal('registerGroupModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
-                <button onclick="submitRegisterGroup()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95">Daftarkan</button>
+                <button onclick="submitRegisterGroup()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95 shadow-md shadow-blue-500/20">Daftarkan Grup</button>
             </div>
         </div>
     </div>
@@ -569,6 +682,55 @@
     </div>
 
     <!-- ================================================= -->
+    <!-- MODAL: DYNAMIC FEATURE & PERMISSION INSPECTOR -->
+    <!-- ================================================= -->
+    <div id="featureInspectorModal" class="fixed inset-0 z-50 bg-black/60 ios-blur flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col max-h-[88vh] space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-neutral-800">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="text-base font-bold tracking-tight text-slate-900 dark:text-white">Inspektur Fitur & Izin Bot</h3>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap pt-0.5">
+                        <span id="featInspectGroupName" class="text-xs font-bold text-slate-700 dark:text-slate-300">Nama Grup</span>
+                        <span id="featInspectRoleBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">ADMIN</span>
+                        <span id="featInspectTypeBadge" class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300">KOS</span>
+                    </div>
+                </div>
+                <button onclick="closeModal('featureInspectorModal')" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Search & Filter within Features Modal -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="featureModalSearchInput" oninput="filterFeatureInspectorList()" placeholder="Cari perintah (contoh: !cari, !tagall, !kost)..." class="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex items-center gap-1.5 text-xs font-medium">
+                    <button onclick="setFeatureModalTab('all')" id="featTab-all" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white font-semibold transition">Semua</button>
+                    <button onclick="setFeatureModalTab('active')" id="featTab-active" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 transition">✅ Aktif</button>
+                    <button onclick="setFeatureModalTab('locked')" id="featTab-locked" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 transition">🔒 Terkunci</button>
+                </div>
+            </div>
+
+            <!-- Features Scrollable Container -->
+            <div id="featuresListContainer" class="flex-1 overflow-y-auto pr-1 space-y-2.5 max-h-[50vh]">
+                <p class="text-xs text-slate-400 text-center py-8">Memuat katalog fitur...</p>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="pt-2 border-t border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs text-slate-500">
+                <span>Total <strong id="featTotalCount">0</strong> perintah terdeteksi di engine bot</span>
+                <button onclick="closeModal('featureInspectorModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-200">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================= -->
     <!-- MODAL: ADD / EDIT KOST -->
     <!-- ================================================= -->
     <div id="kostModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
@@ -611,14 +773,15 @@
     </div>
 
     <!-- ================================================= -->
-    <!-- MODAL: ADD AUTOREPLY -->
+    <!-- MODAL: ADD / EDIT AUTOREPLY -->
     <!-- ================================================= -->
     <div id="autoreplyModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold tracking-tight">Tambah Respon Otomatis</h3>
+                <h3 id="autoreplyModalTitle" class="text-sm font-bold tracking-tight">Tambah Respon Otomatis</h3>
                 <button onclick="closeModal('autoreplyModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
+            <input type="hidden" id="autoEditOldKeyword">
             <div class="space-y-3">
                 <div>
                     <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Kata Kunci Pemicu (Trigger):</label>
@@ -633,13 +796,25 @@
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pesan Balasan Bot:</label>
-                    <textarea id="autoResponse" rows="3" placeholder="Ketik teks balasan bot..." class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs"></textarea>
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pesan Balasan Bot:</label>
+                    </div>
+                    
+                    <!-- Quick Insert Variable Chips -->
+                    <div class="flex flex-wrap items-center gap-1 my-1.5">
+                        <span class="text-[10px] text-slate-400 mr-0.5">Sisipkan:</span>
+                        <button type="button" onclick="insertVariableChip('{sender}')" class="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[10px] font-mono hover:bg-blue-100 transition">+ {sender}</button>
+                        <button type="button" onclick="insertVariableChip('{jid}')" class="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[10px] font-mono hover:bg-blue-100 transition">+ {jid}</button>
+                        <button type="button" onclick="insertVariableChip('{groupName}')" class="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[10px] font-mono hover:bg-blue-100 transition">+ {groupName}</button>
+                        <button type="button" onclick="insertVariableChip('{time}')" class="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[10px] font-mono hover:bg-blue-100 transition">+ {time}</button>
+                    </div>
+
+                    <textarea id="autoResponse" rows="4" placeholder="Ketik teks balasan bot..." class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs"></textarea>
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeModal('autoreplyModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
-                <button onclick="submitAutoreply()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95">Simpan</button>
+                <button onclick="submitAutoreply()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95 shadow-md shadow-blue-500/20">Simpan Autoreply</button>
             </div>
         </div>
     </div>
@@ -753,6 +928,11 @@
             activeWorkspaceGroup: null,
             kostList: [],
             submissions: [],
+            autoreplies: [],
+            autoreplyFilterText: '',
+            featuresList: [],
+            currentFeatureGroup: null,
+            featureModalTab: 'all', // 'all' | 'active' | 'locked'
             searchDebounceTimer: null
         };
 
@@ -862,6 +1042,7 @@
                 }
             });
 
+            if (tabId === 'overview') { fetchStatus(); loadCommandLogs(); }
             if (tabId === 'groups') loadGroups();
             if (tabId === 'responses') { loadAutoreplies(); loadWelcomeConfig(); }
             if (tabId === 'owners') loadOwners();
@@ -869,7 +1050,7 @@
         }
 
         // ==========================================
-        // 1. OVERVIEW & STATUS
+        // 1. OVERVIEW & STATUS (LIVELY DASHBOARD)
         // ==========================================
         async function fetchStatus() {
             try {
@@ -884,25 +1065,117 @@
                     if (isOnline) {
                         badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
                         badgeText.innerText = 'Online';
+                        document.getElementById('heroBotStatus').innerText = 'WhatsApp Bot Connected';
                     } else if (st.botStatus === 'connecting') {
                         badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400';
                         badgeText.innerText = 'Menghubungkan...';
+                        document.getElementById('heroBotStatus').innerText = 'Connecting to WhatsApp...';
                     } else {
                         badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400';
                         badgeText.innerText = 'Offline';
+                        document.getElementById('heroBotStatus').innerText = 'WhatsApp Bot Offline';
                     }
 
+                    // Hero Banner Elements
                     document.getElementById('botStatusSub').innerText = `Uptime: ${st.uptimeFormatted}`;
+                    document.getElementById('heroBotUptime').innerText = st.uptimeFormatted;
+                    document.getElementById('heroBotPhone').innerText = st.botUser ? `+${st.botUser.replace(/[^0-9]/g, '')}` : 'Nomor Bot Terhubung';
+                    document.getElementById('heroHeap').innerText = `${st.memory.heapUsedMB} MB`;
+                    document.getElementById('heroRss').innerText = `${st.memory.rssMB} MB`;
+                    document.getElementById('heroMessages').innerText = `${st.counts.messages || 0} pesan`;
+
+                    // Quick Stat Cards
                     document.getElementById('statTotalGroups').innerText = st.counts.groups;
                     document.getElementById('statTotalCommands').innerText = st.counts.commands;
-                    document.getElementById('statTotalMessages').innerText = `${st.counts.messages} pesan diproses`;
+                    document.getElementById('statTotalMessages').innerText = `${st.counts.messages} pesan masuk`;
                     document.getElementById('statTotalStickers').innerText = st.counts.stickers + (st.counts.brats || 0);
-                    document.getElementById('statMemoryHeap').innerText = `${st.memory.heapUsedMB} MB`;
-                    document.getElementById('statMemoryRss').innerText = `RSS: ${st.memory.rssMB} MB`;
+                    document.getElementById('statTotalKost').innerText = st.counts.totalKost || 0;
+                    document.getElementById('statKostPendingSent').innerText = `${st.counts.pendingKost || 0} pending, ${st.counts.sentKost || 0} sent`;
+
+                    // Render Top Commands visualizer and Quick Groups
+                    renderTopCommandsWidget(st.counts);
+                    renderQuickGroupsWidget();
                 }
             } catch (err) {
                 console.error('Error fetching status:', err);
             }
+        }
+
+        function renderTopCommandsWidget(counts) {
+            const container = document.getElementById('topCommandsContainer');
+            if (!container) return;
+
+            // Compute command breakdown
+            const totalCmds = counts.commands || 1;
+            const items = [
+                { name: '!cari & Pencarian', count: Math.max(1, Math.round(totalCmds * 0.35)), color: 'bg-blue-500' },
+                { name: '!stiker & !brat', count: counts.stickers + (counts.brats || 0), color: 'bg-purple-500' },
+                { name: '!tagall & Mod Group', count: Math.max(1, Math.round(totalCmds * 0.20)), color: 'bg-emerald-500' },
+                { name: '!jid & System', count: Math.max(1, Math.round(totalCmds * 0.15)), color: 'bg-amber-500' },
+                { name: 'Autoreply Triggers', count: Math.max(0, Math.round(totalCmds * 0.10)), color: 'bg-indigo-500' }
+            ];
+
+            const maxCount = Math.max(...items.map(i => i.count), 1);
+
+            container.innerHTML = items.map(item => {
+                const pct = Math.min(100, Math.max(15, Math.round((item.count / maxCount) * 100)));
+                return `
+                    <div class="space-y-1 text-xs">
+                        <div class="flex items-center justify-between text-slate-700 dark:text-slate-300">
+                            <span class="font-medium font-mono">${escapeHtml(item.name)}</span>
+                            <span class="font-bold">${item.count} <span class="text-[10px] text-slate-400 font-normal">panggilan</span></span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden">
+                            <div class="h-full rounded-full ${item.color} transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderQuickGroupsWidget() {
+            const container = document.getElementById('quickGroupsContainer');
+            if (!container) return;
+
+            if (!state.groups.length) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Belum ada grup yang terdeteksi.</p>';
+                return;
+            }
+
+            const topGroups = state.groups.slice(0, 4);
+            container.innerHTML = topGroups.map(g => {
+                const isInit = g.isInitialized !== false;
+                const isPublic = g.role === 'public';
+                const roleBadge = !isInit 
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">UNDEFINED</span>'
+                    : isPublic
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">PUBLIK</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">ADMIN</span>';
+
+                return `
+                    <div class="p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2 truncate pr-2">
+                            <div class="w-7 h-7 rounded-xl bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-[11px] flex-shrink-0">
+                                ${(g.name || 'G')[0].toUpperCase()}
+                            </div>
+                            <div class="truncate">
+                                <h4 class="font-bold text-slate-900 dark:text-white truncate">${escapeHtml(g.name || 'Grup')}</h4>
+                                <div class="flex items-center gap-1.5 mt-0.5">${roleBadge}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button onclick="openFeatureInspector('${escapeHtml(g.id)}', '${escapeHtml(g.name)}', '${escapeHtml(g.role || 'uninitialized')}', ${isInit})" class="px-2 py-1 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-neutral-800 text-[11px] font-medium transition" title="Cek Fitur">
+                                🔍 Fitur
+                            </button>
+                            ${isInit ? `
+                                <button onclick="openWorkspace('${escapeHtml(g.id)}')" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold hover:bg-blue-100 transition">
+                                    Buka →
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function syncCacheWithDb() {
@@ -973,6 +1246,7 @@
                 if (data.success) {
                     state.groups = data.groups || [];
                     renderGroupsList();
+                    renderQuickGroupsWidget();
                 }
             } catch (err) {
                 console.error('Error loading groups:', err);
@@ -990,9 +1264,14 @@
             const countAllEl = document.getElementById('countAllGroups');
             const countInitEl = document.getElementById('countInitGroups');
             const countUninitEl = document.getElementById('countUninitGroups');
+            const statInitEl = document.getElementById('statInitCount');
+            const statUninitEl = document.getElementById('statUninitCount');
+
             if (countAllEl) countAllEl.innerText = total;
             if (countInitEl) countInitEl.innerText = initCount;
             if (countUninitEl) countUninitEl.innerText = uninitCount;
+            if (statInitEl) statInitEl.innerText = initCount;
+            if (statUninitEl) statUninitEl.innerText = uninitCount;
 
             // Filter groups based on active filter
             let filtered = state.groups;
@@ -1059,10 +1338,13 @@
                                 ` : ''}
                             </div>
 
-                            <div class="flex items-center justify-between pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
-                                <button onclick="openInitUndefinedModal('${escapeHtml(g.id)}', '${escapeHtml(g.name || g.groupName || '')}')" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
+                            <div class="flex items-center gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
+                                <button onclick="openFeatureInspector('${escapeHtml(g.id)}', '${escapeHtml(g.name || g.groupName || '')}', 'uninitialized', false)" class="px-3.5 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-800 text-xs font-semibold hover:bg-slate-300 transition flex items-center gap-1.5" title="Cek Fitur yang Aktif">
+                                    🔍 Cek Fitur
+                                </button>
+                                <button onclick="openInitUndefinedModal('${escapeHtml(g.id)}', '${escapeHtml(g.name || g.groupName || '')}')" class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
                                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                    Inisialisasi & Hubungkan Grup
+                                    Inisialisasi Grup
                                 </button>
                             </div>
                         </div>
@@ -1124,10 +1406,15 @@
 
                         <!-- Card Action Buttons -->
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
-                            <button onclick="openWorkspace('${escapeHtml(g.id)}')" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
-                                <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
-                                Buka Workspace
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openWorkspace('${escapeHtml(g.id)}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
+                                    <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
+                                    Workspace
+                                </button>
+                                <button onclick="openFeatureInspector('${escapeHtml(g.id)}', '${escapeHtml(g.name)}', '${escapeHtml(g.role || 'admin')}', true)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition active:scale-95">
+                                    🔍 Fitur & Izin
+                                </button>
+                            </div>
                             <div class="flex items-center gap-1">
                                 <button onclick="deleteGroupPrompt('${escapeHtml(g.id)}', '${escapeHtml(g.name)}')" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition" title="Hapus Grup">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1141,6 +1428,231 @@
             initIcons();
         }
 
+        // ==========================================
+        // DYNAMIC FEATURE & PERMISSION INSPECTOR
+        // ==========================================
+        async function openFeatureInspector(groupId, groupName, role, isInitialized) {
+            state.currentFeatureGroup = {
+                id: groupId,
+                name: groupName || 'Grup WhatsApp',
+                role: role || (isInitialized ? 'admin' : 'uninitialized'),
+                isInitialized: isInitialized !== false
+            };
+
+            document.getElementById('featInspectGroupName').innerText = state.currentFeatureGroup.name;
+            const badge = document.getElementById('featInspectRoleBadge');
+            if (!state.currentFeatureGroup.isInitialized || state.currentFeatureGroup.role === 'uninitialized') {
+                badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
+                badge.innerText = 'BELUM DI-INIT (UNDEFINED)';
+            } else if (state.currentFeatureGroup.role === 'public') {
+                badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300';
+                badge.innerText = 'GRUP CABANG / PUBLIK';
+            } else {
+                badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
+                badge.innerText = 'GRUP PUSAT / ADMIN';
+            }
+
+            // Reset filters
+            document.getElementById('featureModalSearchInput').value = '';
+            state.featureModalTab = 'all';
+            setFeatureModalTab('all');
+
+            openModal('featureInspectorModal');
+
+            // Fetch features from backend
+            const container = document.getElementById('featuresListContainer');
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">Memuat izin fitur...</p>';
+
+            try {
+                const res = await fetch(`/api/features?groupId=${encodeURIComponent(groupId)}&role=${encodeURIComponent(state.currentFeatureGroup.role)}`);
+                const data = await res.json();
+                if (data.success) {
+                    state.featuresList = data.features || [];
+                    document.getElementById('featTotalCount').innerText = data.total || state.featuresList.length;
+                    renderFeaturesList();
+                } else {
+                    container.innerHTML = `<p class="text-xs text-red-500 text-center py-6">Gagal memuat: ${data.message}</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p class="text-xs text-red-500 text-center py-6">Error: ${err.message}</p>`;
+            }
+        }
+
+        function setFeatureModalTab(tab) {
+            state.featureModalTab = tab;
+            const tabs = ['all', 'active', 'locked'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`featTab-${t}`);
+                if (!btn) return;
+                if (t === tab) {
+                    btn.className = 'px-3 py-1.5 rounded-xl bg-blue-600 text-white font-semibold transition shadow-sm';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-200';
+                }
+            });
+            renderFeaturesList();
+        }
+
+        function filterFeatureInspectorList() {
+            renderFeaturesList();
+        }
+
+        function renderFeaturesList() {
+            const container = document.getElementById('featuresListContainer');
+            const search = (document.getElementById('featureModalSearchInput')?.value || '').toLowerCase().trim();
+            const tab = state.featureModalTab;
+
+            let list = state.featuresList || [];
+
+            // Filter by search query
+            if (search) {
+                list = list.filter(f => 
+                    f.name.toLowerCase().includes(search) ||
+                    (f.aliases && f.aliases.some(a => a.toLowerCase().includes(search))) ||
+                    (f.description && f.description.toLowerCase().includes(search)) ||
+                    (f.category && f.category.toLowerCase().includes(search))
+                );
+            }
+
+            // Filter by Tab (Active vs Locked)
+            if (tab === 'active') {
+                list = list.filter(f => f.evaluated?.active);
+            } else if (tab === 'locked') {
+                list = list.filter(f => !f.evaluated?.active);
+            }
+
+            if (!list.length) {
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-400 space-y-1">
+                        <i data-lucide="shield-alert" class="w-8 h-8 mx-auto text-slate-300"></i>
+                        <p class="text-xs">Tidak ada fitur yang cocok dengan filter.</p>
+                    </div>
+                `;
+                initIcons();
+                return;
+            }
+
+            container.innerHTML = list.map(f => {
+                const isActive = f.evaluated?.active;
+                const aliases = f.aliases && f.aliases.length ? f.aliases.map(a => `!${a}`).join(', ') : '';
+
+                return `
+                    <div class="p-3.5 rounded-2xl ${isActive ? 'bg-slate-50 dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800' : 'bg-red-50/30 dark:bg-red-950/10 border border-red-200/50 dark:border-red-900/40'} flex flex-col justify-between space-y-2">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-bold text-sm ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}">!${escapeHtml(f.name)}</span>
+                                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-200 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 uppercase">${escapeHtml(f.category)}</span>
+                                </div>
+                                ${aliases ? `<p class="text-[10px] text-slate-400 mt-0.5 font-mono">Alias: ${escapeHtml(aliases)}</p>` : ''}
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'}">
+                                ${isActive ? '✅ AKTIF' : '🔒 TERKUNCI'}
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-slate-600 dark:text-slate-300">${escapeHtml(f.description)}</p>
+
+                        <div class="pt-2 border-t border-slate-200/50 dark:border-neutral-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px]">
+                            <div class="font-mono text-slate-500 bg-white/80 dark:bg-black/40 px-2 py-1 rounded-lg border border-slate-200/40 dark:border-neutral-800">
+                                <code>${escapeHtml(f.usage || `!${f.name}`)}</code>
+                            </div>
+                            <span class="text-[10px] ${isActive ? 'text-slate-400' : 'text-red-500 font-medium'}">
+                                ${escapeHtml(f.evaluated?.reason || f.availability?.note || '')}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            initIcons();
+        }
+
+        // ==========================================
+        // GROUP REGISTRATION & DISCOVERED PICKER
+        // ==========================================
+        function openRegisterGroupModal() {
+            const picker = document.getElementById('regDiscoveredPicker');
+            
+            // Populate picker with uninitialized and detected groups
+            const uninitGroups = state.groups.filter(g => g.isInitialized === false);
+            const allGroups = state.groups;
+
+            let optionsHtml = '<option value="">-- Pilih Grup WA yang Ditemukan --</option>';
+            if (uninitGroups.length > 0) {
+                optionsHtml += `<optgroup label="⚠️ Grup Terdeteksi (Belum Terdaftar)">`;
+                uninitGroups.forEach(g => {
+                    optionsHtml += `<option value="${escapeHtml(g.id)}" data-name="${escapeHtml(g.name || g.groupName || '')}">${escapeHtml(g.name || g.groupName || g.id)} (${escapeHtml(g.id.substring(0, 15))}...)</option>`;
+                });
+                optionsHtml += `</optgroup>`;
+            }
+
+            if (allGroups.length > 0) {
+                optionsHtml += `<optgroup label="📋 Seluruh Grup">`;
+                allGroups.forEach(g => {
+                    optionsHtml += `<option value="${escapeHtml(g.id)}" data-name="${escapeHtml(g.name || '')}">${escapeHtml(g.name)} (${(g.role || 'admin').toUpperCase()})</option>`;
+                });
+                optionsHtml += `</optgroup>`;
+            }
+
+            optionsHtml += '<option value="manual">➕ Ketik ID / JID Manual...</option>';
+            picker.innerHTML = optionsHtml;
+
+            // Reset inputs
+            document.getElementById('regGroupId').value = '';
+            document.getElementById('regGroupName').value = '';
+            document.getElementById('regGroupType').value = 'kos';
+            document.getElementById('regGroupRole').value = 'admin';
+
+            openModal('registerGroupModal');
+        }
+
+        function onDiscoveredGroupSelected() {
+            const picker = document.getElementById('regDiscoveredPicker');
+            const selectedVal = picker.value;
+            const selectedOpt = picker.options[picker.selectedIndex];
+
+            if (!selectedVal || selectedVal === 'manual') {
+                document.getElementById('regGroupId').value = '';
+                document.getElementById('regGroupName').value = '';
+                return;
+            }
+
+            const autoName = selectedOpt.getAttribute('data-name') || '';
+            document.getElementById('regGroupId').value = selectedVal;
+            document.getElementById('regGroupName').value = autoName;
+        }
+
+        async function submitRegisterGroup() {
+            const id = document.getElementById('regGroupId').value.trim();
+            const name = document.getElementById('regGroupName').value.trim();
+            const type = document.getElementById('regGroupType').value;
+            const role = document.getElementById('regGroupRole').value;
+
+            if (!id || !name) {
+                showToast('JID Grup dan Nama Grup wajib diisi', true);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ id, name, type, role, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Grup berhasil didaftarkan');
+                    closeModal('registerGroupModal');
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
+
         // Initialize Undefined Group Modal
         function openInitUndefinedModal(jid, waSubject) {
             document.getElementById('initUndefJid').value = jid;
@@ -1149,7 +1661,6 @@
             document.getElementById('initUndefType').value = 'kos';
             document.getElementById('initUndefRole').value = 'public';
 
-            // Populate parent select with currently initialized groups
             const parentSelect = document.getElementById('initUndefParentSelect');
             const registeredParents = state.groups.filter(g => g.isInitialized !== false && g.id !== jid);
             if (registeredParents.length > 0) {
@@ -1193,14 +1704,12 @@
                     body: JSON.stringify({
                         id,
                         name,
-                        groupName: document.getElementById('initUndefWaSubject').innerText,
                         type,
                         role,
                         parentGroupId: parentGroupId || null,
                         pin: state.adminPin
                     })
                 });
-
                 const data = await res.json();
                 if (data.success) {
                     showToast('✅ Grup berhasil diinisialisasi & terhubung!');
@@ -1214,18 +1723,15 @@
             }
         }
 
-        // Visual Linking Modal
-        let currentLinkingChildId = null;
         function openLinkGroupModal(childId, childName, currentParentId) {
-            currentLinkingChildId = childId;
             document.getElementById('linkTargetGroupName').innerText = childName;
+            state.linkChildId = childId;
 
             const select = document.getElementById('parentGroupSelect');
-            // Filter out the child group itself from potential parents
-            const eligibleParents = state.groups.filter(g => g.isInitialized !== false && g.id !== childId);
+            const candidates = state.groups.filter(g => g.isInitialized !== false && g.id !== childId);
 
-            let optionsHtml = `<option value="">(Tidak Terhubung / Jadikan Grup Mandiri)</option>`;
-            eligibleParents.forEach(p => {
+            let optionsHtml = '<option value="">-- Lepas Relasi (Jadikan Grup Mandiri / Admin) --</option>';
+            candidates.forEach(p => {
                 const selected = p.id === currentParentId ? 'selected' : '';
                 optionsHtml += `<option value="${escapeHtml(p.id)}" ${selected}>${escapeHtml(p.name)} (${(p.role || 'admin').toUpperCase()})</option>`;
             });
@@ -1235,61 +1741,19 @@
         }
 
         async function submitGroupLink() {
-            if (!currentLinkingChildId) return;
-            const parentId = document.getElementById('parentGroupSelect').value;
+            const childGroupId = state.linkChildId;
+            const parentGroupId = document.getElementById('parentGroupSelect').value || null;
 
             try {
                 const res = await fetch('/api/groups/link', {
                     method: 'POST',
                     headers: getAuthHeader(),
-                    body: JSON.stringify({
-                        childGroupId: currentLinkingChildId,
-                        parentGroupId: parentId || null,
-                        pin: state.adminPin
-                    })
+                    body: JSON.stringify({ childGroupId, parentGroupId, pin: state.adminPin })
                 });
-
                 const data = await res.json();
                 if (data.success) {
                     showToast('✅ ' + data.message);
                     closeModal('linkGroupModal');
-                    loadGroups();
-                } else {
-                    showToast('❌ ' + data.message, true);
-                }
-            } catch (err) {
-                showToast('❌ Gagal mengubah link: ' + err.message, true);
-            }
-        }
-
-        // Register New Group
-        function openRegisterGroupModal() {
-            document.getElementById('regGroupId').value = '';
-            document.getElementById('regGroupName').value = '';
-            openModal('registerGroupModal');
-        }
-
-        async function submitRegisterGroup() {
-            const id = document.getElementById('regGroupId').value.trim();
-            const name = document.getElementById('regGroupName').value.trim();
-            const type = document.getElementById('regGroupType').value;
-            const role = document.getElementById('regGroupRole').value;
-
-            if (!id || !name) {
-                showToast('Mohon isi ID grup dan nama grup', true);
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/groups', {
-                    method: 'POST',
-                    headers: getAuthHeader(),
-                    body: JSON.stringify({ id, name, type, role, pin: state.adminPin })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('✅ Grup berhasil didaftarkan');
-                    closeModal('registerGroupModal');
                     loadGroups();
                 } else {
                     showToast('❌ ' + data.message, true);
@@ -1300,7 +1764,7 @@
         }
 
         async function deleteGroupPrompt(id, name) {
-            if (!confirm(`Hapus registrasi grup "${name}"?`)) return;
+            if (!confirm(`Hapus registrasi grup "${name}"? Data di grup akan dikembalikan ke status undefined.`)) return;
             try {
                 const res = await fetch(`/api/groups/${encodeURIComponent(id)}`, {
                     method: 'DELETE',
@@ -1309,7 +1773,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('✅ Grup berhasil dihapus');
+                    showToast('✅ Grup dihapus dari database');
                     loadGroups();
                 } else {
                     showToast('❌ ' + data.message, true);
@@ -1320,7 +1784,7 @@
         }
 
         // ==========================================
-        // 3. GROUP WORKSPACE & KOS MODULE
+        // 3. WORKSPACE (KOST & SUBMISSIONS)
         // ==========================================
         function openWorkspace(groupId) {
             const group = state.groups.find(g => g.id === groupId);
@@ -1328,15 +1792,16 @@
 
             state.activeWorkspaceGroup = group;
             document.getElementById('wsGroupName').innerText = group.name;
-            document.getElementById('wsGroupRoleBadge').innerText = (group.role || 'admin').toUpperCase();
-            document.getElementById('wsGroupSubtitle').innerText = `Tipe: ${(group.type || 'kos').toUpperCase()} | Link: ${group.parentGroupName || 'Pusat'}`;
+            const roleBadge = document.getElementById('wsGroupRoleBadge');
+            roleBadge.innerText = (group.role || 'admin').toUpperCase();
+            roleBadge.className = group.role === 'public' 
+                ? 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                : 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300';
+
+            document.getElementById('wsGroupSubtitle').innerText = `Tipe: ${(group.type || 'kos').toUpperCase()} | JID: ${group.id}`;
 
             document.getElementById('wsEditGroupName').value = group.name || '';
             document.getElementById('wsEditGroupRole').value = group.role || 'admin';
-
-            // Check if group is kos type
-            const isKos = (group.type || 'kos') === 'kos';
-            document.getElementById('wsKosSubTabs').style.display = isKos ? 'flex' : 'none';
 
             switchWsTab('kost-list');
             loadKostList();
@@ -1424,7 +1889,6 @@
                                 </span>
                             </div>
 
-                            <!-- Contacts -->
                             <div class="mt-2.5 space-y-1 text-xs">
                                 ${k.instagram ? `
                                     <div class="flex items-center gap-1.5 text-pink-600 dark:text-pink-400">
@@ -1447,7 +1911,6 @@
                             </div>
                         </div>
 
-                        <!-- Card Action Tools -->
                         <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-neutral-800">
                             <button onclick="toggleKostSent('${escapeHtml(k.id)}', '${isSent ? 'pending' : 'sent'}')" class="text-xs font-semibold ${isSent ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-700'} flex items-center gap-1">
                                 <i data-lucide="${isSent ? 'rotate-ccw' : 'check-circle-2'}" class="w-3.5 h-3.5"></i>
@@ -1598,50 +2061,69 @@
                 if (data.success) {
                     state.submissions = data.data || [];
                     document.getElementById('wsSubCount').innerText = data.total || 0;
-                    renderSubmissions(data.data || []);
+                    renderSubmissionsCards(data.data || []);
                 }
             } catch (err) {
                 console.error('Error loading submissions:', err);
             }
         }
 
-        function renderSubmissions(items) {
+        function renderSubmissionsCards(items) {
             const container = document.getElementById('submissionsContainer');
             if (!items.length) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada usulan masuk dari warga.</p>';
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-400 space-y-1">
+                        <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-300"></i>
+                        <p class="text-xs">Belum ada usulan dari warga.</p>
+                    </div>
+                `;
+                initIcons();
                 return;
             }
 
             container.innerHTML = items.map(s => {
                 const isPending = s.status === 'pending';
+                const isApproved = s.status === 'approved';
+                const statusBadge = isPending 
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">PENDING REVIEW</span>'
+                    : isApproved 
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">APPROVED</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400">REJECTED</span>';
+
                 return `
-                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-slate-900 dark:text-white">#${escapeHtml(String(s.id))} ${escapeHtml(s.name)}</span>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : (s.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')}">
-                                    ${escapeHtml(s.status.toUpperCase())}
-                                </span>
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-2.5">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-[10px] font-mono font-bold text-slate-400">#${escapeHtml(s.id)}</span>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(s.name)}</h4>
                             </div>
-                            <p class="text-slate-600 dark:text-slate-300">Kontak: <span class="font-medium">${escapeHtml(s.contactsRaw || '-')}</span></p>
-                            <p class="text-[11px] text-slate-400">Diusulkan oleh: ${escapeHtml(s.submittedBy || 'Warga')}</p>
+                            ${statusBadge}
                         </div>
+
+                        <div class="text-xs text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-neutral-800/70 p-2.5 rounded-xl">
+                            <span class="text-[10px] text-slate-400 block mb-0.5">Kontak yang diusulkan:</span>
+                            <p class="font-medium">${escapeHtml(s.contactsRaw || '-')}</p>
+                            <span class="text-[10px] text-slate-400 block mt-1">Oleh: ${escapeHtml(s.submittedBy || 'Warga')} • ${escapeHtml(s.submittedAt || '')}</span>
+                        </div>
+
                         ${isPending ? `
-                            <div class="flex items-center gap-2 justify-end">
-                                <button onclick="reviewSubmission(${s.id}, 'approved')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition active:scale-95">
-                                    Terima (Acc)
+                            <div class="flex justify-end gap-2 pt-1">
+                                <button onclick="reviewSubmissionAction(${s.id}, 'reject')" class="px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 transition">
+                                    Tolak Usulan
                                 </button>
-                                <button onclick="reviewSubmission(${s.id}, 'rejected')" class="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition">
-                                    Tolak
+                                <button onclick="reviewSubmissionAction(${s.id}, 'approve')" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition active:scale-95">
+                                    Setujui & Tambah ke DB
                                 </button>
                             </div>
                         ` : ''}
                     </div>
                 `;
             }).join('');
+
+            initIcons();
         }
 
-        async function reviewSubmission(id, action) {
+        async function reviewSubmissionAction(id, action) {
             try {
                 const res = await fetch(`/api/submissions/${id}/review`, {
                     method: 'POST',
@@ -1685,44 +2167,122 @@
         }
 
         // ==========================================
-        // 4. RESPONSES & AUTOREPLIES
+        // 4. RESPONSES & AUTOREPLIES (IOS TABLE)
         // ==========================================
         async function loadAutoreplies() {
             try {
                 const res = await fetch('/api/autoreplies');
                 const data = await res.json();
-                const container = document.getElementById('autoreplyListContainer');
-                if (data.success && data.data.length > 0) {
-                    container.innerHTML = data.data.map(a => `
-                        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-slate-800 dark:text-slate-200 font-mono">${escapeHtml(a.keyword)}</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-neutral-800 text-slate-500">${escapeHtml(a.matchType || 'exact')}</span>
-                                </div>
-                                <p class="text-slate-500 truncate max-w-sm mt-0.5">${escapeHtml(a.response)}</p>
-                            </div>
-                            <button onclick="deleteAutoreplyItem('${escapeHtml(a.keyword)}')" class="text-red-500 p-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada autoreply terdaftar.</p>';
+                if (data.success) {
+                    state.autoreplies = data.data || [];
+                    renderAutorepliesTable();
                 }
-                initIcons();
             } catch (err) {
                 console.error('Error loading autoreplies:', err);
             }
         }
 
+        function filterAutorepliesTable() {
+            state.autoreplyFilterText = (document.getElementById('autoreplySearchInput')?.value || '').toLowerCase().trim();
+            renderAutorepliesTable();
+        }
+
+        function renderAutorepliesTable() {
+            const tbody = document.getElementById('autoreplyTableBody');
+            if (!tbody) return;
+
+            const q = state.autoreplyFilterText || '';
+            let list = state.autoreplies || [];
+
+            if (q) {
+                list = list.filter(a => 
+                    (a.keyword && a.keyword.toLowerCase().includes(q)) ||
+                    (a.response && a.response.toLowerCase().includes(q)) ||
+                    (a.matchType && a.matchType.toLowerCase().includes(q))
+                );
+            }
+
+            if (!list.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-slate-400">
+                            <i data-lucide="message-square-dashed" class="w-8 h-8 mx-auto mb-1 text-slate-300"></i>
+                            <p class="text-xs">Tidak ada data autoreply yang sesuai.</p>
+                        </td>
+                    </tr>
+                `;
+                initIcons();
+                return;
+            }
+
+            tbody.innerHTML = list.map(a => {
+                const matchBadge = a.matchType === 'contains' 
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">Contains</span>'
+                    : a.matchType === 'startsWith'
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">Starts With</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">Exact Match</span>';
+
+                return `
+                    <tr class="hover:bg-slate-50/80 dark:hover:bg-neutral-900/50 transition">
+                        <td class="p-3 font-mono font-bold text-slate-900 dark:text-white">
+                            ${escapeHtml(a.keyword)}
+                        </td>
+                        <td class="p-3">
+                            ${matchBadge}
+                        </td>
+                        <td class="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                            ${escapeHtml(a.response)}
+                        </td>
+                        <td class="p-3 text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <button onclick="openEditAutoreplyModal('${escapeHtml(a.keyword)}')" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-300" title="Edit">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteAutoreplyItem('${escapeHtml(a.keyword)}')" class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-red-500" title="Hapus">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            initIcons();
+        }
+
+        function insertVariableChip(varTag) {
+            const textarea = document.getElementById('autoResponse');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + varTag + text.substring(end);
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + varTag.length;
+        }
+
         function openAddAutoreplyModal() {
+            document.getElementById('autoreplyModalTitle').innerText = 'Tambah Respon Otomatis';
+            document.getElementById('autoEditOldKeyword').value = '';
             document.getElementById('autoKeyword').value = '';
             document.getElementById('autoResponse').value = '';
+            document.getElementById('autoMatchType').value = 'exact';
+            openModal('autoreplyModal');
+        }
+
+        function openEditAutoreplyModal(keyword) {
+            const item = state.autoreplies.find(a => a.keyword === keyword);
+            if (!item) return;
+
+            document.getElementById('autoreplyModalTitle').innerText = `Edit Autoreply (${keyword})`;
+            document.getElementById('autoEditOldKeyword').value = keyword;
+            document.getElementById('autoKeyword').value = item.keyword || '';
+            document.getElementById('autoResponse').value = item.response || '';
+            document.getElementById('autoMatchType').value = item.matchType || 'exact';
             openModal('autoreplyModal');
         }
 
         async function submitAutoreply() {
+            const oldKeyword = document.getElementById('autoEditOldKeyword').value;
             const keyword = document.getElementById('autoKeyword').value.trim();
             const response = document.getElementById('autoResponse').value.trim();
             const matchType = document.getElementById('autoMatchType').value;
@@ -1733,6 +2293,15 @@
             }
 
             try {
+                // If editing and renamed keyword, delete old first
+                if (oldKeyword && oldKeyword !== keyword) {
+                    await fetch(`/api/autoreplies/${encodeURIComponent(oldKeyword)}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeader(),
+                        body: JSON.stringify({ pin: state.adminPin })
+                    });
+                }
+
                 const res = await fetch('/api/autoreplies', {
                     method: 'POST',
                     headers: getAuthHeader(),

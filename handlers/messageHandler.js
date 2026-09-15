@@ -126,6 +126,35 @@ function createContext({ sock, msg, from, senderNumber, args, commandName, body,
     };
 }
 
+// ----------------------------------------------------
+// Helper: format dynamic template variables in autoreply text
+// ----------------------------------------------------
+function formatAutoreplyText(template, { from, senderNumber, isGroupChat, groupInfo }) {
+    if (!template) return '';
+    let result = String(template);
+    const now = new Date();
+    const timeWib = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB';
+    const dateWib = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full' });
+    const cleanSender = String(senderNumber || '').replace(/[^0-9]/g, '');
+    const groupTitle = groupInfo?.name || groupInfo?.groupName || (isGroupChat ? from : 'Private Chat');
+
+    result = result
+        .replace(/\{jid\}/gi, from)
+        .replace(/\{groupJid\}/gi, from)
+        .replace(/\{groupId\}/gi, from)
+        .replace(/\{userId\}/gi, cleanSender)
+        .replace(/\{userJid\}/gi, `${cleanSender}@s.whatsapp.net`)
+        .replace(/\{sender\}/gi, cleanSender)
+        .replace(/\{senderNumber\}/gi, cleanSender)
+        .replace(/\{groupName\}/gi, groupTitle)
+        .replace(/\{group\}/gi, groupTitle)
+        .replace(/\{time\}/gi, timeWib)
+        .replace(/\{date\}/gi, dateWib)
+        .replace(/\{prefix\}/gi, PREFIX);
+
+    return result;
+}
+
 async function handleMessagesUpsert(sock, upsertData, registry) {
     if (!Array.isArray(upsertData?.messages)) {
         return;
@@ -248,19 +277,22 @@ async function handleSingleMessage(sock, msg, registry) {
             database.incrementCommandStats('autoreply');
             database.logCommand(`autoreply:${autoreplyMatch.trigger}`, from, senderNumber, isGroupChat);
 
+            const groupInfo = isGroupChat ? database.getGroupById(from) : null;
+            const finalResponse = formatAutoreplyText(autoreplyMatch.response || '', { from, senderNumber, isGroupChat, groupInfo });
+
             if (autoreplyMatch.mediaPath && fs.existsSync(autoreplyMatch.mediaPath)) {
                 try {
                     const imageBuffer = fs.readFileSync(autoreplyMatch.mediaPath);
                     await sock.sendMessage(from, {
                         image: imageBuffer,
-                        caption: autoreplyMatch.response || ''
+                        caption: finalResponse
                     }, { quoted: msg });
                 } catch (imgErr) {
                     console.error('[MessageHandler] Gagal mengirim media autoreply:', imgErr);
-                    await sock.sendMessage(from, { text: autoreplyMatch.response || '' }, { quoted: msg });
+                    await sock.sendMessage(from, { text: finalResponse }, { quoted: msg });
                 }
             } else {
-                await sock.sendMessage(from, { text: autoreplyMatch.response || '' }, { quoted: msg });
+                await sock.sendMessage(from, { text: finalResponse }, { quoted: msg });
             }
             return;
         }
@@ -279,19 +311,22 @@ async function handleSingleMessage(sock, msg, registry) {
         database.incrementCommandStats('autoreply');
         database.logCommand(`autoreply:${exactMatch.trigger}`, from, senderNumber, isGroupChat);
 
+        const groupInfo = isGroupChat ? database.getGroupById(from) : null;
+        const finalResponse = formatAutoreplyText(exactMatch.response || '', { from, senderNumber, isGroupChat, groupInfo });
+
         if (exactMatch.mediaPath && fs.existsSync(exactMatch.mediaPath)) {
             try {
                 const imageBuffer = fs.readFileSync(exactMatch.mediaPath);
                 await sock.sendMessage(from, {
                     image: imageBuffer,
-                    caption: exactMatch.response || ''
+                    caption: finalResponse
                 }, { quoted: msg });
             } catch (imgErr) {
                 console.error('[MessageHandler] Gagal mengirim media autoreply:', imgErr);
-                await sock.sendMessage(from, { text: exactMatch.response || '' }, { quoted: msg });
+                await sock.sendMessage(from, { text: finalResponse }, { quoted: msg });
             }
         } else {
-            await sock.sendMessage(from, { text: exactMatch.response || '' }, { quoted: msg });
+            await sock.sendMessage(from, { text: finalResponse }, { quoted: msg });
         }
         return;
     }

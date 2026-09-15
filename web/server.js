@@ -269,6 +269,201 @@ app.get('/api/groups', async (req, res) => {
     }
 });
 
+// ----------------------------------------------------
+// DYNAMIC FEATURE CATALOG & PERMISSIONS API
+// ----------------------------------------------------
+function scanAvailableFeatures() {
+    const fs = require('fs');
+    const commandsDir = path.join(__dirname, '..', 'commands');
+    const features = [];
+
+    function walkDir(dir) {
+        if (!fs.existsSync(dir)) return;
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                walkDir(fullPath);
+            } else if (entry.isFile() && entry.name.endsWith('.js')) {
+                try {
+                    delete require.cache[require.resolve(fullPath)];
+                    const cmd = require(fullPath);
+                    if (!cmd || !cmd.name) continue;
+
+                    const cat = (cmd.category || 'general').toLowerCase();
+                    const name = cmd.name.toLowerCase();
+
+                    // Calculate permission matrix
+                    let availability = {
+                        uninitialized: true,
+                        admin: true,
+                        public: true,
+                        dm: true,
+                        requiredRole: 'anyone',
+                        note: 'Tersedia di semua jenis interaksi'
+                    };
+
+                    if (cat === 'sticker') {
+                        availability = {
+                            uninitialized: true,
+                            admin: true,
+                            public: true,
+                            dm: false,
+                            requiredRole: 'anyone',
+                            note: 'Tersedia di seluruh grup WhatsApp'
+                        };
+                    } else if (cat === 'group') {
+                        if (name === 'initgroup') {
+                            availability = {
+                                uninitialized: true,
+                                admin: false,
+                                public: false,
+                                dm: false,
+                                requiredRole: 'group_admin',
+                                note: 'Khusus inisialisasi grup baru'
+                            };
+                        } else {
+                            availability = {
+                                uninitialized: true,
+                                admin: true,
+                                public: true,
+                                dm: false,
+                                requiredRole: 'group_admin',
+                                note: 'Hanya dapat dijalankan oleh Admin Grup WA'
+                            };
+                        }
+                    } else if (cat === 'bukittinggi-kos' || cat === 'kos') {
+                        if (name === 'cari') {
+                            availability = {
+                                uninitialized: false,
+                                admin: true,
+                                public: true,
+                                dm: false,
+                                requiredRole: 'anyone',
+                                note: 'Pencarian kos publik / member grup'
+                            };
+                        } else if (name === 'usulkost') {
+                            availability = {
+                                uninitialized: false,
+                                admin: true,
+                                public: true,
+                                dm: false,
+                                requiredRole: 'anyone',
+                                note: 'Formulir usulan data kos dari warga'
+                            };
+                        } else {
+                            availability = {
+                                uninitialized: false,
+                                admin: true,
+                                public: false,
+                                dm: false,
+                                requiredRole: 'group_admin',
+                                note: 'Khusus grup induk / internal admin'
+                            };
+                        }
+                    } else if (cat === 'owner') {
+                        availability = {
+                            uninitialized: true,
+                            admin: true,
+                            public: true,
+                            dm: true,
+                            requiredRole: 'bot_owner',
+                            note: 'Khusus Super Owner & Pengelola Bot'
+                        };
+                    } else if (cat === 'autoreply') {
+                        availability = {
+                            uninitialized: true,
+                            admin: true,
+                            public: true,
+                            dm: true,
+                            requiredRole: 'anyone',
+                            note: 'Berdasarkan konfigurasi trigger autoreply'
+                        };
+                    }
+
+                    features.push({
+                        name: cmd.name,
+                        aliases: Array.isArray(cmd.aliases) ? cmd.aliases : [],
+                        category: cmd.category || 'general',
+                        description: cmd.description || 'Tidak ada deskripsi',
+                        usage: cmd.usage || `!${cmd.name}`,
+                        availability
+                    });
+                } catch (e) {
+                    console.warn(`[WebServer] Error scanning feature ${fullPath}:`, e.message);
+                }
+            }
+        }
+    }
+
+    walkDir(commandsDir);
+    return features;
+}
+
+app.get('/api/features', (req, res) => {
+    try {
+        const { groupId, role } = req.query;
+        const features = scanAvailableFeatures();
+
+        let targetRole = role;
+        let isInit = true;
+        let groupDetails = null;
+
+        if (groupId) {
+            const cleanGid = normalizeJid(groupId);
+            groupDetails = database.getGroupById(cleanGid);
+            if (groupDetails) {
+                targetRole = groupDetails.role || 'admin';
+                isInit = true;
+            } else {
+                targetRole = 'uninitialized';
+                isInit = false;
+            }
+        }
+
+        // Categorize features with evaluated status for the target group
+        const evaluated = features.map(f => {
+            let active = true;
+            let reason = 'Tersedia dan aktif';
+
+            if (targetRole === 'uninitialized') {
+                if (!f.availability.uninitialized) {
+                    active = false;
+                    reason = 'Grup belum diinisialisasi (jalankan !initgroup terlebih dahulu)';
+                }
+            } else if (targetRole === 'public') {
+                if (!f.availability.public) {
+                    active = false;
+                    reason = 'Perintah khusus grup internal Admin (bukan grup publik/cabang)';
+                }
+            } else if (targetRole === 'admin') {
+                if (!f.availability.admin) {
+                    active = false;
+                    reason = 'Fitur tidak aktif pada mode grup ini';
+                }
+            }
+
+            return {
+                ...f,
+                evaluated: {
+                    active,
+                    reason,
+                    targetRole: targetRole || 'all'
+                }
+            };
+        });
+
+        res.json({
+            success: true,
+            total: evaluated.length,
+            group: groupDetails || (groupId ? { id: groupId, role: targetRole, isInitialized: isInit } : null),
+            features: evaluated
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // Register new group
 app.post('/api/groups', async (req, res) => {
     try {
