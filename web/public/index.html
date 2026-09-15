@@ -385,14 +385,27 @@
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Status Fitur Welcome:</span>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="welcomeEnabledSwitch" class="sr-only peer" checked>
-                            <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                        </label>
+            </div>
+
+            <!-- Welcome Message Setting -->
+            <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold tracking-tight">Pesan Selamat Datang (Welcome Message)</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Dikirim otomatis saat ada member baru masuk ke grup WhatsApp.</p>
                     </div>
-                    <textarea id="welcomeTextarea" rows="3" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ketik pesan sambutan..."></textarea>
-                    <div class="flex justify-end">
-                        <button onclick="saveWelcomeConfig()" class="px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition active:scale-95">
-                            Simpan Pengaturan Welcome
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="welcomeEnabledSwitch" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+
+                <div class="space-y-2">
+                    <textarea id="welcomeTextarea" rows="4" placeholder="Ketik pesan selamat datang..." class="w-full p-3 rounded-2xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] text-slate-400">Variabel yang didukung: <code class="text-blue-500">@user</code> (mention member baru), <code class="text-blue-500">{groupName}</code></span>
+                        <button onclick="saveWelcomeConfig()" class="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 active:scale-95">
+                            Simpan Pesan
                         </button>
                     </div>
                 </div>
@@ -400,22 +413,23 @@
         </section>
 
         <!-- ================================================= -->
-        <!-- 4. TAB: OWNERS (PENGELOLA) -->
+        <!-- 4. TAB: OWNERS MANAGEMENT (PENGELOLA BOT) -->
         <!-- ================================================= -->
         <section id="section-owners" class="hidden space-y-6">
             <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h2 class="text-base font-bold tracking-tight">Daftar Owner & Pengelola Bot</h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Nomor-nomor yang memiliki akses ke perintah admin bot.</p>
+                        <h2 class="text-base font-bold tracking-tight">Daftar Owner Bot</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Nomor-nomor yang memiliki akses eksekusi command level owner pada bot.</p>
                     </div>
-                    <button onclick="openAddOwnerModal()" class="px-3.5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95">
-                        + Tambah Owner
+                    <button onclick="openAddOwnerModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-blue-500/20 active:scale-95">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        Tambah Owner
                     </button>
                 </div>
 
-                <div id="ownersListContainer" class="space-y-2.5">
-                    <p class="text-xs text-slate-400 text-center py-6">Memuat owner...</p>
+                <div id="ownersListContainer" class="space-y-2">
+                    <p class="text-xs text-slate-400 text-center py-6">Memuat data owner...</p>
                 </div>
             </div>
         </section>
@@ -423,30 +437,28 @@
     </main>
 
     <!-- ================================================= -->
-    <!-- GROUP WORKSPACE MODAL / DRAWER (MODUL KHUSUS GRUP) -->
+    <!-- MODAL: WORKSPACE (KOST & SUBMISSIONS) -->
     <!-- ================================================= -->
-    <div id="workspaceModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-2 sm:p-4 hidden">
-        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <!-- Workspace Header -->
-            <div class="p-4 sm:p-5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-neutral-900/50">
+    <div id="workspaceModal" class="fixed inset-0 z-50 bg-black/60 ios-blur flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-4xl w-full h-[90vh] shadow-2xl border border-black/10 dark:border-white/10 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <!-- Workspace Top Bar -->
+            <div class="px-5 py-4 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <button onclick="closeWorkspaceModal()" class="p-2 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-700 dark:text-slate-200 transition">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    </button>
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                    </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 id="wsGroupName" class="text-base font-bold tracking-tight">Nama Grup</h2>
+                            <h3 id="wsGroupName" class="text-base font-bold tracking-tight">Nama Grup</h3>
                             <span id="wsGroupRoleBadge" class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">ADMIN</span>
                         </div>
-                        <p id="wsGroupSubtitle" class="text-xs text-slate-500 dark:text-slate-400">Tipe: Kos | Status: Terhubung</p>
+                        <p id="wsGroupSubtitle" class="text-xs text-slate-400 font-mono mt-0.5">JID: -</p>
                     </div>
                 </div>
-                <button onclick="closeWorkspaceModal()" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-400">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <button onclick="closeWorkspaceModal()" class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <!-- Workspace Sub-tabs for KOS module -->
+            <!-- Workspace Sub-tabs -->
             <div id="wsKosSubTabs" class="px-5 pt-3 border-b border-black/5 dark:border-white/10 flex gap-4 text-xs font-semibold">
                 <button onclick="switchWsTab('kost-list')" id="wsTab-kost-list" class="pb-2.5 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400">
                     🏠 Daftar Listing Kos (<span id="wsKostCount">0</span>)
@@ -475,6 +487,17 @@
                                 <option value="pending">Pending</option>
                                 <option value="sent">Sent (Terkirim)</option>
                             </select>
+
+                            <!-- View Mode Toggle -->
+                            <div class="flex items-center bg-slate-100 dark:bg-neutral-900 p-1 rounded-2xl border border-slate-200/60 dark:border-neutral-800 text-xs">
+                                <button onclick="setKostViewMode('table')" id="kostView-table" class="p-1.5 rounded-xl bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 shadow-sm" title="Mode Tabel (Rekomendasi)">
+                                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="setKostViewMode('cards')" id="kostView-cards" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Mode Kartu">
+                                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+
                             <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                 Tambah Kos
@@ -482,19 +505,30 @@
                         </div>
                     </div>
 
-                    <!-- Kost Grid / Table -->
-                    <div id="kostItemsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <p class="text-xs text-slate-400 text-center col-span-full py-8">Memuat data kos...</p>
+                    <!-- Kost Container (Table or Cards) -->
+                    <div id="kostItemsContainer">
+                        <p class="text-xs text-slate-400 text-center py-8">Memuat data kos...</p>
                     </div>
                 </div>
 
                 <!-- SUB-VIEW 2: SUBMISSIONS -->
                 <div id="wsView-submissions" class="hidden space-y-4">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <p class="text-xs text-slate-500 dark:text-slate-400">Daftar usulan info kos dari warga yang masuk via perintah WhatsApp <code class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800">!usulkost</code>.</p>
-                        <button onclick="loadSubmissionsList()" class="text-xs text-blue-600 hover:underline">Segarkan</button>
+                        <div class="flex items-center gap-2">
+                            <!-- View Mode Toggle -->
+                            <div class="flex items-center bg-slate-100 dark:bg-neutral-900 p-1 rounded-2xl border border-slate-200/60 dark:border-neutral-800 text-xs">
+                                <button onclick="setSubmissionsViewMode('table')" id="subView-table" class="p-1.5 rounded-xl bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 shadow-sm" title="Mode Tabel (Rekomendasi)">
+                                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="setSubmissionsViewMode('cards')" id="subView-cards" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Mode Kartu">
+                                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <button onclick="loadSubmissionsList()" class="text-xs text-blue-600 hover:underline">Segarkan</button>
+                        </div>
                     </div>
-                    <div id="submissionsContainer" class="space-y-3">
+                    <div id="submissionsContainer">
                         <p class="text-xs text-slate-400 text-center py-8">Memuat usulan masuk...</p>
                     </div>
                 </div>
@@ -560,23 +594,24 @@
     </div>
 
     <!-- ================================================= -->
-    <!-- MODAL: REGISTER NEW GROUP -->
+    <!-- MODAL: REGISTER GROUP -->
     <!-- ================================================= -->
     <div id="registerGroupModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="plus-circle" class="w-4 h-4"></i></div>
-                    <h3 class="text-sm font-bold tracking-tight">Daftarkan Grup Baru</h3>
+                    <h3 class="text-sm font-bold tracking-tight">Daftarkan Grup WhatsApp Baru</h3>
                 </div>
                 <button onclick="closeModal('registerGroupModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
+
             <div class="space-y-3">
-                <!-- Discovered Groups Quick Picker -->
-                <div>
-                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                        <span>Pilih dari Grup WhatsApp Terdeteksi:</span>
-                        <span class="text-[10px] text-blue-600 font-normal">Auto-detect</span>
+                <!-- Group Auto-Picker dropdown from detected / live WhatsApp groups -->
+                <div class="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30">
+                    <label class="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-500"></i>
+                        Pilih Cepat dari Grup yang Ditemukan:
                     </label>
                     <select id="regDiscoveredPicker" onchange="onDiscoveredGroupSelected()" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-medium">
                         <option value="">-- Pilih Grup WA yang Ditemukan --</option>
@@ -659,24 +694,24 @@
                     <div>
                         <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Peran Grup:</label>
                         <select id="initUndefRole" onchange="onInitRoleChange()" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
-                            <option value="public">Publik (Terhubung ke Induk)</option>
-                            <option value="admin">Admin (Grup Pusat / Induk)</option>
+                            <option value="public">Publik (Cabang - Terhubung ke Induk)</option>
+                            <option value="admin">Admin (Grup Pusat / Mandiri)</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="initUndefParentRow">
-                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Hubungkan ke Grup Induk:</label>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pilih Grup Induk:</label>
                     <select id="initUndefParentSelect" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
                         <!-- Populated dynamically -->
                     </select>
-                    <p class="text-[10px] text-slate-400 mt-1">Grup publik ini akan otomatis membaca database yang dimiliki oleh grup induk.</p>
+                    <p class="text-[10px] text-slate-400 mt-1">Data kos dan konfigurasi akan menginduk ke grup yang dipilih.</p>
                 </div>
             </div>
 
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeModal('initUndefinedModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
-                <button onclick="submitInitUndefinedGroup()" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold active:scale-95 shadow-md shadow-emerald-500/20">Simpan & Inisialisasi</button>
+                <button onclick="submitInitUndefinedGroup()" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold active:scale-95 shadow-md shadow-emerald-500/20">Inisialisasi & Simpan</button>
             </div>
         </div>
     </div>
@@ -684,8 +719,8 @@
     <!-- ================================================= -->
     <!-- MODAL: DYNAMIC FEATURE & PERMISSION INSPECTOR -->
     <!-- ================================================= -->
-    <div id="featureInspectorModal" class="fixed inset-0 z-50 bg-black/60 ios-blur flex items-center justify-center p-3 sm:p-4 hidden">
-        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col max-h-[88vh] space-y-4 animate-in fade-in zoom-in-95 duration-200">
+    <div id="featureInspectorModal" class="fixed inset-0 z-50 bg-black/60 ios-blur flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col max-h-[90vh] space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <!-- Header -->
             <div class="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-neutral-800">
                 <div class="space-y-1">
@@ -704,21 +739,33 @@
                 <button onclick="closeModal('featureInspectorModal')" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <!-- Search & Filter within Features Modal -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <!-- Search & Filter & View Toggle within Features Modal -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
                 <div class="relative flex-1">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400"></i>
                     <input type="text" id="featureModalSearchInput" oninput="filterFeatureInspectorList()" placeholder="Cari perintah (contoh: !cari, !tagall, !kost)..." class="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="flex items-center gap-1.5 text-xs font-medium">
-                    <button onclick="setFeatureModalTab('all')" id="featTab-all" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white font-semibold transition">Semua</button>
-                    <button onclick="setFeatureModalTab('active')" id="featTab-active" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 transition">✅ Aktif</button>
-                    <button onclick="setFeatureModalTab('locked')" id="featTab-locked" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 transition">🔒 Terkunci</button>
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1 text-xs font-medium bg-slate-100 dark:bg-neutral-900 p-1 rounded-xl border border-slate-200/60 dark:border-neutral-800">
+                        <button onclick="setFeatureModalTab('all')" id="featTab-all" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold transition">Semua</button>
+                        <button onclick="setFeatureModalTab('active')" id="featTab-active" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 transition">✅ Aktif</button>
+                        <button onclick="setFeatureModalTab('locked')" id="featTab-locked" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 transition">🔒 Terkunci</button>
+                    </div>
+
+                    <!-- View Mode Toggle (Table vs Cards) -->
+                    <div class="flex items-center bg-slate-100 dark:bg-neutral-900 p-1 rounded-xl border border-slate-200/60 dark:border-neutral-800 text-xs">
+                        <button onclick="setFeaturesViewMode('table')" id="featView-table" class="p-1.5 rounded-lg bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 shadow-sm" title="Mode Tabel (Rekomendasi)">
+                            <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="setFeaturesViewMode('cards')" id="featView-cards" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Mode Kartu">
+                            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Features Scrollable Container -->
-            <div id="featuresListContainer" class="flex-1 overflow-y-auto pr-1 space-y-2.5 max-h-[50vh]">
+            <!-- Features Scrollable Container (Table or Cards) -->
+            <div id="featuresListContainer" class="flex-1 overflow-y-auto pr-1 space-y-2.5 max-h-[58vh]">
                 <p class="text-xs text-slate-400 text-center py-8">Memuat katalog fitur...</p>
             </div>
 
@@ -924,6 +971,10 @@
             adminPin: localStorage.getItem('bot_admin_pin') || '',
             activeTab: 'overview',
             groupFilter: 'all', // 'all' | 'initialized' | 'uninitialized'
+            featuresViewMode: localStorage.getItem('bot_features_view_mode') || 'table',
+            kostViewMode: localStorage.getItem('bot_kost_view_mode') || 'table',
+            groupsViewMode: localStorage.getItem('bot_groups_view_mode') || 'table',
+            submissionsViewMode: localStorage.getItem('bot_submissions_view_mode') || 'table',
             groups: [],
             activeWorkspaceGroup: null,
             kostList: [],
@@ -943,6 +994,7 @@
             initIcons();
             applyDevModeUI();
             updatePinUI();
+            updateAllViewToggleButtons();
             fetchStatus();
             loadGroups();
             loadCommandLogs();
@@ -952,6 +1004,58 @@
             if (window.lucide && typeof lucide.createIcons === 'function') {
                 lucide.createIcons();
             }
+        }
+
+        // ==========================================
+        // VIEW MODE SWITCHERS (TABLE VS CARDS)
+        // ==========================================
+        function updateViewToggleButtons(prefix, activeMode) {
+            const btnTable = document.getElementById(`${prefix}-table`);
+            const btnCards = document.getElementById(`${prefix}-cards`);
+            if (btnTable && btnCards) {
+                if (activeMode === 'table') {
+                    btnTable.className = 'p-1.5 rounded-lg bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 shadow-sm';
+                    btnCards.className = 'p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200';
+                } else {
+                    btnTable.className = 'p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200';
+                    btnCards.className = 'p-1.5 rounded-lg bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 shadow-sm';
+                }
+            }
+        }
+
+        function updateAllViewToggleButtons() {
+            updateViewToggleButtons('featView', state.featuresViewMode);
+            updateViewToggleButtons('kostView', state.kostViewMode);
+            updateViewToggleButtons('groupView', state.groupsViewMode);
+            updateViewToggleButtons('subView', state.submissionsViewMode);
+        }
+
+        function setFeaturesViewMode(mode) {
+            state.featuresViewMode = mode;
+            localStorage.setItem('bot_features_view_mode', mode);
+            updateViewToggleButtons('featView', mode);
+            renderFeaturesList();
+        }
+
+        function setKostViewMode(mode) {
+            state.kostViewMode = mode;
+            localStorage.setItem('bot_kost_view_mode', mode);
+            updateViewToggleButtons('kostView', mode);
+            renderKostCards(state.kostList);
+        }
+
+        function setGroupsViewMode(mode) {
+            state.groupsViewMode = mode;
+            localStorage.setItem('bot_groups_view_mode', mode);
+            updateViewToggleButtons('groupView', mode);
+            renderGroupsList();
+        }
+
+        function setSubmissionsViewMode(mode) {
+            state.submissionsViewMode = mode;
+            localStorage.setItem('bot_submissions_view_mode', mode);
+            updateViewToggleButtons('subView', mode);
+            renderSubmissionsCards(state.submissions);
         }
 
         // ==========================================
@@ -1313,7 +1417,7 @@
 
             if (!filtered.length) {
                 container.innerHTML = `
-                    <div class="col-span-full bg-white dark:bg-[#1C1C1E] p-8 rounded-3xl text-center ios-card-shadow border border-black/5 dark:border-white/5 space-y-2">
+                    <div class="bg-white dark:bg-[#1C1C1E] p-8 rounded-3xl text-center ios-card-shadow border border-black/5 dark:border-white/5 space-y-2">
                         <i data-lucide="users-2" class="w-10 h-10 mx-auto text-slate-300"></i>
                         <h4 class="text-sm font-semibold">Tidak Ada Grup di Kategori Ini</h4>
                         <p class="text-xs text-slate-500 max-w-sm mx-auto">Semua grup yang terdeteksi atau terdaftar akan muncul di sini.</p>
@@ -1323,132 +1427,218 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(g => {
-                const origIdx = g._originalIndex;
-                const isInit = g.isInitialized !== false;
-                const isPublic = g.role === 'public';
-                const hasParent = Boolean(g.parentGroupId);
+            // Render based on groupsViewMode (Table vs Cards)
+            if (state.groupsViewMode === 'table') {
+                container.innerHTML = `
+                    <div class="overflow-x-auto rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50/80 dark:bg-neutral-900 text-slate-500 border-b border-slate-100 dark:border-neutral-800">
+                                <tr>
+                                    <th class="p-3.5 font-semibold">GRUP WHATSAPP</th>
+                                    <th class="p-3.5 font-semibold">TIPE</th>
+                                    <th class="p-3.5 font-semibold">PERAN</th>
+                                    <th class="p-3.5 font-semibold">STATUS RELASI</th>
+                                    <th class="p-3.5 font-semibold">ANGGOTA</th>
+                                    <th class="p-3.5 font-semibold text-right">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                                ${filtered.map(g => {
+                                    const origIdx = g._originalIndex;
+                                    const isInit = g.isInitialized !== false;
+                                    const isPublic = g.role === 'public';
+                                    const hasParent = Boolean(g.parentGroupId);
+                                    const typeLabel = (g.type || 'kos').toUpperCase();
 
-                if (!isInit) {
-                    return `
-                        <div class="p-5 rounded-3xl bg-amber-50/30 dark:bg-amber-950/10 ios-card-shadow border-2 border-dashed border-amber-300/80 dark:border-amber-700/60 flex flex-col justify-between space-y-4">
-                            <div>
-                                <div class="flex items-start justify-between gap-2">
-                                    <div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                                            <h3 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white">
-                                                ${escapeHtml(g.name || g.groupName || 'Grup WhatsApp')}
-                                            </h3>
-                                        </div>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-                                            <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i>
-                                            ${g.participantsCount ? `${g.participantsCount} Anggota` : 'Terdeteksi di WhatsApp'}
-                                        </p>
-                                    </div>
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/50">
-                                        ⚠️ BELUM DI-INIT
-                                    </span>
-                                </div>
+                                    const roleBadge = !isInit
+                                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">⚠️ UNDEFINED</span>'
+                                        : isPublic
+                                            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">CABANG / PUBLIK</span>'
+                                            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">INDUK / ADMIN</span>';
 
-                                <div class="mt-3 p-2.5 rounded-2xl bg-white/80 dark:bg-neutral-900/80 border border-amber-200/60 dark:border-amber-800/40 text-xs text-slate-600 dark:text-slate-300">
-                                    <p class="text-[11px] leading-relaxed">
-                                        Grup ini ada di WhatsApp bot tapi <strong>belum dikonfigurasi</strong> perannya (Admin vs Publik).
-                                    </p>
-                                </div>
+                                    const relasiText = !isInit
+                                        ? '<span class="text-slate-400 italic">Belum diset</span>'
+                                        : hasParent
+                                            ? `<span class="text-blue-600 dark:text-blue-400 flex items-center gap-1 font-medium"><i data-lucide="link" class="w-3.5 h-3.5"></i> ${escapeHtml(g.parentGroupName || g.parentGroupId)}</span>`
+                                            : '<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Pusat / Mandiri</span>';
 
-                                ${state.developerMode ? `
-                                    <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-amber-400 font-mono text-[10px] space-y-1">
-                                        <div class="truncate">JID: ${escapeHtml(g.id)}</div>
-                                        <div class="flex justify-between text-slate-400">
-                                            <span>Seen: ${escapeHtml(g.lastSeen || 'Live')}</span>
-                                            <button onclick='openInspector("Group: ${escapeHtml(g.name)}", state.groups[${origIdx}])' class="text-blue-400 hover:underline">Inspect JSON</button>
-                                        </div>
-                                    </div>
-                                ` : ''}
-                            </div>
-
-                            <div class="flex items-center gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
-                                <button onclick="openFeatureInspectorByIndex(${origIdx})" class="px-3.5 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-800 text-xs font-semibold hover:bg-slate-300 transition flex items-center gap-1.5" title="Cek Fitur yang Aktif">
-                                    🔍 Cek Fitur
-                                </button>
-                                <button onclick="openInitUndefinedByIndex(${origIdx})" class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
-                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                    Inisialisasi Grup
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                const roleColor = isPublic 
-                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' 
-                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
-                
-                const typeLabel = (g.type || 'kos').toUpperCase();
-
-                return `
-                    <div class="p-5 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between space-y-4">
-                        <div>
-                            <div class="flex items-start justify-between gap-2">
-                                <div>
-                                    <h3 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                                        ${escapeHtml(g.name)}
-                                    </h3>
-                                    ${g.groupName ? `<p class="text-xs text-slate-400 mt-0.5">WA: ${escapeHtml(g.groupName)}</p>` : ''}
-                                </div>
-                                <div class="flex items-center gap-1.5 flex-wrap justify-end">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${roleColor}">
-                                        ${isPublic ? 'CABANG / PUBLIK' : 'INDUK / ADMIN'}
-                                    </span>
-                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300">
-                                        ${typeLabel}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="mt-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800/80 text-xs flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="${hasParent ? 'link' : 'shield-check'}" class="w-3.5 h-3.5 ${hasParent ? 'text-blue-500' : 'text-emerald-500'}"></i>
-                                    <span class="text-slate-600 dark:text-slate-300 truncate">
-                                        ${hasParent ? `Terhubung ke: <strong>${escapeHtml(g.parentGroupName || g.parentGroupId)}</strong>` : 'Grup Pusat / Mandiri'}
-                                    </span>
-                                </div>
-                                <button onclick="openLinkGroupByIndex(${origIdx})" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-                                    ${hasParent ? 'Ubah Link' : 'Hubungkan'}
-                                </button>
-                            </div>
-
-                            ${state.developerMode ? `
-                                <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-emerald-400 font-mono text-[10px] space-y-1">
-                                    <div class="truncate">JID: ${escapeHtml(g.id)}</div>
-                                    <div class="flex justify-between text-slate-400">
-                                        <span>Init: ${escapeHtml(g.initializedBy || '-')}</span>
-                                        <button onclick='openInspector("Group: ${escapeHtml(g.name)}", state.groups[${origIdx}])' class="text-blue-400 hover:underline">Inspect JSON</button>
-                                    </div>
-                                </div>
-                            ` : ''}
-                        </div>
-
-                        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
-                            <div class="flex items-center gap-2">
-                                <button onclick="openWorkspaceByIndex(${origIdx})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
-                                    <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
-                                    Workspace
-                                </button>
-                                <button onclick="openFeatureInspectorByIndex(${origIdx})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition active:scale-95">
-                                    🔍 Fitur & Izin
-                                </button>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="deleteGroupPromptByIndex(${origIdx})" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition" title="Hapus Grup">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
+                                    return `
+                                        <tr class="hover:bg-slate-50/70 dark:hover:bg-neutral-900/50 transition">
+                                            <td class="p-3.5">
+                                                <div class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
+                                                    ${escapeHtml(g.name || g.groupName || 'Grup')}
+                                                </div>
+                                                ${g.groupName ? `<p class="text-[11px] text-slate-400 mt-0.5 font-normal">WA: ${escapeHtml(g.groupName)}</p>` : ''}
+                                                ${state.developerMode ? `<p class="text-[10px] font-mono text-emerald-500 mt-0.5 truncate max-w-xs">${escapeHtml(g.id)}</p>` : ''}
+                                            </td>
+                                            <td class="p-3.5">
+                                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 uppercase">${typeLabel}</span>
+                                            </td>
+                                            <td class="p-3.5">${roleBadge}</td>
+                                            <td class="p-3.5">${relasiText}</td>
+                                            <td class="p-3.5 text-slate-500 font-medium">${g.participantsCount ? `${g.participantsCount} org` : '-'}</td>
+                                            <td class="p-3.5 text-right">
+                                                <div class="inline-flex items-center gap-1.5 justify-end">
+                                                    ${!isInit ? `
+                                                        <button onclick="openInitUndefinedByIndex(${origIdx})" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm flex items-center gap-1">
+                                                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Init
+                                                        </button>
+                                                    ` : `
+                                                        <button onclick="openWorkspaceByIndex(${origIdx})" class="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 font-semibold text-xs flex items-center gap-1" title="Workspace">
+                                                            <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> Workspace
+                                                        </button>
+                                                        <button onclick="openLinkGroupByIndex(${origIdx})" class="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-300" title="${hasParent ? 'Ubah Link Induk' : 'Hubungkan ke Induk'}">
+                                                            <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                                                        </button>
+                                                    `}
+                                                    <button onclick="openFeatureInspectorByIndex(${origIdx})" class="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-300" title="Cek Fitur & Izin">
+                                                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                    <button onclick="deleteGroupPromptByIndex(${origIdx})" class="p-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-500" title="Hapus Grup">
+                                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
-            }).join('');
+            } else {
+                // Card View Mode
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${filtered.map(g => {
+                            const origIdx = g._originalIndex;
+                            const isInit = g.isInitialized !== false;
+                            const isPublic = g.role === 'public';
+                            const hasParent = Boolean(g.parentGroupId);
+
+                            if (!isInit) {
+                                return `
+                                    <div class="p-5 rounded-3xl bg-amber-50/30 dark:bg-amber-950/10 ios-card-shadow border-2 border-dashed border-amber-300/80 dark:border-amber-700/60 flex flex-col justify-between space-y-4">
+                                        <div>
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                                        <h3 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                                                            ${escapeHtml(g.name || g.groupName || 'Grup WhatsApp')}
+                                                        </h3>
+                                                    </div>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                                                        <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i>
+                                                        ${g.participantsCount ? `${g.participantsCount} Anggota` : 'Terdeteksi di WhatsApp'}
+                                                    </p>
+                                                </div>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/50">
+                                                    ⚠️ BELUM DI-INIT
+                                                </span>
+                                            </div>
+
+                                            <div class="mt-3 p-2.5 rounded-2xl bg-white/80 dark:bg-neutral-900/80 border border-amber-200/60 dark:border-amber-800/40 text-xs text-slate-600 dark:text-slate-300">
+                                                <p class="text-[11px] leading-relaxed">
+                                                    Grup ini ada di WhatsApp bot tapi <strong>belum dikonfigurasi</strong> perannya (Admin vs Publik).
+                                                </p>
+                                            </div>
+
+                                            ${state.developerMode ? `
+                                                <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-amber-400 font-mono text-[10px] space-y-1">
+                                                    <div class="truncate">JID: ${escapeHtml(g.id)}</div>
+                                                    <div class="flex justify-between text-slate-400">
+                                                        <span>Seen: ${escapeHtml(g.lastSeen || 'Live')}</span>
+                                                        <button onclick='openInspector("Group: ${escapeHtml(g.name)}", state.groups[${origIdx}])' class="text-blue-400 hover:underline">Inspect JSON</button>
+                                                    </div>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+
+                                        <div class="flex items-center gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
+                                            <button onclick="openFeatureInspectorByIndex(${origIdx})" class="px-3.5 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-800 text-xs font-semibold hover:bg-slate-300 transition flex items-center gap-1.5" title="Cek Fitur yang Aktif">
+                                                🔍 Cek Fitur
+                                            </button>
+                                            <button onclick="openInitUndefinedByIndex(${origIdx})" class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
+                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                                Inisialisasi Grup
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
+                            const roleColor = isPublic 
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' 
+                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
+                            
+                            const typeLabel = (g.type || 'kos').toUpperCase();
+
+                            return `
+                                <div class="p-5 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between space-y-4">
+                                    <div>
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <h3 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                    ${escapeHtml(g.name)}
+                                                </h3>
+                                                ${g.groupName ? `<p class="text-xs text-slate-400 mt-0.5">WA: ${escapeHtml(g.groupName)}</p>` : ''}
+                                            </div>
+                                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${roleColor}">
+                                                    ${isPublic ? 'CABANG / PUBLIK' : 'INDUK / ADMIN'}
+                                                </span>
+                                                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300">
+                                                    ${typeLabel}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800/80 text-xs flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <i data-lucide="${hasParent ? 'link' : 'shield-check'}" class="w-3.5 h-3.5 ${hasParent ? 'text-blue-500' : 'text-emerald-500'}"></i>
+                                                <span class="text-slate-600 dark:text-slate-300 truncate">
+                                                    ${hasParent ? `Terhubung ke: <strong>${escapeHtml(g.parentGroupName || g.parentGroupId)}</strong>` : 'Grup Pusat / Mandiri'}
+                                                </span>
+                                            </div>
+                                            <button onclick="openLinkGroupByIndex(${origIdx})" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                                ${hasParent ? 'Ubah Link' : 'Hubungkan'}
+                                            </button>
+                                        </div>
+
+                                        ${state.developerMode ? `
+                                            <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-emerald-400 font-mono text-[10px] space-y-1">
+                                                <div class="truncate">JID: ${escapeHtml(g.id)}</div>
+                                                <div class="flex justify-between text-slate-400">
+                                                    <span>Init: ${escapeHtml(g.initializedBy || '-')}</span>
+                                                    <button onclick='openInspector("Group: ${escapeHtml(g.name)}", state.groups[${origIdx}])' class="text-blue-400 hover:underline">Inspect JSON</button>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="openWorkspaceByIndex(${origIdx})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
+                                                <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
+                                                Workspace
+                                            </button>
+                                            <button onclick="openFeatureInspectorByIndex(${origIdx})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition active:scale-95">
+                                                🔍 Fitur & Izin
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <button onclick="deleteGroupPromptByIndex(${origIdx})" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition" title="Hapus Grup">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
 
             initIcons();
         }
@@ -1512,9 +1702,9 @@
                 const btn = document.getElementById(`featTab-${t}`);
                 if (!btn) return;
                 if (t === tab) {
-                    btn.className = 'px-3 py-1.5 rounded-xl bg-blue-600 text-white font-semibold transition shadow-sm';
+                    btn.className = 'px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold transition';
                 } else {
-                    btn.className = 'px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-200';
+                    btn.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-neutral-800';
                 }
             });
             renderFeaturesList();
@@ -1559,38 +1749,92 @@
                 return;
             }
 
-            container.innerHTML = list.map(f => {
-                const isActive = f.evaluated?.active;
-                const aliases = f.aliases && f.aliases.length ? f.aliases.map(a => `!${a}`).join(', ') : '';
+            if (state.featuresViewMode === 'table') {
+                // Table View Mode (Dense, clean, easily scannable)
+                container.innerHTML = `
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-neutral-800">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-neutral-900 text-slate-500 border-b border-slate-200/80 dark:border-neutral-800">
+                                <tr>
+                                    <th class="p-3 font-semibold">PERINTAH</th>
+                                    <th class="p-3 font-semibold">KATEGORI</th>
+                                    <th class="p-3 font-semibold">DESKRIPSI & USAGE</th>
+                                    <th class="p-3 font-semibold">STATUS</th>
+                                    <th class="p-3 font-semibold">HAK AKSES</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800/80">
+                                ${list.map(f => {
+                                    const isActive = f.evaluated?.active;
+                                    const aliases = f.aliases && f.aliases.length ? f.aliases.map(a => `!${a}`).join(', ') : '';
 
-                return `
-                    <div class="p-3.5 rounded-2xl ${isActive ? 'bg-slate-50 dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800' : 'bg-red-50/30 dark:bg-red-950/10 border border-red-200/50 dark:border-red-900/40'} flex flex-col justify-between space-y-2">
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-mono font-bold text-sm ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}">!${escapeHtml(f.name)}</span>
-                                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-200 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 uppercase">${escapeHtml(f.category)}</span>
-                                </div>
-                                ${aliases ? `<p class="text-[10px] text-slate-400 mt-0.5 font-mono">Alias: ${escapeHtml(aliases)}</p>` : ''}
-                            </div>
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'}">
-                                ${isActive ? '✅ AKTIF' : '🔒 TERKUNCI'}
-                            </span>
-                        </div>
-
-                        <p class="text-xs text-slate-600 dark:text-slate-300">${escapeHtml(f.description)}</p>
-
-                        <div class="pt-2 border-t border-slate-200/50 dark:border-neutral-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px]">
-                            <div class="font-mono text-slate-500 bg-white/80 dark:bg-black/40 px-2 py-1 rounded-lg border border-slate-200/40 dark:border-neutral-800">
-                                <code>${escapeHtml(f.usage || `!${f.name}`)}</code>
-                            </div>
-                            <span class="text-[10px] ${isActive ? 'text-slate-400' : 'text-red-500 font-medium'}">
-                                ${escapeHtml(f.evaluated?.reason || f.availability?.note || '')}
-                            </span>
-                        </div>
+                                    return `
+                                        <tr class="hover:bg-slate-50/70 dark:hover:bg-neutral-900/50 transition">
+                                            <td class="p-3 align-top font-mono">
+                                                <div class="font-bold text-sm ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}">
+                                                    !${escapeHtml(f.name)}
+                                                </div>
+                                                ${aliases ? `<p class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(aliases)}</p>` : ''}
+                                            </td>
+                                            <td class="p-3 align-top">
+                                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 uppercase">${escapeHtml(f.category)}</span>
+                                            </td>
+                                            <td class="p-3 align-top max-w-sm">
+                                                <p class="text-slate-800 dark:text-slate-200 leading-snug">${escapeHtml(f.description)}</p>
+                                                <div class="mt-1 font-mono text-[11px] text-slate-500 bg-slate-100 dark:bg-black/40 px-2 py-0.5 rounded-md inline-block border border-slate-200/50 dark:border-neutral-800">
+                                                    <code>${escapeHtml(f.usage || `!${f.name}`)}</code>
+                                                </div>
+                                            </td>
+                                            <td class="p-3 align-top">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'}">
+                                                    ${isActive ? '✅ AKTIF' : '🔒 TERKUNCI'}
+                                                </span>
+                                            </td>
+                                            <td class="p-3 align-top text-[11px] ${isActive ? 'text-slate-500' : 'text-red-500 font-medium'}">
+                                                ${escapeHtml(f.evaluated?.reason || f.availability?.note || '-')}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
-            }).join('');
+            } else {
+                // Card View Mode
+                container.innerHTML = list.map(f => {
+                    const isActive = f.evaluated?.active;
+                    const aliases = f.aliases && f.aliases.length ? f.aliases.map(a => `!${a}`).join(', ') : '';
+
+                    return `
+                        <div class="p-3.5 rounded-2xl ${isActive ? 'bg-slate-50 dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800' : 'bg-red-50/30 dark:bg-red-950/10 border border-red-200/50 dark:border-red-900/40'} flex flex-col justify-between space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono font-bold text-sm ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}">!${escapeHtml(f.name)}</span>
+                                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-200 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 uppercase">${escapeHtml(f.category)}</span>
+                                    </div>
+                                    ${aliases ? `<p class="text-[10px] text-slate-400 mt-0.5 font-mono">Alias: ${escapeHtml(aliases)}</p>` : ''}
+                                </div>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'}">
+                                    ${isActive ? '✅ AKTIF' : '🔒 TERKUNCI'}
+                                </span>
+                            </div>
+
+                            <p class="text-xs text-slate-600 dark:text-slate-300">${escapeHtml(f.description)}</p>
+
+                            <div class="pt-2 border-t border-slate-200/50 dark:border-neutral-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px]">
+                                <div class="font-mono text-slate-500 bg-white/80 dark:bg-black/40 px-2 py-1 rounded-lg border border-slate-200/40 dark:border-neutral-800">
+                                    <code>${escapeHtml(f.usage || `!${f.name}`)}</code>
+                                </div>
+                                <span class="text-[10px] ${isActive ? 'text-slate-400' : 'text-red-500 font-medium'}">
+                                    ${escapeHtml(f.evaluated?.reason || f.availability?.note || '')}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             initIcons();
         }
@@ -1905,7 +2149,7 @@
 
             if (!items.length) {
                 container.innerHTML = `
-                    <div class="col-span-full py-10 text-center text-slate-400 space-y-2">
+                    <div class="py-10 text-center text-slate-400 space-y-2">
                         <i data-lucide="home" class="w-8 h-8 mx-auto text-slate-300"></i>
                         <p class="text-xs">Tidak ada data kos yang cocok.</p>
                     </div>
@@ -1914,60 +2158,134 @@
                 return;
             }
 
-            container.innerHTML = items.map((k, idx) => {
-                const isSent = k.status === 'sent';
-                return `
-                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex flex-col justify-between space-y-3">
-                        <div>
-                            <div class="flex items-start justify-between gap-2">
-                                <div>
-                                    <span class="text-[10px] font-mono font-bold text-slate-400">#${escapeHtml(k.id)}</span>
-                                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(k.name)}</h4>
-                                </div>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'}">
-                                    ${isSent ? 'TERKIRIM' : 'PENDING'}
-                                </span>
-                            </div>
-
-                            <div class="mt-2.5 space-y-1 text-xs">
-                                ${k.instagram ? `
-                                    <div class="flex items-center gap-1.5 text-pink-600 dark:text-pink-400">
-                                        <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
-                                        <a href="https://instagram.com/${escapeHtml(k.instagram)}" target="_blank" class="hover:underline truncate">@${escapeHtml(k.instagram)}</a>
-                                    </div>
-                                ` : ''}
-                                ${k.whatsapp ? `
-                                    <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                                        <i data-lucide="phone" class="w-3.5 h-3.5"></i>
-                                        <a href="https://wa.me/${escapeHtml(k.whatsapp)}" target="_blank" class="hover:underline truncate">${escapeHtml(k.whatsapp)}</a>
-                                    </div>
-                                ` : ''}
-                                ${k.tiktok ? `
-                                    <div class="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
-                                        <i data-lucide="video" class="w-3.5 h-3.5"></i>
-                                        <span class="truncate">@${escapeHtml(k.tiktok)}</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-neutral-800">
-                            <button onclick="toggleKostSentByIndex(${idx})" class="text-xs font-semibold ${isSent ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-700'} flex items-center gap-1">
-                                <i data-lucide="${isSent ? 'rotate-ccw' : 'check-circle-2'}" class="w-3.5 h-3.5"></i>
-                                ${isSent ? 'Set Pending' : 'Tandai Sent'}
-                            </button>
-                            <div class="flex items-center gap-1">
-                                <button onclick="openEditKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-500" title="Edit Kos">
-                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button onclick="deleteKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950 text-red-500" title="Hapus Kos">
-                                    <i data-lucide="trash" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
+            if (state.kostViewMode === 'table') {
+                // Table View Mode (iOS Style, Compact & Clean)
+                container.innerHTML = `
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-neutral-800">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-neutral-900 text-slate-500 border-b border-slate-200 dark:border-neutral-800">
+                                <tr>
+                                    <th class="p-3 font-semibold">#ID</th>
+                                    <th class="p-3 font-semibold">NAMA KOS</th>
+                                    <th class="p-3 font-semibold">KONTAK / SOSMED</th>
+                                    <th class="p-3 font-semibold">STATUS</th>
+                                    <th class="p-3 font-semibold text-right">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                                ${items.map((k, idx) => {
+                                    const isSent = k.status === 'sent';
+                                    return `
+                                        <tr class="hover:bg-slate-50/70 dark:hover:bg-neutral-900/50 transition">
+                                            <td class="p-3 font-mono text-slate-400 font-bold">#${escapeHtml(k.id)}</td>
+                                            <td class="p-3 font-bold text-slate-900 dark:text-white">${escapeHtml(k.name)}</td>
+                                            <td class="p-3">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    ${k.instagram ? `
+                                                        <a href="https://instagram.com/${escapeHtml(k.instagram)}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-medium text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/40 px-2 py-0.5 rounded-md hover:underline">
+                                                            <i data-lucide="instagram" class="w-3 h-3"></i> @${escapeHtml(k.instagram)}
+                                                        </a>
+                                                    ` : ''}
+                                                    ${k.whatsapp ? `
+                                                        <a href="https://wa.me/${escapeHtml(k.whatsapp)}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md hover:underline">
+                                                            <i data-lucide="phone" class="w-3 h-3"></i> ${escapeHtml(k.whatsapp)}
+                                                        </a>
+                                                    ` : ''}
+                                                    ${k.tiktok ? `
+                                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded-md">
+                                                            <i data-lucide="video" class="w-3 h-3"></i> @${escapeHtml(k.tiktok)}
+                                                        </span>
+                                                    ` : ''}
+                                                    ${!k.instagram && !k.whatsapp && !k.tiktok ? '<span class="text-slate-400 italic">-</span>' : ''}
+                                                </div>
+                                            </td>
+                                            <td class="p-3">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'}">
+                                                    ${isSent ? 'TERKIRIM' : 'PENDING'}
+                                                </span>
+                                            </td>
+                                            <td class="p-3 text-right">
+                                                <div class="inline-flex items-center gap-1.5 justify-end">
+                                                    <button onclick="toggleKostSentByIndex(${idx})" class="px-2.5 py-1 rounded-lg text-xs font-semibold ${isSent ? 'bg-slate-100 dark:bg-neutral-800 text-slate-600 hover:bg-slate-200' : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 hover:bg-emerald-100'} flex items-center gap-1" title="${isSent ? 'Ubah ke Pending' : 'Tandai Terkirim'}">
+                                                        <i data-lucide="${isSent ? 'rotate-ccw' : 'check-circle-2'}" class="w-3 h-3"></i>
+                                                        ${isSent ? 'Pending' : 'Sent'}
+                                                    </button>
+                                                    <button onclick="openEditKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-500" title="Edit Kos">
+                                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                    <button onclick="deleteKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950 text-red-500" title="Hapus Kos">
+                                                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
-            }).join('');
+            } else {
+                // Card View Mode
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${items.map((k, idx) => {
+                            const isSent = k.status === 'sent';
+                            return `
+                                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex flex-col justify-between space-y-3">
+                                    <div>
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <span class="text-[10px] font-mono font-bold text-slate-400">#${escapeHtml(k.id)}</span>
+                                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(k.name)}</h4>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'}">
+                                                ${isSent ? 'TERKIRIM' : 'PENDING'}
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-2.5 space-y-1 text-xs">
+                                            ${k.instagram ? `
+                                                <div class="flex items-center gap-1.5 text-pink-600 dark:text-pink-400">
+                                                    <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
+                                                    <a href="https://instagram.com/${escapeHtml(k.instagram)}" target="_blank" class="hover:underline truncate">@${escapeHtml(k.instagram)}</a>
+                                                </div>
+                                            ` : ''}
+                                            ${k.whatsapp ? `
+                                                <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                                                    <i data-lucide="phone" class="w-3.5 h-3.5"></i>
+                                                    <a href="https://wa.me/${escapeHtml(k.whatsapp)}" target="_blank" class="hover:underline truncate">${escapeHtml(k.whatsapp)}</a>
+                                                </div>
+                                            ` : ''}
+                                            ${k.tiktok ? `
+                                                <div class="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+                                                    <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                                                    <span class="truncate">@${escapeHtml(k.tiktok)}</span>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-neutral-800">
+                                        <button onclick="toggleKostSentByIndex(${idx})" class="text-xs font-semibold ${isSent ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-700'} flex items-center gap-1">
+                                            <i data-lucide="${isSent ? 'rotate-ccw' : 'check-circle-2'}" class="w-3.5 h-3.5"></i>
+                                            ${isSent ? 'Set Pending' : 'Tandai Sent'}
+                                        </button>
+                                        <div class="flex items-center gap-1">
+                                            <button onclick="openEditKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-500" title="Edit Kos">
+                                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <button onclick="deleteKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950 text-red-500" title="Hapus Kos">
+                                                <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
 
             initIcons();
         }
@@ -2136,44 +2454,105 @@
                 return;
             }
 
-            container.innerHTML = items.map((s, idx) => {
-                const isPending = s.status === 'pending';
-                const isApproved = s.status === 'approved';
-                const statusBadge = isPending 
-                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">PENDING REVIEW</span>'
-                    : isApproved 
-                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">APPROVED</span>'
-                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400">REJECTED</span>';
+            if (state.submissionsViewMode === 'table') {
+                // Table View Mode (Dense & Review-friendly)
+                container.innerHTML = `
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-neutral-800">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-neutral-900 text-slate-500 border-b border-slate-200 dark:border-neutral-800">
+                                <tr>
+                                    <th class="p-3 font-semibold">#ID</th>
+                                    <th class="p-3 font-semibold">NAMA KOS</th>
+                                    <th class="p-3 font-semibold">KONTAK DIUSULKAN</th>
+                                    <th class="p-3 font-semibold">PENGUSUL & WAKTU</th>
+                                    <th class="p-3 font-semibold">STATUS</th>
+                                    <th class="p-3 font-semibold text-right">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                                ${items.map((s, idx) => {
+                                    const isPending = s.status === 'pending';
+                                    const isApproved = s.status === 'approved';
+                                    const statusBadge = isPending 
+                                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">PENDING</span>'
+                                        : isApproved 
+                                            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">APPROVED</span>'
+                                            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400">REJECTED</span>';
 
-                return `
-                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-2.5">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <span class="text-[10px] font-mono font-bold text-slate-400">#${escapeHtml(s.id)}</span>
-                                <h4 class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(s.name)}</h4>
-                            </div>
-                            ${statusBadge}
-                        </div>
-
-                        <div class="text-xs text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-neutral-800/70 p-2.5 rounded-xl">
-                            <span class="text-[10px] text-slate-400 block mb-0.5">Kontak yang diusulkan:</span>
-                            <p class="font-medium">${escapeHtml(s.contactsRaw || '-')}</p>
-                            <span class="text-[10px] text-slate-400 block mt-1">Oleh: ${escapeHtml(s.submittedBy || 'Warga')} • ${escapeHtml(s.submittedAt || '')}</span>
-                        </div>
-
-                        ${isPending ? `
-                            <div class="flex justify-end gap-2 pt-1">
-                                <button onclick="reviewSubmissionAction(${s.id}, 'reject')" class="px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 transition">
-                                    Tolak Usulan
-                                </button>
-                                <button onclick="reviewSubmissionAction(${s.id}, 'approve')" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition active:scale-95">
-                                    Setujui & Tambah ke DB
-                                </button>
-                            </div>
-                        ` : ''}
+                                    return `
+                                        <tr class="hover:bg-slate-50/70 dark:hover:bg-neutral-900/50 transition">
+                                            <td class="p-3 font-mono text-slate-400 font-bold">#${escapeHtml(s.id)}</td>
+                                            <td class="p-3 font-bold text-slate-900 dark:text-white">${escapeHtml(s.name)}</td>
+                                            <td class="p-3 font-medium text-slate-700 dark:text-slate-300">${escapeHtml(s.contactsRaw || '-')}</td>
+                                            <td class="p-3 text-[11px] text-slate-500">
+                                                ${escapeHtml(s.submittedBy || 'Warga')}
+                                                ${s.submittedAt ? `<span class="block text-[10px] text-slate-400">${escapeHtml(s.submittedAt)}</span>` : ''}
+                                            </td>
+                                            <td class="p-3">${statusBadge}</td>
+                                            <td class="p-3 text-right">
+                                                ${isPending ? `
+                                                    <div class="inline-flex items-center gap-1.5 justify-end">
+                                                        <button onclick="reviewSubmissionAction(${s.id}, 'reject')" class="px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 transition">
+                                                            Tolak
+                                                        </button>
+                                                        <button onclick="reviewSubmissionAction(${s.id}, 'approve')" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition active:scale-95">
+                                                            Setujui & Tambah
+                                                        </button>
+                                                    </div>
+                                                ` : '<span class="text-slate-400 text-[11px] italic">Sudah direview</span>'}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
-            }).join('');
+            } else {
+                // Card View Mode
+                container.innerHTML = `
+                    <div class="space-y-3">
+                        ${items.map((s, idx) => {
+                            const isPending = s.status === 'pending';
+                            const isApproved = s.status === 'approved';
+                            const statusBadge = isPending 
+                                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">PENDING REVIEW</span>'
+                                : isApproved 
+                                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">APPROVED</span>'
+                                    : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400">REJECTED</span>';
+
+                            return `
+                                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-2.5">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <span class="text-[10px] font-mono font-bold text-slate-400">#${escapeHtml(s.id)}</span>
+                                            <h4 class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(s.name)}</h4>
+                                        </div>
+                                        ${statusBadge}
+                                    </div>
+
+                                    <div class="text-xs text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-neutral-800/70 p-2.5 rounded-xl">
+                                        <span class="text-[10px] text-slate-400 block mb-0.5">Kontak yang diusulkan:</span>
+                                        <p class="font-medium">${escapeHtml(s.contactsRaw || '-')}</p>
+                                        <span class="text-[10px] text-slate-400 block mt-1">Oleh: ${escapeHtml(s.submittedBy || 'Warga')} • ${escapeHtml(s.submittedAt || '')}</span>
+                                    </div>
+
+                                    ${isPending ? `
+                                        <div class="flex justify-end gap-2 pt-1">
+                                            <button onclick="reviewSubmissionAction(${s.id}, 'reject')" class="px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 transition">
+                                                Tolak Usulan
+                                            </button>
+                                            <button onclick="reviewSubmissionAction(${s.id}, 'approve')" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition active:scale-95">
+                                                Setujui & Tambah ke DB
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
 
             initIcons();
         }
