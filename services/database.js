@@ -172,7 +172,7 @@ async function ensureAllTables() {
             instagram VARCHAR(100) DEFAULT NULL,
             tiktok VARCHAR(100) DEFAULT NULL,
             whatsapp VARCHAR(50) DEFAULT NULL,
-            status ENUM('pending', 'sent') NOT NULL DEFAULT 'pending',
+            status VARCHAR(50) NOT NULL DEFAULT 'pending',
             added_by VARCHAR(100) DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             sent_by VARCHAR(100) DEFAULT NULL,
@@ -183,6 +183,7 @@ async function ensureAllTables() {
     `);
 
     try {
+        await db.query(`ALTER TABLE kost MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'pending'`);
         await db.query(`ALTER TABLE kost ADD COLUMN IF NOT EXISTS tiktok VARCHAR(100) NULL AFTER instagram`);
         await db.query(`ALTER TABLE kost ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(50) NULL AFTER tiktok`);
         await db.query(`ALTER TABLE kost MODIFY COLUMN instagram VARCHAR(100) NULL DEFAULT NULL`);
@@ -1767,6 +1768,73 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
     };
 }
 
+async function markKostPublished(arg1, arg2 = '', arg3 = null) {
+    let targetId = '';
+    let targetGroup = null;
+    let targetPublishedBy = '';
+
+    if (typeof arg1 === 'string' && arg1.endsWith('@g.us')) {
+        targetGroup = arg1;
+        targetId = arg2;
+        targetPublishedBy = arg3 || '';
+    } else {
+        targetId = arg1;
+        if (typeof arg2 === 'string' && arg2.endsWith('@g.us')) {
+            targetGroup = arg2;
+            targetPublishedBy = arg3 || '';
+        } else if (typeof arg3 === 'string' && arg3.endsWith('@g.us')) {
+            targetGroup = arg3;
+            targetPublishedBy = arg2 || '';
+        } else {
+            targetPublishedBy = arg2 || '';
+            targetGroup = arg3 || null;
+        }
+    }
+
+    const cleanId = normalizeKostId(targetId) || String(targetId || '').trim().toUpperCase();
+    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+
+    if (!cleanId) {
+        return { success: false, message: 'ID kost wajib diisi.' };
+    }
+
+    await ensureAllTables();
+    const db = getPool();
+
+    const current = await getKostById(cleanId, cleanGroupId);
+    if (!current) {
+        return {
+            success: false,
+            notFound: true,
+            message: `Kost dengan ID ${cleanId} tidak ditemukan.`
+        };
+    }
+
+    if (current.status === 'published' || current.status === 'posted') {
+        return {
+            success: false,
+            alreadyPublished: true,
+            message: `Kost dengan ID ${cleanId} sudah berstatus diposting (tayang) sebelumnya.`,
+            data: current
+        };
+    }
+
+    const now = new Date();
+    let updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = ? WHERE id = ?';
+    const updateParams = ['published', targetPublishedBy || null, now, cleanId];
+    if (cleanGroupId) {
+        updateSql += ' AND group_id = ?';
+        updateParams.push(cleanGroupId);
+    }
+    await db.query(updateSql, updateParams);
+
+    const updated = await getKostById(cleanId, cleanGroupId);
+    return {
+        success: true,
+        data: updated
+    };
+}
+
 function normalizeKostId(input) {
     if (input === null || input === undefined) return null;
     let s = String(input).trim().toUpperCase();
@@ -1961,7 +2029,7 @@ async function updateKost(id, { name, instagram = undefined, tiktok = undefined,
     const cleanStatus = status ? String(status).toLowerCase() : current.status;
 
     let sentAt = current.sentAt;
-    if (cleanStatus === 'sent' && current.status !== 'sent') {
+    if ((cleanStatus === 'sent' || cleanStatus === 'published' || cleanStatus === 'posted') && !current.sentAt) {
         sentAt = new Date();
     } else if (cleanStatus === 'pending') {
         sentAt = null;
@@ -1988,7 +2056,8 @@ async function getKostStats(groupId = null) {
         SELECT 
             COUNT(*) AS total,
             COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) AS pending,
-            COALESCE(SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END), 0) AS sent
+            COALESCE(SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END), 0) AS sent,
+            COALESCE(SUM(CASE WHEN status IN ('published', 'posted') THEN 1 ELSE 0 END), 0) AS published
         FROM kost
     `;
     const params = [];
@@ -2000,7 +2069,8 @@ async function getKostStats(groupId = null) {
     return {
         total: Number(rows[0]?.total || 0),
         pending: Number(rows[0]?.pending || 0),
-        sent: Number(rows[0]?.sent || 0)
+        sent: Number(rows[0]?.sent || 0),
+        published: Number(rows[0]?.published || 0)
     };
 }
 
@@ -2215,6 +2285,8 @@ module.exports = {
     markKostSent,
     markSent: markKostSent,
     markKostBatchSent,
+    markKostPublished,
+    markPublished: markKostPublished,
     normalizeKostId,
     parseKostIdTargets,
     deleteKost,

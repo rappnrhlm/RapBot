@@ -733,7 +733,7 @@ app.put('/api/kost/:id', async (req, res) => {
     }
 });
 
-// Mark kost sent / toggle status
+// Mark kost sent / toggle status (sent vs pending)
 app.post('/api/kost/:id/sent', async (req, res) => {
     try {
         const { id } = req.params;
@@ -751,7 +751,7 @@ app.post('/api/kost/:id/sent', async (req, res) => {
             }
             return res.json({
                 success: true,
-                message: 'Status kost berhasil diubah menjadi draft / pending.',
+                message: 'Status kost berhasil diubah menjadi pending (belum ditawarkan).',
                 data: result.data
             });
         }
@@ -763,12 +763,51 @@ app.post('/api/kost/:id/sent', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Status kost berhasil diubah menjadi sent (sudah diposting).',
+            message: 'Status kost berhasil diubah menjadi terkirim penawaran (sent).',
             data: result.data
         });
     } catch (err) {
         console.error('[web/server] Error POST /api/kost/:id/sent:', err);
-        res.status(500).json({ success: false, message: 'Gagal memperbarui status publikasi kost.' });
+        res.status(500).json({ success: false, message: 'Gagal memperbarui status penawaran kost.' });
+    }
+});
+
+// Mark kost published (tayang ke publik)
+app.post('/api/kost/:id/publish', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { publishedBy, groupId, pin, unpublish } = req.body;
+        const currentPin = pin || extractPin(req);
+
+        if (!validatePin(currentPin)) {
+            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        if (unpublish) {
+            const result = await database.updateKost(id, { status: 'sent', groupId });
+            if (!result.success) {
+                return res.status(result.notFound ? 404 : 400).json(result);
+            }
+            return res.json({
+                success: true,
+                message: 'Status kost berhasil ditarik dari publik (kembali ke sent).',
+                data: result.data
+            });
+        }
+
+        const result = await database.markKostPublished(id, groupId, publishedBy || 'web-admin');
+        if (!result.success) {
+            return res.status(result.notFound ? 404 : 400).json(result);
+        }
+
+        res.json({
+            success: true,
+            message: 'Status kost berhasil dipublikasikan (tayang ke publik).',
+            data: result.data
+        });
+    } catch (err) {
+        console.error('[web/server] Error POST /api/kost/:id/publish:', err);
+        res.status(500).json({ success: false, message: 'Gagal mempublikasikan data kost.' });
     }
 });
 

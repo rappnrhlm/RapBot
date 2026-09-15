@@ -68,12 +68,23 @@ function getContactDisplayLines(kost, database, indent = '   ') {
     return lines.join('\n');
 }
 
+function getStatusBadge(status) {
+    const s = String(status || 'pending').toLowerCase();
+    if (s === 'published' || s === 'posted') {
+        return '🟢 SUDAH DIPOSTING (PUBLIK)';
+    }
+    if (s === 'sent') {
+        return '📩 TERKIRIM PENAWARAN (DM)';
+    }
+    return '🟡 PROSPEK BARU (BELUM DI-DM)';
+}
+
 module.exports = {
     name: 'kost',
     aliases: ['addkost', 'cari', 'listkost', 'kostdm'],
     category: 'bukittinggi-kos',
     description: 'Manajemen data kos (khusus grup yang terdaftar). Mendukung Instagram, WhatsApp, dan TikTok.',
-    usage: '!addkost <Nama Kost> > <kontak (ig/wa/tt)> | !kost [all|pending|sent] | !kost dm | !kost lengkap <ID> | !cari <keyword>',
+    usage: '!addkost <Nama Kost> > <kontak (ig/wa/tt)> | !kost [all|pending|sent|published] | !kost dm | !kost lengkap <ID> | !cari <keyword>',
 
     async execute({ sock, msg, from, senderNumber, command, args, isGroup: isGroupChat, reply, services, utils }) {
         const database = services?.database || require('../../services/database');
@@ -151,7 +162,7 @@ Contoh:
 ID: ${result.data.id}
 Nama: ${result.data.name}
 ${contactDisplay}
-Status: ⏳ PENDING`;
+Status: 🟡 PROSPEK BARU (BELUM DI-DM)`;
 
                 return sendReply(succMsg);
             }
@@ -175,17 +186,22 @@ Status: ⏳ PENDING`;
                     }
                 }
 
-                // Publik hanya dapat mencari data kost yang SUDAH DI-POST (sent/published)
+                // Publik HANYA dapat mencari data kost yang SUDAH DIPOSTING / TAYANG (published)
                 const results = isPublicGroup
-                    ? await database.searchKost(query, from, { status: 'sent' })
+                    ? await database.searchKost(query, from, { status: 'published' })
                     : await database.searchKost(query, from);
 
                 if (!results.length) {
-                    const emptyMsg = `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
-                    return sendReply(emptyMsg);
+                    if (isPublicGroup) {
+                        const emptyMsg = `🔎 Belum ada data kos yang dipublikasikan atau cocok dengan kata kunci "${query}".\n\n💡 Punya info kos? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
+                        return sendReply(emptyMsg);
+                    } else {
+                        const emptyMsg = `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
+                        return sendReply(emptyMsg);
+                    }
                 }
 
-                // Format untuk grup publik (Hanya kost yang sudah dipost)
+                // Format untuk grup publik (Hanya kost yang sudah diposting secara resmi)
                 if (isPublicGroup) {
                     const maxRes = registeredGroup?.settings?.maxSearchResults || 5;
                     const displayList = results.slice(0, maxRes);
@@ -199,16 +215,15 @@ Status: ⏳ PENDING`;
                     return sendReply(text.trim());
                 }
 
-                // Format untuk grup admin (Menampilkan status: SUDAH DIPOST vs PROSPEK/PENDING)
+                // Format untuk grup admin (Menampilkan status 3-tier)
                 let text = `🔎 *HASIL PENCARIAN (ADMIN)*\nKata kunci: ${query}\n\nDitemukan: ${results.length}\n\n`;
                 results.forEach((k, idx) => {
-                    const isPublished = (k.status || 'pending').toLowerCase() === 'sent';
-                    const statusBadge = isPublished ? '✅ SUDAH DIPOST' : '⏳ PROSPEK / PENDING';
+                    const statusBadge = getStatusBadge(k.status);
                     const contacts = getContactDisplayLines(k, database, '   ');
-                    text += `${idx + 1}. *${k.name}*\n   🆔 ${k.id}\n${contacts}\n   📌 ${statusBadge}\n\n`;
+                    text += `${idx + 1}. *${k.name}*\n   🆔 ${k.id}\n${contacts}\n   📌 Status: ${statusBadge}\n\n`;
                 });
 
-                text += `────────────────────\n\n💡 Gunakan:\n\`!kost lengkap <ID>\`\n\`!sent <ID>\`\n\`!delkost <ID>\``;
+                text += `────────────────────\n\n💡 Gunakan:\n\`!kost lengkap <ID>\`\n\`!post <ID>\` (tayangkan ke publik)\n\`!sent <ID>\` (tandai sudah di-DM)\n\`!delkost <ID>\``;
                 return sendReply(text.trim());
             }
 
@@ -228,7 +243,9 @@ Contoh:
                 }
 
                 const kost = await database.getKostById(targetId, from);
-                if (!kost || (isPublicGroup && (kost.status || 'pending').toLowerCase() !== 'sent')) {
+                const isPublished = (kost?.status || '').toLowerCase() === 'published' || (kost?.status || '').toLowerCase() === 'posted';
+
+                if (!kost || (isPublicGroup && !isPublished)) {
                     return sendReply(`❌ Kost dengan ID "${targetId}" tidak ditemukan atau belum dipublikasikan.`);
                 }
 
@@ -251,8 +268,7 @@ Contoh:
                 }
 
                 const groupName = registeredGroup?.name || 'Bukittinggi Kos';
-                const isPublished = (kost.status || 'pending').toLowerCase() === 'sent';
-                const statusBadge = isPublished ? '✅ SUDAH DIPOST' : '⏳ PROSPEK / PENDING';
+                const statusBadge = getStatusBadge(kost.status);
                 const sentByDisplay = kost.sentBy ? kost.sentBy : '-';
                 const sentAtDisplay = kost.sentAt ? database.formatIndonesianDateTime(kost.sentAt) : '-';
 
@@ -265,8 +281,8 @@ Contoh:
 💬 WhatsApp: ${waUrl}
 🎵 TikTok: ${ttUrl}
 📌 Status: ${statusBadge}
-👤 Dipost Oleh: ${sentByDisplay}
-🕒 Waktu Dipost: ${sentAtDisplay}
+👤 Ditandai Oleh: ${sentByDisplay}
+🕒 Waktu Update: ${sentAtDisplay}
 👥 Grup: ${groupName}`;
 
                 return sendReply(detailText);
@@ -284,18 +300,17 @@ Contoh:
             if (isDmMode) {
                 // Jika user mengetik !kost dm <ID> (misal: !kost dm 1 atau !kost dm kst 12), alihkan ke perintah !dm
                 const possibleId = ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase()) ? args.slice(1).join(' ').trim() : args.join(' ').trim();
-                if (possibleId && !['all', 'sent', 'pending'].includes(possibleId.toLowerCase())) {
+                if (possibleId && !['all', 'sent', 'pending', 'published', 'posted'].includes(possibleId.toLowerCase())) {
                     const dmCmd = require('./dm');
                     return await dmCmd.execute({ sock, msg, from, senderNumber, args: [possibleId], isGroup: inGroup, reply, services, utils });
                 }
 
-                const dmTemplate = require('../../utils/dmTemplate');
                 let filterStatus = 'pending';
                 if (['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase())) {
-                    if (args[1]?.toLowerCase() === 'all' || args[1]?.toLowerCase() === 'sent') {
+                    if (['all', 'sent', 'pending', 'published', 'posted'].includes(args[1]?.toLowerCase())) {
                         filterStatus = args[1].toLowerCase();
                     }
-                } else if (args[0]?.toLowerCase() === 'all' || args[0]?.toLowerCase() === 'sent') {
+                } else if (['all', 'sent', 'pending', 'published', 'posted'].includes(args[0]?.toLowerCase())) {
                     filterStatus = args[0].toLowerCase();
                 }
 
@@ -316,16 +331,16 @@ Contoh:
                     text += `${idx + 1}. *${k.name}* (\`${k.id}\`)\n${contactLines.join('\n')}\n\n`;
                 });
 
-                text += `────────────────────\n💡 *Trik Cepat Cina:*\n• Ketik \`!dm <ID>\` (contoh: \`!dm 1\`) untuk mendapatkan balon chat teks template siap salin ke Instagram.\n• Setelah selesai di-DM, tandai sent:\n\`!sent <ID>\` atau \`!sent 1 sampai 10\``;
+                text += `────────────────────\n💡 *Trik Cepat DM & Posting:*\n• Ketik \`!dm <ID>\` untuk teks pesan ajakan promosi siap kirim.\n• Setelah selesai di-DM, tandai sent:\n\`!sent <ID>\`\n• Jika sudah deal & posting di feed/story:\n\`!post <ID>\``;
                 return sendReply(text.trim());
             }
 
-            // 5. LIST KOST: !kost [all|pending|sent]
+            // 5. LIST KOST: !kost [all|pending|sent|published]
             const sub = args[0]?.toLowerCase() || 'pending';
             let filter = 'pending';
-            if (sub === 'all') filter = 'all';
-            else if (sub === 'sent') filter = 'sent';
-            else if (sub === 'pending') filter = 'pending';
+            if (['all', 'sent', 'pending', 'published', 'posted'].includes(sub)) {
+                filter = sub;
+            }
 
             const list = await database.getKostByStatus(filter, from);
 
@@ -338,7 +353,7 @@ Contoh:
             let text = `🏠 *DAFTAR KOST ${groupAlias}* (${filter.toUpperCase()})\nTotal: ${list.length}\n\n`;
 
             list.forEach((k, idx) => {
-                const statusBadge = (k.status || 'pending').toLowerCase() === 'sent' ? '✅ SENT' : '⏳ PENDING';
+                const statusBadge = getStatusBadge(k.status);
                 const contacts = getContactDisplayLines(k, database, '   ');
                 text += `${idx + 1}. *${k.name}*\n   🆔 ${k.id}\n${contacts}\n   📌 Status: ${statusBadge}\n\n`;
             });
@@ -352,10 +367,12 @@ Contoh:
 \`!kost all\`
 \`!kost pending\`
 \`!kost sent\`
+\`!kost published\`
 \`!kost lengkap <ID>\`
+\`!post <ID>\` (tayangkan ke publik)
+\`!sent <ID>\` (tandai sudah di-DM)
 \`!addkost <Nama> > <kontak (ig/wa/tt)>\`
 \`!cari <kata kunci>\`
-\`!sent <ID>\`
 \`!delkost <ID>\``;
 
             return sendReply(text.trim());
