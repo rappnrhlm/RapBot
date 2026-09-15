@@ -201,27 +201,69 @@ app.delete('/api/owners/:number', async (req, res) => {
     });
 });
 
-// ----------------------------------------------------
-// 3. GROUPS & GROUP LINKING API
-// ----------------------------------------------------
-
-// List all registered groups
-app.get('/api/groups', (req, res) => {
+// List all groups (both initialized and uninitialized / undefined)
+app.get('/api/groups', async (req, res) => {
     try {
+        // If active bot socket is connected, fetch live participating groups
+        if (activeBotSocket?.groupFetchAllParticipating) {
+            try {
+                const liveGroupsMap = await activeBotSocket.groupFetchAllParticipating();
+                if (liveGroupsMap && typeof liveGroupsMap === 'object') {
+                    database.updateDiscoveredGroupsFromMetadata(liveGroupsMap);
+                }
+            } catch (err) {
+                console.warn('[web/server] Info: Could not fetch live groups from socket:', err.message);
+            }
+        }
+
         const rawGroups = database.getGroups();
-        const enriched = rawGroups.map(g => {
+        const discovered = database.getDiscoveredGroups();
+
+        // Map initialized groups
+        const initializedJids = new Set();
+        const enrichedRegistered = rawGroups.map(g => {
+            const cleanId = normalizeJid(g.id);
+            initializedJids.add(cleanId);
             let parentName = null;
             if (g.parentGroupId) {
                 const parent = database.getGroupById(g.parentGroupId);
                 parentName = parent ? parent.name : g.parentGroupId;
             }
+            const disc = discovered.find(d => normalizeJid(d.id) === cleanId);
             return {
                 ...g,
-                parentGroupName: parentName
+                groupName: g.groupName || disc?.subject || '',
+                parentGroupName: parentName,
+                isInitialized: true,
+                participantsCount: disc?.participantsCount || null
             };
         });
 
-        res.json({ success: true, groups: enriched });
+        // Map uninitialized (undefined) groups discovered by bot
+        const uninitialized = discovered
+            .filter(d => d?.id && !initializedJids.has(normalizeJid(d.id)))
+            .map(d => ({
+                id: d.id,
+                name: d.subject || 'Grup WhatsApp',
+                groupName: d.subject || '',
+                type: 'undefined',
+                role: 'uninitialized',
+                parentGroupId: null,
+                parentGroupName: null,
+                isInitialized: false,
+                participantsCount: d.participantsCount || 0,
+                lastSeen: d.lastSeen || null
+            }));
+
+        const allGroups = [...enrichedRegistered, ...uninitialized];
+
+        res.json({
+            success: true,
+            total: allGroups.length,
+            initializedCount: enrichedRegistered.length,
+            uninitializedCount: uninitialized.length,
+            groups: allGroups
+        });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

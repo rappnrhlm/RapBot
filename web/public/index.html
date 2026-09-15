@@ -210,16 +210,31 @@
         <!-- 2. TAB: GROUP HUB (GRUP SAYA) -->
         <!-- ================================================= -->
         <section id="section-groups" class="hidden space-y-6">
-            <!-- Header with Register Group Button -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5">
-                <div>
-                    <h2 class="text-base font-bold tracking-tight">Daftar Grup WhatsApp</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola grup, atur relasi link data ke grup induk, atau buka workspace khusus.</p>
+            <!-- Header with Register Group Button & Filter Tabs -->
+            <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-base font-bold tracking-tight">Daftar Grup WhatsApp</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola grup terdaftar, inisialisasi grup baru, dan atur relasi data grup induk.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openRegisterGroupModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-blue-500/20 active:scale-95">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            + Daftarkan Manual
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="openRegisterGroupModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-blue-500/20 active:scale-95">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        + Daftarkan Grup
+
+                <!-- Group Filters (All vs Registered vs Undefined) -->
+                <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-neutral-800 text-xs font-semibold">
+                    <button onclick="setGroupFilter('all')" id="groupFilter-all" class="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white transition">
+                        Semua (<span id="countAllGroups">0</span>)
+                    </button>
+                    <button onclick="setGroupFilter('initialized')" id="groupFilter-initialized" class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                        ✅ Terdaftar (<span id="countInitGroups">0</span>)
+                    </button>
+                    <button onclick="setGroupFilter('uninitialized')" id="groupFilter-uninitialized" class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                        ⚠️ Belum Di-Init / Undefined (<span id="countUninitGroups">0</span>)
                     </button>
                 </div>
             </div>
@@ -490,6 +505,70 @@
     </div>
 
     <!-- ================================================= -->
+    <!-- MODAL: INITIALIZE UNDEFINED GROUP -->
+    <!-- ================================================= -->
+    <div id="initUndefinedModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+                    <h3 class="text-sm font-bold tracking-tight">Inisialisasi & Hubungkan Grup</h3>
+                </div>
+                <button onclick="closeModal('initUndefinedModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Grup WhatsApp ini terdeteksi oleh bot. Berikan nama alias dan tentukan apakah grup ini merupakan <strong>Grup Pusat (Admin)</strong> atau <strong>Grup Publik yang terhubung ke induk</strong>.
+            </p>
+
+            <input type="hidden" id="initUndefJid">
+
+            <div class="space-y-3">
+                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-neutral-900 text-xs text-slate-600 dark:text-slate-300">
+                    <span class="text-[11px] text-slate-400 block">Nama Asli di WhatsApp:</span>
+                    <strong id="initUndefWaSubject" class="text-slate-900 dark:text-white">-</strong>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama Alias / Tampilan Bot:</label>
+                    <input type="text" id="initUndefAliasName" placeholder="Contoh: Bukittinggi Kos Publik" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipe Modul:</label>
+                        <select id="initUndefType" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                            <option value="kos">Kos-kosan</option>
+                            <option value="general">Umum / Komunitas</option>
+                            <option value="marketplace">Marketplace</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Peran Grup:</label>
+                        <select id="initUndefRole" onchange="onInitRoleChange()" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                            <option value="public">Publik (Terhubung ke Induk)</option>
+                            <option value="admin">Admin (Grup Pusat / Induk)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="initUndefParentRow">
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Hubungkan ke Grup Induk:</label>
+                    <select id="initUndefParentSelect" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">Grup publik ini akan otomatis membaca database yang dimiliki oleh grup induk.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('initUndefinedModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="submitInitUndefinedGroup()" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold active:scale-95 shadow-md shadow-emerald-500/20">Simpan & Inisialisasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================= -->
     <!-- MODAL: ADD / EDIT KOST -->
     <!-- ================================================= -->
     <div id="kostModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
@@ -669,6 +748,7 @@
             developerMode: localStorage.getItem('bot_dev_mode') === 'true',
             adminPin: localStorage.getItem('bot_admin_pin') || '',
             activeTab: 'overview',
+            groupFilter: 'all', // 'all' | 'initialized' | 'uninitialized'
             groups: [],
             activeWorkspaceGroup: null,
             kostList: [],
@@ -871,6 +951,21 @@
         // ==========================================
         // 2. GROUPS & LINKING MANAGEMENT
         // ==========================================
+        function setGroupFilter(filter) {
+            state.groupFilter = filter;
+            const filters = ['all', 'initialized', 'uninitialized'];
+            filters.forEach(f => {
+                const btn = document.getElementById(`groupFilter-${f}`);
+                if (!btn) return;
+                if (f === filter) {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-semibold shadow-sm transition';
+                } else {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-neutral-700 font-semibold transition';
+                }
+            });
+            renderGroupsList();
+        }
+
         async function loadGroups() {
             try {
                 const res = await fetch('/api/groups');
@@ -886,22 +981,95 @@
 
         function renderGroupsList() {
             const container = document.getElementById('groupsListContainer');
-            if (!state.groups.length) {
+            
+            // Calculate group counts
+            const total = state.groups.length;
+            const initCount = state.groups.filter(g => g.isInitialized !== false).length;
+            const uninitCount = state.groups.filter(g => g.isInitialized === false).length;
+
+            const countAllEl = document.getElementById('countAllGroups');
+            const countInitEl = document.getElementById('countInitGroups');
+            const countUninitEl = document.getElementById('countUninitGroups');
+            if (countAllEl) countAllEl.innerText = total;
+            if (countInitEl) countInitEl.innerText = initCount;
+            if (countUninitEl) countUninitEl.innerText = uninitCount;
+
+            // Filter groups based on active filter
+            let filtered = state.groups;
+            if (state.groupFilter === 'initialized') {
+                filtered = state.groups.filter(g => g.isInitialized !== false);
+            } else if (state.groupFilter === 'uninitialized') {
+                filtered = state.groups.filter(g => g.isInitialized === false);
+            }
+
+            if (!filtered.length) {
                 container.innerHTML = `
                     <div class="col-span-full bg-white dark:bg-[#1C1C1E] p-8 rounded-3xl text-center ios-card-shadow border border-black/5 dark:border-white/5 space-y-2">
                         <i data-lucide="users-2" class="w-10 h-10 mx-auto text-slate-300"></i>
-                        <h4 class="text-sm font-semibold">Belum Ada Grup Terdaftar</h4>
-                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Grup yang diinisialisasi melalui perintah WhatsApp atau form ini akan muncul di sini.</p>
-                        <button onclick="openRegisterGroupModal()" class="mt-2 px-4 py-2 rounded-2xl bg-blue-600 text-white text-xs font-semibold">Daftarkan Sekarang</button>
+                        <h4 class="text-sm font-semibold">Tidak Ada Grup di Kategori Ini</h4>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Semua grup yang terdeteksi atau terdaftar akan muncul di sini.</p>
                     </div>
                 `;
                 initIcons();
                 return;
             }
 
-            container.innerHTML = state.groups.map(g => {
+            container.innerHTML = filtered.map(g => {
+                const isInit = g.isInitialized !== false;
                 const isPublic = g.role === 'public';
                 const hasParent = Boolean(g.parentGroupId);
+
+                if (!isInit) {
+                    // UNDEFINED / UNINITIALIZED GROUP CARD
+                    return `
+                        <div class="p-5 rounded-3xl bg-amber-50/30 dark:bg-amber-950/10 ios-card-shadow border-2 border-dashed border-amber-300/80 dark:border-amber-700/60 flex flex-col justify-between space-y-4">
+                            <div>
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                            <h3 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                                                ${escapeHtml(g.name || g.groupName || 'Grup WhatsApp')}
+                                            </h3>
+                                        </div>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                                            <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i>
+                                            ${g.participantsCount ? `${g.participantsCount} Anggota` : 'Terdeteksi di WhatsApp'}
+                                        </p>
+                                    </div>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/50">
+                                        ⚠️ BELUM DI-INIT
+                                    </span>
+                                </div>
+
+                                <div class="mt-3 p-2.5 rounded-2xl bg-white/80 dark:bg-neutral-900/80 border border-amber-200/60 dark:border-amber-800/40 text-xs text-slate-600 dark:text-slate-300">
+                                    <p class="text-[11px] leading-relaxed">
+                                        Grup ini ada di WhatsApp bot tapi <strong>belum dikonfigurasi</strong> perannya (Admin vs Publik).
+                                    </p>
+                                </div>
+
+                                ${state.developerMode ? `
+                                    <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-amber-400 font-mono text-[10px] space-y-1">
+                                        <div class="truncate">JID: ${escapeHtml(g.id)}</div>
+                                        <div class="flex justify-between text-slate-400">
+                                            <span>Seen: ${escapeHtml(g.lastSeen || 'Live')}</span>
+                                            <button onclick='openInspector("Group: ${escapeHtml(g.name)}", ${JSON.stringify(g)})' class="text-blue-400 hover:underline">Inspect JSON</button>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
+                                <button onclick="openInitUndefinedModal('${escapeHtml(g.id)}', '${escapeHtml(g.name || g.groupName || '')}')" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                    Inisialisasi & Hubungkan Grup
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // ACTIVE / INITIALIZED GROUP CARD
                 const roleColor = isPublic 
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' 
                     : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
@@ -973,6 +1141,79 @@
             initIcons();
         }
 
+        // Initialize Undefined Group Modal
+        function openInitUndefinedModal(jid, waSubject) {
+            document.getElementById('initUndefJid').value = jid;
+            document.getElementById('initUndefWaSubject').innerText = waSubject || jid;
+            document.getElementById('initUndefAliasName').value = waSubject || '';
+            document.getElementById('initUndefType').value = 'kos';
+            document.getElementById('initUndefRole').value = 'public';
+
+            // Populate parent select with currently initialized groups
+            const parentSelect = document.getElementById('initUndefParentSelect');
+            const registeredParents = state.groups.filter(g => g.isInitialized !== false && g.id !== jid);
+            if (registeredParents.length > 0) {
+                parentSelect.innerHTML = registeredParents.map(p => `
+                    <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} (${(p.role || 'admin').toUpperCase()})</option>
+                `).join('');
+            } else {
+                parentSelect.innerHTML = `<option value="">(Belum ada grup induk terdaftar - akan dijadikan grup mandiri)</option>`;
+            }
+
+            onInitRoleChange();
+            openModal('initUndefinedModal');
+        }
+
+        function onInitRoleChange() {
+            const role = document.getElementById('initUndefRole').value;
+            const parentRow = document.getElementById('initUndefParentRow');
+            if (role === 'public') {
+                parentRow.style.display = 'block';
+            } else {
+                parentRow.style.display = 'none';
+            }
+        }
+
+        async function submitInitUndefinedGroup() {
+            const id = document.getElementById('initUndefJid').value;
+            const name = document.getElementById('initUndefAliasName').value.trim();
+            const type = document.getElementById('initUndefType').value;
+            const role = document.getElementById('initUndefRole').value;
+            const parentGroupId = role === 'public' ? document.getElementById('initUndefParentSelect').value : null;
+
+            if (!name) {
+                showToast('Nama alias grup wajib diisi', true);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({
+                        id,
+                        name,
+                        groupName: document.getElementById('initUndefWaSubject').innerText,
+                        type,
+                        role,
+                        parentGroupId: parentGroupId || null,
+                        pin: state.adminPin
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Grup berhasil diinisialisasi & terhubung!');
+                    closeModal('initUndefinedModal');
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
+
         // Visual Linking Modal
         let currentLinkingChildId = null;
         function openLinkGroupModal(childId, childName, currentParentId) {
@@ -981,7 +1222,7 @@
 
             const select = document.getElementById('parentGroupSelect');
             // Filter out the child group itself from potential parents
-            const eligibleParents = state.groups.filter(g => g.id !== childId);
+            const eligibleParents = state.groups.filter(g => g.isInitialized !== false && g.id !== childId);
 
             let optionsHtml = `<option value="">(Tidak Terhubung / Jadikan Grup Mandiri)</option>`;
             eligibleParents.forEach(p => {

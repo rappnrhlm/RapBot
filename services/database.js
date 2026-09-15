@@ -13,6 +13,7 @@ const WELCOME_FILE = path.join(DATA_DIR, 'welcome.json');
 const AUTOREPLY_FILE = path.join(DATA_DIR, 'autoreplies.json');
 const KOST_FILE = path.join(DATA_DIR, 'kost.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
+const DISCOVERED_GROUPS_FILE = path.join(DATA_DIR, 'discovered_groups.json');
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'kost_submissions.json');
 
 const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '6285195532009');
@@ -62,6 +63,7 @@ const INITIAL_KOST = [
 const cache = {
     owners: [],
     groups: [],
+    discoveredGroups: [],
     autoreplies: [],
     welcome: { ...DEFAULT_WELCOME },
     groupWelcomes: {},
@@ -95,6 +97,11 @@ function initLocalCache() {
             cache.groups = rawGroups;
         } else {
             cache.groups = [INITIAL_GROUP];
+        }
+
+        const rawDiscovered = readJSON(DISCOVERED_GROUPS_FILE, []);
+        if (Array.isArray(rawDiscovered)) {
+            cache.discoveredGroups = rawDiscovered;
         }
 
         const rawAutoreplies = readJSON(AUTOREPLY_FILE, null);
@@ -144,6 +151,7 @@ function ensureDataFiles() {
     if (!fs.existsSync(WELCOME_FILE)) writeJSON(WELCOME_FILE, cache.welcome);
     if (!fs.existsSync(AUTOREPLY_FILE)) writeJSON(AUTOREPLY_FILE, cache.autoreplies);
     if (!fs.existsSync(GROUPS_FILE)) writeJSON(GROUPS_FILE, { groups: cache.groups });
+    if (!fs.existsSync(DISCOVERED_GROUPS_FILE)) writeJSON(DISCOVERED_GROUPS_FILE, []);
     if (!fs.existsSync(KOST_FILE)) writeJSON(KOST_FILE, []);
     if (!fs.existsSync(SUBMISSIONS_FILE)) writeJSON(SUBMISSIONS_FILE, []);
 }
@@ -1354,6 +1362,43 @@ async function deleteGroup(id) {
     };
 }
 
+function getDiscoveredGroups() {
+    return cache.discoveredGroups || [];
+}
+
+function saveDiscoveredGroups(list) {
+    if (!Array.isArray(list)) return;
+    cache.discoveredGroups = list;
+    syncDataFile(DISCOVERED_GROUPS_FILE, list);
+}
+
+function updateDiscoveredGroupsFromMetadata(metaListOrMap) {
+    const current = cache.discoveredGroups || [];
+    const map = new Map();
+    current.forEach(g => {
+        if (g?.id) map.set(normalizeJid(g.id), g);
+    });
+
+    const list = Array.isArray(metaListOrMap) ? metaListOrMap : Object.values(metaListOrMap || {});
+    list.forEach(m => {
+        if (!m?.id) return;
+        const jid = normalizeJid(m.id);
+        const prev = map.get(jid) || {};
+        map.set(jid, {
+            id: jid,
+            subject: m.subject || prev.subject || '',
+            participantsCount: m.participants?.length || prev.participantsCount || 0,
+            creation: m.creation || prev.creation || null,
+            desc: m.desc || prev.desc || '',
+            lastSeen: new Date().toISOString()
+        });
+    });
+
+    const updated = Array.from(map.values());
+    saveDiscoveredGroups(updated);
+    return updated;
+}
+
 // ====================================================
 // KOST REPOSITORY (MARIADB SINGLE SOURCE OF TRUTH)
 // ====================================================
@@ -2188,6 +2233,7 @@ module.exports = {
 
     // Groups (Persistent Registration)
     GROUPS_FILE,
+    DISCOVERED_GROUPS_FILE,
     getGroups,
     saveGroups,
     getGroupById,
@@ -2196,6 +2242,9 @@ module.exports = {
     addGroup,
     updateGroup,
     deleteGroup,
+    getDiscoveredGroups,
+    saveDiscoveredGroups,
+    updateDiscoveredGroupsFromMetadata,
 
     // Submissions
     addKostSubmission,

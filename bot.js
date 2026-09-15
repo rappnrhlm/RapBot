@@ -56,6 +56,15 @@ async function connectToWhatsApp() {
             webServer.setBotSocket(sock, 'connected');
             console.log('Bot Baileys Berhasil Terhubung! 🚀');
             console.log('Daftar Owner:', database.getOwners().map(o => o.name || o.number));
+            try {
+                const groups = await sock.groupFetchAllParticipating();
+                if (groups && typeof groups === 'object') {
+                    database.updateDiscoveredGroupsFromMetadata(groups);
+                    console.log(`✅ ${Object.keys(groups).length} grup WhatsApp terdeteksi & disinkronkan.`);
+                }
+            } catch (gErr) {
+                console.warn('Info: Gagal mengambil daftar grup partisipasi saat startup:', gErr.message);
+            }
         }
     });
 
