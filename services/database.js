@@ -16,46 +16,15 @@ const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
 const DISCOVERED_GROUPS_FILE = path.join(DATA_DIR, 'discovered_groups.json');
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'kost_submissions.json');
 
-const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '6285195532009');
-
-const INITIAL_GROUP = {
-    id: '120363429518970623@g.us',
-    name: 'Bukittinggi Kos',
-    groupName: 'admin @bukittinggikos',
-    type: 'kos',
-    role: 'admin',
-    parentGroupId: null,
-    settings: {},
-    initializedAt: '2026-09-07T14:38:00.333Z',
-    initializedBy: '6285195532009'
-};
+const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '');
 
 const DEFAULT_WELCOME = {
     enabled: true,
     text:
-        '👋 Selamat datang @user di *@group*!\n\n' +
+        '👋 Selamat datang {user} di *{group}*!\n\n' +
         'Semoga betah di sini 🤙\n' +
         'Ketik !menu untuk melihat fitur bot.'
 };
-
-const INITIAL_KOST = [
-    { id: 'KST-000001', group_id: '120363429518970623@g.us', name: 'Kost Farrel', instagram: 'kostfarrel_bukittinggi', tiktok: null, whatsapp: null, status: 'sent', added_by: '6285195532009', created_at: '2026-09-07 21:45:55', sent_by: '6282171641083', sent_at: '2026-09-07 23:00:39' },
-    { id: 'KST-000002', group_id: '120363429518970623@g.us', name: 'Kost Putri Enam Dua', instagram: 'kostputrienamdua', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 22:53:25', sent_by: null, sent_at: null },
-    { id: 'KST-000003', group_id: '120363429518970623@g.us', name: 'Kost Al Hazen', instagram: 'kost_al_hazen_bukittinggi', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:08:31', sent_by: null, sent_at: null },
-    { id: 'KST-000004', group_id: '120363429518970623@g.us', name: 'Kos Gunapaksi', instagram: 'suchi_putri', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:12:40', sent_by: null, sent_at: null },
-    { id: 'KST-000005', group_id: '120363429518970623@g.us', name: 'Fatimah Guesthouse', instagram: 'fatimah_guesthouse', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:14:55', sent_by: null, sent_at: null },
-    { id: 'KST-000006', group_id: '120363429518970623@g.us', name: 'Kost Putri', instagram: 'dhiyazzu_', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:16:04', sent_by: null, sent_at: null },
-    { id: 'KST-000007', group_id: '120363429518970623@g.us', name: 'Mubarak Homestay & Kost', instagram: 'mubarak_homestaybkt', tiktok: null, whatsapp: null, status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:28:57', sent_by: null, sent_at: null },
-    { id: 'KST-000008', group_id: '120363429518970623@g.us', name: 'Sabila Homestay', instagram: 'sabilahomestay', tiktok: null, whatsapp: '6282283771685', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:30:04', sent_by: null, sent_at: null },
-    { id: 'KST-000009', group_id: '120363429518970623@g.us', name: 'Kos Putri Tangah Sawah', instagram: null, tiktok: null, whatsapp: '6281268201018', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:33:03', sent_by: null, sent_at: null },
-    { id: 'KST-000010', group_id: '120363429518970623@g.us', name: 'Kontrakan Jorong Tampaik', instagram: null, tiktok: null, whatsapp: '6285760271400', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:34:00', sent_by: null, sent_at: null },
-    { id: 'KST-000011', group_id: '120363429518970623@g.us', name: 'Kontrakan jl.Cangkiang', instagram: null, tiktok: null, whatsapp: '6281267075917', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:35:18', sent_by: null, sent_at: null },
-    { id: 'KST-000012', group_id: '120363429518970623@g.us', name: 'Kost di Birugo', instagram: null, tiktok: null, whatsapp: '6281374043580', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:36:03', sent_by: null, sent_at: null },
-    { id: 'KST-000013', group_id: '120363429518970623@g.us', name: 'Kontrakan simpang pakan ladang', instagram: null, tiktok: null, whatsapp: '6281372282374', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:37:11', sent_by: null, sent_at: null },
-    { id: 'KST-000014', group_id: '120363429518970623@g.us', name: 'Kost Putri dekat UIN', instagram: 'kost_uin_bukittinggi', tiktok: null, whatsapp: '6285718745033', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:38:26', sent_by: null, sent_at: null },
-    { id: 'KST-000015', group_id: '120363429518970623@g.us', name: 'Rumah Kita', instagram: null, tiktok: null, whatsapp: '6281277224179', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:39:31', sent_by: null, sent_at: null },
-    { id: 'KST-000016', group_id: '120363429518970623@g.us', name: 'Kost Putri Gulai Bancah', instagram: null, tiktok: null, whatsapp: '6288279032407', status: 'pending', added_by: '6285195532009', created_at: '2026-09-07 23:40:21', sent_by: null, sent_at: null }
-];
 
 // ====================================================
 // IN-MEMORY CACHE (ULTRA LOW-LATENCY 0MS READS)
@@ -173,11 +142,11 @@ let pool = null;
 function getPool() {
     if (!pool) {
         pool = mysql.createPool({
-            host: process.env.DB_HOST || 'armbian',
+            host: process.env.DB_HOST || 'localhost',
             port: Number(process.env.DB_PORT) || 3306,
-            user: process.env.DB_USER || 'dbrapa',
-            password: process.env.DB_PASSWORD || '090409',
-            database: process.env.DB_NAME || 'RapDB',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'bot_wa',
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
@@ -336,38 +305,44 @@ async function ensureAllTables() {
 }
 
 async function autoSeedTablesIfEmpty(db) {
-    // 1. Seed kost
+    // 1. Seed kost from data/kost.json if table is empty
     try {
         const [cntRows] = await db.query('SELECT COUNT(*) as cnt FROM kost');
         if (cntRows[0]?.cnt === 0) {
-            for (const k of INITIAL_KOST) {
-                await db.query(
-                    `INSERT IGNORE INTO kost (id, group_id, name, instagram, tiktok, whatsapp, status, added_by, created_at, sent_by, sent_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [k.id, k.group_id, k.name, k.instagram, k.tiktok, k.whatsapp, k.status, k.added_by, k.created_at, k.sent_by, k.sent_at]
-                );
+            const fileKost = readJSON(KOST_FILE, []);
+            if (Array.isArray(fileKost) && fileKost.length > 0) {
+                for (const k of fileKost) {
+                    if (!k?.id || !k?.name) continue;
+                    await db.query(
+                        `INSERT IGNORE INTO kost (id, group_id, name, instagram, tiktok, whatsapp, status, added_by, created_at, sent_by, sent_at)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [k.id, k.groupId || k.group_id || '', k.name, k.instagram || null, k.tiktok || null, k.whatsapp || null, k.status || 'pending', k.addedBy || k.added_by || 'init', k.createdAt || k.created_at ? new Date(k.createdAt || k.created_at) : new Date(), k.sentBy || k.sent_by || null, k.sentAt || k.sent_at ? new Date(k.sentAt || k.sent_at) : null]
+                    );
+                }
+                console.log(`[database] Auto-seeded ${fileKost.length} data kost ke MariaDB.`);
             }
-            console.log('[database] Auto-seeded 16 data kost awal ke MariaDB.');
         }
     } catch (e) {
         console.error('[database] Auto-seed kost check error:', e.message);
     }
 
-    // 2. Seed bot_groups
+    // 2. Seed bot_groups from data/groups.json if table is empty
     try {
         const [cntGroups] = await db.query('SELECT COUNT(*) as cnt FROM bot_groups');
         if (cntGroups[0]?.cnt === 0) {
             const fileGroups = readJSON(GROUPS_FILE, null);
-            const list = Array.isArray(fileGroups?.groups) ? fileGroups.groups : (Array.isArray(fileGroups) ? fileGroups : [INITIAL_GROUP]);
+            const list = Array.isArray(fileGroups?.groups) ? fileGroups.groups : (Array.isArray(fileGroups) ? fileGroups : []);
             for (const g of list) {
                 if (!g?.id) continue;
                 await db.query(
-                    `INSERT IGNORE INTO bot_groups (id, name, group_name, initialized_at, initialized_by)
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [g.id, g.name || 'Grup', g.groupName || '', g.initializedAt ? new Date(g.initializedAt) : new Date(), g.initializedBy || '']
+                    `INSERT IGNORE INTO bot_groups (id, name, group_name, type, role, parent_group_id, settings_json, initialized_at, initialized_by)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [g.id, g.name || 'Grup', g.groupName || '', g.type || 'kos', g.role || 'admin', g.parentGroupId || null, JSON.stringify(g.settings || {}), g.initializedAt ? new Date(g.initializedAt) : new Date(), g.initializedBy || '']
                 );
             }
-            console.log(`[database] Auto-seeded ${list.length} bot_groups ke MariaDB.`);
+            if (list.length > 0) {
+                console.log(`[database] Auto-seeded ${list.length} bot_groups ke MariaDB.`);
+            }
         }
     } catch (e) {
         console.error('[database] Auto-seed bot_groups check error:', e.message);
