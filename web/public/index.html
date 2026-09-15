@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WaBot Control Center</title>
+    <title>WaBot Control Platform</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -43,18 +43,10 @@
         .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
         .dark ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
         
-        .card-shadow {
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-        }
-        .card-shadow-lg {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
-        }
-        .dark .card-shadow {
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-        }
-        .dark .card-shadow-lg {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-        }
+        .card-shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05); }
+        .card-shadow-lg { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03); }
+        .dark .card-shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4); }
+        .dark .card-shadow-lg { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
 
         /* Toast Animation */
         @keyframes slideInRight {
@@ -91,15 +83,15 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <h1 class="text-sm font-bold tracking-tight text-slate-900 dark:text-white">WaBot Admin</h1>
+                            <h1 class="text-sm font-bold tracking-tight text-slate-900 dark:text-white">WaBot Studio</h1>
                             <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50">v2.5</span>
                         </div>
-                        <p class="text-[11px] text-slate-400 dark:text-slate-500 truncate" id="sidebarPhone">WhatsApp Controller</p>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 truncate" id="sidebarPhone">Multi-Purpose Bot</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Superuser Quick Access Box -->
+            <!-- Superuser Quick Access Card -->
             <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/50">
                 <button onclick="promptPinModal()" id="sidebarPinBtn" class="w-full py-2.5 px-3.5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition flex items-center justify-between group text-xs font-semibold shadow-xs">
                     <div class="flex items-center gap-2">
@@ -110,52 +102,40 @@
                 </button>
             </div>
 
-            <!-- Navigation Links -->
+            <!-- Consolidated Navigation Menu (4 Main Tabs) -->
             <div class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-320px)]">
                 <div class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    MENU UTAMA
+                    NAVIGASI UTAMA
                 </div>
 
-                <!-- Nav: Overview -->
+                <!-- 1. Dashboard -->
                 <button onclick="switchTab('overview')" id="nav-overview" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                    <span>Beranda & Statistik</span>
+                    <span>Dashboard & Metrik</span>
                 </button>
 
-                <!-- Nav: Groups Hub -->
+                <!-- 2. Groups & Community -->
                 <button onclick="switchTab('groups')" id="nav-groups" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
                     <i data-lucide="users-round" class="w-4 h-4"></i>
-                    <span>Hub & Grup WhatsApp</span>
+                    <span>Grup & Komunitas</span>
                 </button>
 
-                <!-- Nav: Workspace Kost -->
-                <button onclick="switchTab('workspace')" id="nav-workspace" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="building-2" class="w-4 h-4"></i>
-                    <span>Listing Kos & Usulan</span>
-                </button>
-
-                <!-- Nav: Responses -->
-                <button onclick="switchTab('responses')" id="nav-responses" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                <!-- 3. Automation & Autoreply -->
+                <button onclick="switchTab('automation')" id="nav-automation" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
                     <i data-lucide="message-square-text" class="w-4 h-4"></i>
-                    <span>Autoreply & Respon</span>
+                    <span>Pesan & Otomasi</span>
                 </button>
 
-                <!-- Nav: Owners -->
-                <button onclick="switchTab('owners')" id="nav-owners" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i>
-                    <span>Pengelola & Owner</span>
+                <!-- 4. Business Modules & Data -->
+                <button onclick="switchTab('modules')" id="nav-modules" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="boxes" class="w-4 h-4"></i>
+                    <span>Modul Bisnis & Data</span>
                 </button>
 
-                <!-- Nav: Features Inspector -->
-                <button onclick="switchTab('features')" id="nav-features" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    <span>Inspektur Fitur & Izin</span>
-                </button>
-
-                <!-- Nav: Logs & System -->
-                <button onclick="switchTab('logs')" id="nav-logs" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="terminal" class="w-4 h-4"></i>
-                    <span>Log Sistem & Siaran</span>
+                <!-- 5. System & Settings -->
+                <button onclick="switchTab('system')" id="nav-system" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="settings-2" class="w-4 h-4"></i>
+                    <span>Sistem & Pengelola</span>
                 </button>
             </div>
         </div>
@@ -167,7 +147,7 @@
             <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
                 <div class="flex items-center gap-2">
                     <i data-lucide="code-2" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Mode Developer</span>
+                    <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Mode Dev</span>
                 </div>
                 <button id="devModeToggle" onclick="toggleDeveloperMode()" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-slate-300 dark:bg-slate-700 focus:outline-none" role="switch" aria-checked="false">
                     <span id="devModeKnob" class="translate-x-0 pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"></span>
@@ -185,7 +165,7 @@
                     <span class="font-mono text-slate-600 dark:text-slate-400" id="sidebarUptime">0j 0m</span>
                 </div>
                 <p class="pt-1 text-[10px] text-slate-400/80 dark:text-slate-600 flex items-center gap-1">
-                    <i data-lucide="shield" class="w-3 h-3 inline"></i> Internal STB Server
+                    <i data-lucide="shield" class="w-3 h-3 inline"></i> Platform Siap Pakai & Jual
                 </p>
             </div>
         </div>
@@ -203,13 +183,13 @@
             <div class="flex items-center gap-3">
                 <div>
                     <div class="flex items-center gap-2">
-                        <h2 id="pageTitle" class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">Beranda & Statistik 📊</h2>
+                        <h2 id="pageTitle" class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">Dashboard & Metrik 📊</h2>
                         <span id="botStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span id="botStatusText">Online</span>
                         </span>
                     </div>
-                    <p id="pageSubtitle" class="text-xs text-slate-400 dark:text-slate-500">Ringkasan aktivitas dan status operasional bot</p>
+                    <p id="pageSubtitle" class="text-xs text-slate-400 dark:text-slate-500">Ringkasan operasional dan kesehatan sistem WhatsApp Bot</p>
                 </div>
             </div>
 
@@ -219,13 +199,13 @@
                 <!-- Dynamic Quick Action Button -->
                 <button id="topActionBtn" onclick="handleTopAction()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition active:scale-95 flex items-center gap-1.5">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span id="topActionBtnText">Daftarkan Grup</span>
+                    <span id="topActionBtnText">Aksi Cepat</span>
                 </button>
 
                 <!-- Sync Cache Button -->
                 <button onclick="syncCacheWithDb()" title="Sinkronkan data memori dengan file database" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 text-xs font-medium transition active:scale-95 flex items-center gap-1.5 shadow-xs">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                    <span class="hidden sm:inline">Sinkronisasi</span>
+                    <span class="hidden sm:inline">Sinkron</span>
                 </button>
 
                 <!-- Dark Mode Toggle -->
@@ -250,40 +230,40 @@
                         <i data-lucide="users" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">TOTAL GRUP</p>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">GRUP WHATSAPP</p>
                         <h4 class="text-lg font-extrabold text-slate-900 dark:text-white" id="metricTotalGroups">0</h4>
-                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium" id="metricActiveGroups">0 Aktif</span>
+                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium" id="metricActiveGroups">0 Terdaftar</span>
                     </div>
                 </div>
 
-                <!-- Card 2: Listing Kos -->
+                <!-- Card 2: Autoreply & Otomasi -->
                 <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex items-center gap-3.5">
                     <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 border border-indigo-100 dark:border-indigo-800/40">
-                        <i data-lucide="building-2" class="w-5 h-5"></i>
+                        <i data-lucide="message-square-code" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">TOTAL KOS</p>
-                        <h4 class="text-lg font-extrabold text-slate-900 dark:text-white" id="metricTotalKost">0</h4>
-                        <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium" id="metricPendingKost">0 Pending</span>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">AUTOREPLY</p>
+                        <h4 class="text-lg font-extrabold text-slate-900 dark:text-white" id="metricTotalAutoreplies">0</h4>
+                        <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">Trigger Aktif</span>
                     </div>
                 </div>
 
-                <!-- Card 3: Usulan Warga -->
+                <!-- Card 3: Data Listing Modul -->
                 <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex items-center gap-3.5">
                     <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 border border-amber-100 dark:border-amber-800/40">
-                        <i data-lucide="hourglass" class="w-5 h-5"></i>
+                        <i data-lucide="database" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">USULAN WARGA</p>
-                        <h4 class="text-lg font-extrabold text-slate-900 dark:text-white" id="metricPendingSubmissions">0</h4>
-                        <span class="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Perlu Review</span>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">DATA MODUL</p>
+                        <h4 class="text-lg font-extrabold text-slate-900 dark:text-white" id="metricTotalKost">0</h4>
+                        <span class="text-[10px] text-amber-600 dark:text-amber-400 font-medium" id="metricSubmissionsCount">0 Usulan</span>
                     </div>
                 </div>
 
                 <!-- Card 4: Pesan & Perintah -->
                 <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex items-center gap-3.5">
                     <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 border border-blue-100 dark:border-blue-800/40">
-                        <i data-lucide="message-square" class="w-5 h-5"></i>
+                        <i data-lucide="activity" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">PESAN MASUK</p>
@@ -300,13 +280,13 @@
                     <div>
                         <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">HAK AKSES</p>
                         <h4 class="text-sm font-extrabold text-slate-900 dark:text-white" id="metricSuperuserStatus">Terkunci</h4>
-                        <span class="text-[10px] text-purple-600 dark:text-purple-400 font-medium" id="metricOwnerCount">1 Owner</span>
+                        <span class="text-[10px] text-purple-600 dark:text-purple-400 font-medium" id="metricOwnerCount">1 Pengelola</span>
                     </div>
                 </div>
             </div>
 
             <!-- ========================================================= -->
-            <!-- SECTION 1: OVERVIEW / BERANDA                             -->
+            <!-- TAB 1: DASHBOARD & METRIK                                 -->
             <!-- ========================================================= -->
             <div id="section-overview" class="space-y-6">
                 
@@ -317,9 +297,9 @@
                         <div>
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-semibold backdrop-blur-md mb-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span>WhatsApp Baileys v2.5 Online</span>
+                                <span>WhatsApp Baileys Core Connected</span>
                             </div>
-                            <h3 class="text-xl sm:text-2xl font-black tracking-tight" id="heroBotName">WaBot Management Center</h3>
+                            <h3 class="text-xl sm:text-2xl font-black tracking-tight" id="heroBotName">WaBot Management Platform</h3>
                             <p class="text-xs text-blue-100/90 mt-1 flex flex-wrap items-center gap-3">
                                 <span>📱 Nomor Bot: <strong class="font-mono font-bold" id="heroBotPhone">Memuat...</strong></span>
                                 <span>•</span>
@@ -331,9 +311,9 @@
                                 <i data-lucide="send" class="w-4 h-4"></i>
                                 Siaran Pesan
                             </button>
-                            <button onclick="switchTab('workspace')" class="px-4 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-md transition active:scale-95 flex items-center gap-2">
-                                <i data-lucide="building-2" class="w-4 h-4"></i>
-                                Buka Workspace Kos
+                            <button onclick="switchTab('modules')" class="px-4 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-md transition active:scale-95 flex items-center gap-2">
+                                <i data-lucide="boxes" class="w-4 h-4"></i>
+                                Buka Modul Data
                             </button>
                         </div>
                     </div>
@@ -352,7 +332,7 @@
                                 <h4 class="text-sm font-bold text-slate-900 dark:text-white">Status Grup & Hub</h4>
                             </div>
                             <button onclick="switchTab('groups')" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
-                                Lihat Semua <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                                Kelola Grup <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
 
@@ -370,7 +350,7 @@
                                 </div>
                                 <h4 class="text-sm font-bold text-slate-900 dark:text-white">Aktivitas Terakhir</h4>
                             </div>
-                            <button onclick="switchTab('logs')" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                            <button onclick="switchTab('system')" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
                                 Semua Log <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
@@ -383,94 +363,203 @@
             </div>
 
             <!-- ========================================================= -->
-            <!-- SECTION 2: HUB & MANAJEMEN GRUP                           -->
+            <!-- TAB 2: GRUP & KOMUNITAS (COMMUNITY & HUB)                 -->
             <!-- ========================================================= -->
             <div id="section-groups" class="hidden space-y-4">
                 
-                <!-- Filter & Action Bar Card -->
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                    
-                    <!-- Search Input -->
-                    <div class="relative flex-1 max-w-md">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="groupSearchInput" oninput="filterGroups()" placeholder="Cari nama grup atau JID..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                <!-- Sub-tabs Header -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <button onclick="switchGroupSubTab('list')" id="groupSubTab-list" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            <span>Daftar Grup (<span id="groupsCountBadge">0</span>)</span>
+                        </button>
+                        <button onclick="switchGroupSubTab('broadcast')" id="groupSubTab-broadcast" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            <span>Siaran Pesan (Broadcast)</span>
+                        </button>
                     </div>
 
-                    <!-- Filter Tabs & Mode Switcher -->
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                            <button onclick="filterGroupRole('all')" id="filterGroup-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua</button>
-                            <button onclick="filterGroupRole('indukan')" id="filterGroup-indukan" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Indukan</button>
-                            <button onclick="filterGroupRole('cabang')" id="filterGroup-cabang" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Cabang</button>
-                            <button onclick="filterGroupRole('undefined')" id="filterGroup-undefined" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Undefined</button>
+                    <button onclick="openRegisterGroupModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Daftarkan Grup Baru
+                    </button>
+                </div>
+
+                <!-- 2A. Sub-View: Daftar Grup -->
+                <div id="groupSubView-list" class="space-y-4">
+                    <!-- Filters & Search -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                        <div class="relative flex-1 max-w-md">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="groupSearchInput" oninput="filterGroups()" placeholder="Cari nama grup atau JID..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                         </div>
 
-                        <!-- Table vs Card Toggle Switcher -->
-                        <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                            <button onclick="setGroupsViewMode('table')" id="btnViewTable-groups" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
-                                <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="setGroupsViewMode('cards')" id="btnViewCards-groups" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
-                                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                <button onclick="filterGroupRole('all')" id="filterGroup-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua</button>
+                                <button onclick="filterGroupRole('indukan')" id="filterGroup-indukan" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Indukan</button>
+                                <button onclick="filterGroupRole('cabang')" id="filterGroup-cabang" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Cabang</button>
+                                <button onclick="filterGroupRole('undefined')" id="filterGroup-undefined" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Undefined</button>
+                            </div>
 
-                        <button onclick="openRegisterGroupModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Daftarkan Grup
-                        </button>
+                            <!-- Table vs Card Toggle Switcher -->
+                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
+                                <button onclick="setGroupsViewMode('table')" id="btnViewTable-groups" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
+                                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="setGroupsViewMode('cards')" id="btnViewCards-groups" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
+                                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groups Container -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                        <div id="groupsContainer" class="p-4 sm:p-5">
+                            <div class="text-xs text-slate-400 py-12 text-center flex flex-col items-center justify-center gap-2">
+                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-indigo-600"></i>
+                                <span>Memuat daftar grup WhatsApp...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Main Content Container for Groups (Table or Cards) -->
-                <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                    <div id="groupsContainer" class="p-4 sm:p-5">
-                        <div class="text-xs text-slate-400 py-12 text-center flex flex-col items-center justify-center gap-2">
-                            <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-indigo-600"></i>
-                            <span>Memuat daftar grup WhatsApp...</span>
+                <!-- 2B. Sub-View: Siaran Pesan (Broadcast) Panel -->
+                <div id="groupSubView-broadcast" class="hidden space-y-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200/70 dark:border-slate-800 card-shadow max-w-2xl mx-auto space-y-4">
+                        <div class="border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Siaran Pesan ke Grup WhatsApp</h4>
+                            <p class="text-xs text-slate-400">Kirim pengumuman resmi ke seluruh grup terdaftar secara aman</p>
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Pengiriman:</label>
+                                <select id="bcTargetInline" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                                    <option value="all">Semua Grup Terdaftar</option>
+                                    <option value="indukan">Hanya Grup Indukan (Master)</option>
+                                    <option value="cabang">Hanya Grup Cabang (Public)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Isi Pesan Siaran <span class="text-rose-500">*</span></label>
+                                <textarea id="bcMessageInline" rows="5" placeholder="Tulis pengumuman atau instruksi resmi di sini..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-2">
+                            <button onclick="submitBroadcastInline()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-sm flex items-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Kirim Siaran Sekarang
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- ========================================================= -->
-            <!-- SECTION 3: WORKSPACE KOS & USULAN WARGA                  -->
+            <!-- TAB 3: PESAN & OTOMASI (AUTOMATION & AUTOREPLY)           -->
             <!-- ========================================================= -->
-            <div id="section-workspace" class="hidden space-y-4">
+            <div id="section-automation" class="hidden space-y-4">
                 
-                <!-- Workspace Sub-tabs -->
+                <!-- Sub-tabs Header -->
                 <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <button onclick="switchWsTab('kost-list')" id="wsTab-kost-list" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
-                            <i data-lucide="home" class="w-3.5 h-3.5"></i>
-                            <span>Listing Kos (<span id="wsKostCount">0</span>)</span>
+                        <button onclick="switchAutoSubTab('autoreply')" id="autoSubTab-autoreply" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
+                            <i data-lucide="message-square-text" class="w-3.5 h-3.5"></i>
+                            <span>Autoreply Kustom (<span id="autoreplyCountBadge">0</span>)</span>
                         </button>
-                        <button onclick="switchWsTab('submissions')" id="wsTab-submissions" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
-                            <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
-                            <span>Usulan Warga (<span id="wsSubCount">0</span>)</span>
-                        </button>
-                        <button onclick="switchWsTab('settings')" id="wsTab-settings" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
-                            <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
-                            <span>Pengaturan Grup</span>
+                        <button onclick="switchAutoSubTab('welcome')" id="autoSubTab-welcome" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                            <span>Pesan Sambutan (Welcome)</span>
                         </button>
                     </div>
 
-                    <!-- Right Sub-actions -->
-                    <div class="flex items-center gap-2" id="wsSubActionContainer">
+                    <button onclick="openAddAutoreplyModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Tambah Autoreply
+                    </button>
+                </div>
+
+                <!-- 3A. Sub-View: Autoreply Listing -->
+                <div id="autoSubView-autoreply" class="space-y-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                        <div id="autoreplyContainer" class="p-4 sm:p-5">
+                            <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar autoreply...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3B. Sub-View: Welcome Message Config -->
+                <div id="autoSubView-welcome" class="hidden space-y-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200/70 dark:border-slate-800 card-shadow max-w-2xl mx-auto space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Pesan Sambutan Member Baru</h4>
+                                <p class="text-xs text-slate-400">Otomatis dikirim ketika member baru bergabung ke grup</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="welcomeEnabled" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300">Format Pesan:</label>
+                            <textarea id="welcomeText" rows="4" placeholder="Halo {user}, selamat datang di {group}! Ketik !help untuk melihat menu bot." class="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"></textarea>
+                            <p class="text-[11px] text-slate-400">Variabel dinamis: <code class="text-indigo-600 dark:text-indigo-400">{user}</code>, <code class="text-indigo-600 dark:text-indigo-400">{group}</code>, <code class="text-indigo-600 dark:text-indigo-400">{time}</code>, <code class="text-indigo-600 dark:text-indigo-400">{date}</code></p>
+                        </div>
+
+                        <div class="flex justify-end pt-2">
+                            <button onclick="saveWelcomeConfig()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-sm flex items-center gap-1.5">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                                Simpan Konfigurasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- TAB 4: MODUL BISNIS & DATA (BUSINESS MODULES / DATA HUB)  -->
+            <!-- ========================================================= -->
+            <div id="section-modules" class="hidden space-y-4">
+                
+                <!-- Sub-tabs Header for Modular Data -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
+                            <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                            <span>Listing Data (<span id="modListingCount">0</span>)</span>
+                        </button>
+                        <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
+                            <span>Usulan Warga (<span id="modSubCount">0</span>)</span>
+                        </button>
+                        <button onclick="switchModSubTab('features')" id="modSubTab-features" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>Inspektur Fitur & Izin</span>
+                        </button>
+                    </div>
+
+                    <div id="modActionBtnContainer">
                         <button onclick="openAddKostModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Tambah Kos Baru
+                            Tambah Data Baru
                         </button>
                     </div>
                 </div>
 
-                <!-- 3A. Sub-View: Listing Kos -->
-                <div id="wsView-kost-list" class="space-y-4">
+                <!-- 4A. Sub-View: Listing Data (Kost / Katalog) -->
+                <div id="modSubView-listing" class="space-y-4">
                     <!-- Filters & Search -->
                     <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
                         <div class="relative flex-1 max-w-md">
                             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama kos, alamat, atau kontak..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama item, deskripsi, atau kontak..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                         </div>
 
                         <div class="flex items-center gap-2">
@@ -480,7 +569,6 @@
                                 <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Terkirim</button>
                             </div>
 
-                            <!-- Table vs Card Toggle Switcher -->
                             <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
                                 <button onclick="setKostViewMode('table')" id="btnViewTable-kost" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
                                     <i data-lucide="table" class="w-3.5 h-3.5"></i>
@@ -492,23 +580,23 @@
                         </div>
                     </div>
 
-                    <!-- Main Container for Kost Listing -->
+                    <!-- Main Listing Table Container -->
                     <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
                         <div id="kostContainer" class="p-4 sm:p-5">
                             <div class="text-xs text-slate-400 py-12 text-center flex flex-col items-center justify-center gap-2">
                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-indigo-600"></i>
-                                <span>Memuat listing kos...</span>
+                                <span>Memuat data listing...</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3B. Sub-View: Usulan Warga -->
-                <div id="wsView-submissions" class="hidden space-y-4">
+                <!-- 4B. Sub-View: Usulan Warga -->
+                <div id="modSubView-submissions" class="hidden space-y-4">
                     <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex items-center justify-between">
                         <div>
-                            <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Kotak Masuk Usulan Kos dari Grup</h4>
-                            <p class="text-[11px] text-slate-400">Review usulan dari member sebelum dipublikasikan ke daftar resmi</p>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Kotak Masuk Usulan Data dari Member</h4>
+                            <p class="text-[11px] text-slate-400">Review usulan sebelum dipublikasikan ke daftar resmi bot</p>
                         </div>
                         <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
                             <button onclick="setSubmissionsViewMode('table')" id="btnViewTable-submissions" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
@@ -522,128 +610,19 @@
 
                     <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
                         <div id="submissionsContainer" class="p-4 sm:p-5">
-                            <div class="text-xs text-slate-400 py-12 text-center">Memuat data usulan warga...</div>
+                            <div class="text-xs text-slate-400 py-12 text-center">Memuat data usulan...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3C. Sub-View: Pengaturan Grup & Auto Helper -->
-                <div id="wsView-settings" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-5">
-                        <div class="border-b border-slate-100 dark:border-slate-800/60 pb-3">
-                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Konfigurasi Perilaku Bot di Grup</h4>
-                            <p class="text-xs text-slate-400">Atur fitur otomatis dan respons cerdas per grup</p>
+                <!-- 4C. Sub-View: Inspektur Fitur & Izin Bot -->
+                <div id="modSubView-features" class="hidden space-y-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                        <div class="relative flex-1 max-w-md">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="featureSearchInput" oninput="filterFeatures()" placeholder="Cari nama perintah atau kategori..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 flex items-start justify-between gap-4">
-                                <div>
-                                    <h5 class="text-xs font-bold text-slate-900 dark:text-white">Auto-Helper Deteksi Kos</h5>
-                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Bot otomatis memberikan panduan pencarian jika ada yang menanyakan rekomendasi kos di grup.</p>
-                                </div>
-                                <input type="checkbox" id="settingAutoHelper" class="mt-1 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
-                            </div>
-
-                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 flex items-start justify-between gap-4">
-                                <div>
-                                    <h5 class="text-xs font-bold text-slate-900 dark:text-white">Pemberitahuan Usulan Baru</h5>
-                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Kirim notifikasi otomatis ke grup indukan saat ada warga mengusulkan kos baru.</p>
-                                </div>
-                                <input type="checkbox" id="settingNotifyNewSubmission" class="mt-1 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end pt-2">
-                            <button onclick="saveGroupSettings()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-sm flex items-center gap-1.5">
-                                <i data-lucide="save" class="w-3.5 h-3.5"></i>
-                                Simpan Pengaturan
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========================================================= -->
-            <!-- SECTION 4: AUTOREPLY & RESPON                             -->
-            <!-- ========================================================= -->
-            <div id="section-responses" class="hidden space-y-4">
-                
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Daftar Autoreply & Template Pesan</h4>
-                        <p class="text-[11px] text-slate-400">Respon otomatis saat kata kunci atau perintah tertentu dipanggil</p>
-                    </div>
-
-                    <button onclick="openAddAutoreplyModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        Tambah Autoreply
-                    </button>
-                </div>
-
-                <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                    <div id="autoreplyContainer" class="p-4 sm:p-5">
-                        <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar autoreply...</div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Pesan Sambutan Member Baru (Welcome Message)</h4>
-                            <p class="text-[11px] text-slate-400">Pesan otomatis yang dikirim ketika anggota baru bergabung ke grup</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="welcomeEnabled" class="sr-only peer">
-                            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
-                    </div>
-
-                    <textarea id="welcomeText" rows="3" placeholder="Halo {user}, selamat datang di {group}! Ketik !help untuk melihat menu bot." class="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"></textarea>
-
-                    <div class="flex items-center justify-between pt-1">
-                        <span class="text-[11px] text-slate-400">Variabel: <code class="text-indigo-600 dark:text-indigo-400">{user}</code>, <code class="text-indigo-600 dark:text-indigo-400">{group}</code>, <code class="text-indigo-600 dark:text-indigo-400">{time}</code></span>
-                        <button onclick="saveWelcomeConfig()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-sm">
-                            Simpan Sambutan
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========================================================= -->
-            <!-- SECTION 5: PENGELOLA & OWNER                              -->
-            <!-- ========================================================= -->
-            <div id="section-owners" class="hidden space-y-4">
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Daftar Pengelola Bot (Owner & Admin)</h4>
-                        <p class="text-[11px] text-slate-400">Nomor-nomor yang memiliki hak akses perintah owner dan private chat</p>
-                    </div>
-
-                    <button onclick="openAddOwnerModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        Tambah Owner
-                    </button>
-                </div>
-
-                <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                    <div id="ownersContainer" class="p-4 sm:p-5">
-                        <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar owner...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========================================================= -->
-            <!-- SECTION 6: INSPEKTUR FITUR & IZIN                         -->
-            <!-- ========================================================= -->
-            <div id="section-features" class="hidden space-y-4">
-                
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                    <div class="relative flex-1 max-w-md">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="featureSearchInput" oninput="filterFeatures()" placeholder="Cari nama perintah, kategori, atau hak akses..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                    </div>
-
-                    <div class="flex items-center gap-2">
                         <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
                             <button onclick="setFeaturesViewMode('table')" id="btnViewTable-features" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
                                 <i data-lucide="table" class="w-3.5 h-3.5"></i>
@@ -653,51 +632,70 @@
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                    <div id="featuresContainer" class="p-4 sm:p-5">
-                        <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar fitur & perintah...</div>
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                        <div id="featuresContainer" class="p-4 sm:p-5">
+                            <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar fitur & izin...</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- ========================================================= -->
-            <!-- SECTION 7: LOG SISTEM & SIARAN                            -->
+            <!-- TAB 5: SISTEM & PENGELOLA (SYSTEM & SETTINGS)             -->
             <!-- ========================================================= -->
-            <div id="section-logs" class="hidden space-y-4">
+            <div id="section-system" class="hidden space-y-4">
                 
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex items-center justify-between">
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Log Riwayat Eksekusi Perintah</h4>
-                        <p class="text-[11px] text-slate-400">Catatan waktu dan pengirim perintah WhatsApp ke bot</p>
+                <!-- Sub-tabs Header for System -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <button onclick="switchSysSubTab('owners')" id="sysSubTab-owners" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                            <span>Pengelola Bot (<span id="sysOwnersCount">0</span>)</span>
+                        </button>
+                        <button onclick="switchSysSubTab('logs')" id="sysSubTab-logs" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                            <span>Log Aktivitas Server STB</span>
+                        </button>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button onclick="loadCommandLogs()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-xs">
-                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                            <span>Segarkan Log</span>
+                    <div id="sysActionBtnContainer">
+                        <button onclick="openAddOwnerModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            Tambah Owner Baru
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                                    <th class="py-3 px-4">WAKTU</th>
-                                    <th class="py-3 px-4">PERINATH</th>
-                                    <th class="py-3 px-4">PENGIRIM</th>
-                                    <th class="py-3 px-4">LOKASI / GRUP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-[11px]">
-                                <tr>
-                                    <td colspan="4" class="py-8 text-center text-slate-400 font-sans">Memuat riwayat log...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- 5A. Sub-View: Pengelola (Owners) -->
+                <div id="sysSubView-owners" class="space-y-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                        <div id="ownersContainer" class="p-4 sm:p-5">
+                            <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar pengelola...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5B. Sub-View: Log Aktivitas Server -->
+                <div id="sysSubView-logs" class="hidden space-y-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                                        <th class="py-3 px-4">WAKTU</th>
+                                        <th class="py-3 px-4">PERINTAH</th>
+                                        <th class="py-3 px-4">PENGIRIM</th>
+                                        <th class="py-3 px-4">LOKASI / GRUP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-[11px]">
+                                    <tr>
+                                        <td colspan="4" class="py-8 text-center text-slate-400 font-sans">Memuat riwayat log...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -742,7 +740,7 @@
     <div id="registerGroupModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-md w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Daftarkan Grup Baru</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Daftarkan Grup WhatsApp Baru</h4>
                 <button onclick="closeRegisterGroupModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
 
@@ -750,19 +748,19 @@
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">JID Grup WhatsApp <span class="text-rose-500">*</span></label>
                     <input type="text" id="regGroupJid" placeholder="120363012345678901@g.us" class="w-full px-3 py-2 font-mono rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-                    <p class="text-[10px] text-slate-400 mt-1">Tips: Di grup ketik <code class="text-indigo-600">!id</code> atau <code class="text-indigo-600">!jid</code> untuk cek JID.</p>
+                    <p class="text-[10px] text-slate-400 mt-1">Tips: Di grup ketik <code class="text-indigo-600 font-bold">!id</code> atau <code class="text-indigo-600 font-bold">!jid</code> untuk salin JID grup.</p>
                 </div>
 
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Grup / Label <span class="text-rose-500">*</span></label>
-                    <input type="text" id="regGroupName" placeholder="Contoh: Info Kos Bukittinggi Pusat" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    <input type="text" id="regGroupName" placeholder="Contoh: Komunitas Bisnis / Grup Utama" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipe / Peran</label>
                         <select id="regGroupRole" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
-                            <option value="indukan">Grup Indukan (Master)</option>
+                            <option value="indukan">Grup Indukan (Master Hub)</option>
                             <option value="cabang">Grup Cabang (Public)</option>
                             <option value="khusus">Grup Khusus / Lainnya</option>
                         </select>
@@ -791,7 +789,7 @@
     <div id="linkGroupModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-sm w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Hubungkan ke Indukan</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Hubungkan ke Grup Indukan</h4>
                 <button onclick="closeLinkGroupModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
 
@@ -816,11 +814,11 @@
         </div>
     </div>
 
-    <!-- 4. Tambah/Edit Kos Modal -->
+    <!-- 4. Tambah/Edit Item Data Modal -->
     <div id="kostModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-lg w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="kostModalTitle">Tambah Data Kos</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="kostModalTitle">Tambah Data Item</h4>
                 <button onclick="closeKostModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
 
@@ -828,30 +826,30 @@
 
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Kos <span class="text-rose-500">*</span></label>
-                    <input type="text" id="kostName" placeholder="Contoh: Kost Putri Melati" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Item / Data <span class="text-rose-500">*</span></label>
+                    <input type="text" id="kostName" placeholder="Contoh: Kost Melati / Produk / Item Data" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Deskripsi / Tipe / Fasilitas</label>
-                    <textarea id="kostDesc" rows="2" placeholder="Tipe putri, kamar mandi dalam, dekat kampus..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none"></textarea>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Deskripsi / Detail Tambahan</label>
+                    <textarea id="kostDesc" rows="2" placeholder="Detail informasi, fasilitas, spesifikasi item..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No WhatsApp / HP</label>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No WhatsApp / Kontak</label>
                         <input type="text" id="kostWhatsapp" placeholder="081234567890" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Instagram (@username)</label>
-                        <input type="text" id="kostInstagram" placeholder="@kost_melati" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                        <input type="text" id="kostInstagram" placeholder="@username" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">TikTok (@username)</label>
-                        <input type="text" id="kostTiktok" placeholder="@kostmelati" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">TikTok / Sosmed Lain</label>
+                        <input type="text" id="kostTiktok" placeholder="@username" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Publikasi</label>
@@ -868,7 +866,7 @@
                     Batal
                 </button>
                 <button onclick="submitKostForm()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
-                    Simpan Kos
+                    Simpan Data
                 </button>
             </div>
         </div>
@@ -878,19 +876,20 @@
     <div id="autoreplyModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-md w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Tambah Autoreply</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Tambah Autoreply Baru</h4>
                 <button onclick="closeAutoreplyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
 
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Trigger / Kata Kunci <span class="text-rose-500">*</span></label>
-                    <input type="text" id="arTrigger" placeholder="Contoh: !rules atau !rekening" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                    <input type="text" id="arTrigger" placeholder="Contoh: !rules / !harga / !rekening" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                    <p class="text-[10px] text-slate-400 mt-1">Bisa pisahkan beberapa alias dengan tanda slash (<code>/</code>).</p>
                 </div>
 
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Isi Balasan Pesan <span class="text-rose-500">*</span></label>
-                    <textarea id="arResponse" rows="4" placeholder="Teks balasan yang akan dikirim bot..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none"></textarea>
+                    <textarea id="arResponse" rows="4" placeholder="Teks balasan yang akan dikirim bot secara otomatis..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -921,7 +920,7 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Pengelola <span class="text-rose-500">*</span></label>
-                    <input type="text" id="ownerName" placeholder="Contoh: Admin Raffa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                    <input type="text" id="ownerName" placeholder="Contoh: Admin Store" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                 </div>
 
                 <div>
@@ -941,7 +940,7 @@
         </div>
     </div>
 
-    <!-- 7. Siaran Pesan (Broadcast) Modal -->
+    <!-- 7. Siaran Pesan (Broadcast) Modal Global -->
     <div id="broadcastModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-md w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -954,8 +953,8 @@
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Pengiriman:</label>
                     <select id="bcTarget" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                         <option value="all">Semua Grup Terdaftar</option>
-                        <option value="indukan">Hanya Grup Indukan</option>
-                        <option value="cabang">Hanya Grup Cabang</option>
+                        <option value="indukan">Hanya Grup Indukan (Master)</option>
+                        <option value="cabang">Hanya Grup Cabang (Public)</option>
                     </select>
                 </div>
 
@@ -981,16 +980,25 @@
     <!-- JAVASCRIPT LOGIC & STATE HANDLING                                 -->
     <!-- ================================================================= -->
     <script>
+        // -----------------------------------------------------------------
+        // 1. STATE & INITIALIZATION
+        // -----------------------------------------------------------------
         let currentTab = 'overview';
-        let currentWsTab = 'kost-list';
+        let currentGroupSubTab = 'list';
+        let currentAutoSubTab = 'autoreply';
+        let currentModSubTab = 'listing';
+        let currentSysSubTab = 'owners';
+
         let currentPin = localStorage.getItem('wabot_admin_pin') || '';
         let isDevMode = localStorage.getItem('wabot_dev_mode') === 'true';
 
+        // View Modes (Default: 'table')
         let groupsViewMode = localStorage.getItem('view_mode_groups') || 'table';
         let kostViewMode = localStorage.getItem('view_mode_kost') || 'table';
         let submissionsViewMode = localStorage.getItem('view_mode_submissions') || 'table';
         let featuresViewMode = localStorage.getItem('view_mode_features') || 'table';
 
+        // Data caches
         let rawGroupsData = [];
         let filteredGroupsData = [];
         let rawKostData = [];
@@ -1003,12 +1011,14 @@
         let activeGroupRoleFilter = 'all';
         let activeKostStatusFilter = 'all';
 
+        // DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             updatePinUI();
             updateDevModeUI();
             updateViewToggleIcons();
             
+            // Initial data fetch
             fetchStatus();
             loadGroups();
             loadKostList();
@@ -1019,6 +1029,7 @@
             loadWelcomeConfig();
             loadFeatures();
 
+            // Periodic auto-refresh (every 15s)
             setInterval(() => {
                 fetchStatus(true);
             }, 15000);
@@ -1026,6 +1037,9 @@
             if (window.lucide) lucide.createIcons();
         });
 
+        // -----------------------------------------------------------------
+        // 2. TOAST NOTIFICATION & ERROR FEEDBACK SYSTEM
+        // -----------------------------------------------------------------
         function showToast(message, type = 'info', title = null, duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1087,10 +1101,13 @@
             }, 250);
         }
 
+        // -----------------------------------------------------------------
+        // 3. TAB & SUB-TAB SWITCHING (CONSOLIDATED 5 CATEGORIES)
+        // -----------------------------------------------------------------
         function switchTab(tabId) {
             currentTab = tabId;
 
-            const sections = ['overview', 'groups', 'workspace', 'responses', 'owners', 'features', 'logs'];
+            const sections = ['overview', 'groups', 'automation', 'modules', 'system'];
             sections.forEach(s => {
                 const secEl = document.getElementById('section-' + s);
                 if (secEl) secEl.classList.add('hidden');
@@ -1120,91 +1137,142 @@
             const topBtnText = document.getElementById('topActionBtnText');
 
             if (tabId === 'overview') {
-                titleEl.textContent = 'Beranda & Statistik 📊';
-                subEl.textContent = 'Ringkasan aktivitas dan status operasional bot WhatsApp';
+                titleEl.textContent = 'Dashboard & Metrik 📊';
+                subEl.textContent = 'Ringkasan operasional dan kesehatan sistem WhatsApp Bot';
                 topBtn.classList.remove('hidden');
                 topBtnText.textContent = 'Daftarkan Grup';
             } else if (tabId === 'groups') {
-                titleEl.textContent = 'Hub & Grup WhatsApp 👥';
-                subEl.textContent = `${rawGroupsData.length} grup WhatsApp terdata dalam sistem`;
+                titleEl.textContent = 'Grup & Komunitas 👥';
+                subEl.textContent = `${rawGroupsData.length} grup WhatsApp terdaftar dalam sistem`;
                 topBtn.classList.remove('hidden');
                 topBtnText.textContent = 'Daftarkan Grup';
-            } else if (tabId === 'workspace') {
-                titleEl.textContent = 'Workspace Kos & Usulan 🏠';
-                subEl.textContent = `${rawKostData.length} listing kos & ${rawSubmissionsData.length} usulan warga`;
-                topBtn.classList.remove('hidden');
-                topBtnText.textContent = 'Tambah Kos Baru';
-            } else if (tabId === 'responses') {
-                titleEl.textContent = 'Autoreply & Respon 💬';
-                subEl.textContent = `${rawAutorepliesData.length} aturan autoreply & sambutan aktif`;
+            } else if (tabId === 'automation') {
+                titleEl.textContent = 'Pesan & Otomasi 💬';
+                subEl.textContent = `${rawAutorepliesData.length} aturan autoreply & respon sambutan aktif`;
                 topBtn.classList.remove('hidden');
                 topBtnText.textContent = 'Tambah Autoreply';
-            } else if (tabId === 'owners') {
-                titleEl.textContent = 'Pengelola & Owner 🛡️';
-                subEl.textContent = `${rawOwnersData.length} owner terdaftar dengan akses kontrol`;
+            } else if (tabId === 'modules') {
+                titleEl.textContent = 'Modul Bisnis & Data 📦';
+                subEl.textContent = `${rawKostData.length} item listing & ${rawSubmissionsData.length} usulan masuk`;
+                topBtn.classList.remove('hidden');
+                topBtnText.textContent = 'Tambah Data';
+            } else if (tabId === 'system') {
+                titleEl.textContent = 'Sistem & Pengelola ⚙️';
+                subEl.textContent = `${rawOwnersData.length} pengelola & riwayat log server STB`;
                 topBtn.classList.remove('hidden');
                 topBtnText.textContent = 'Tambah Owner';
-            } else if (tabId === 'features') {
-                titleEl.textContent = 'Inspektur Fitur & Izin ⚡';
-                subEl.textContent = `${rawFeaturesData.length} perintah dan kemampuan bot`;
-                topBtn.classList.add('hidden');
-            } else if (tabId === 'logs') {
-                titleEl.textContent = 'Log Sistem & Siaran 📊';
-                subEl.textContent = 'Catatan eksekusi perintah dan pengiriman siaran';
-                topBtn.classList.remove('hidden');
-                topBtnText.textContent = 'Siaran Pesan';
             }
         }
 
         function handleTopAction() {
             if (currentTab === 'overview' || currentTab === 'groups') {
                 openRegisterGroupModal();
-            } else if (currentTab === 'workspace') {
-                openAddKostModal();
-            } else if (currentTab === 'responses') {
+            } else if (currentTab === 'automation') {
                 openAddAutoreplyModal();
-            } else if (currentTab === 'owners') {
+            } else if (currentTab === 'modules') {
+                openAddKostModal();
+            } else if (currentTab === 'system') {
                 openAddOwnerModal();
-            } else if (currentTab === 'logs') {
-                openBroadcastModal();
             }
         }
 
-        function switchWsTab(subTab) {
-            currentWsTab = subTab;
-            const subViews = ['kost-list', 'submissions', 'settings'];
-            subViews.forEach(v => {
-                const el = document.getElementById('wsView-' + v);
+        // Sub-Tab Switchers
+        function switchGroupSubTab(sub) {
+            currentGroupSubTab = sub;
+            ['list', 'broadcast'].forEach(v => {
+                const el = document.getElementById('groupSubView-' + v);
                 if (el) el.classList.add('hidden');
-                const btn = document.getElementById('wsTab-' + v);
-                if (btn) {
-                    btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
-                }
+                const btn = document.getElementById('groupSubTab-' + v);
+                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
             });
+            const activeEl = document.getElementById('groupSubView-' + sub);
+            if (activeEl) activeEl.classList.remove('hidden');
+            const activeBtn = document.getElementById('groupSubTab-' + sub);
+            if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
+            if (window.lucide) lucide.createIcons();
+        }
 
-            const activeView = document.getElementById('wsView-' + subTab);
-            if (activeView) activeView.classList.remove('hidden');
-            const activeBtn = document.getElementById('wsTab-' + subTab);
-            if (activeBtn) {
-                activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
-            }
+        function switchAutoSubTab(sub) {
+            currentAutoSubTab = sub;
+            ['autoreply', 'welcome'].forEach(v => {
+                const el = document.getElementById('autoSubView-' + v);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('autoSubTab-' + v);
+                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
+            });
+            const activeEl = document.getElementById('autoSubView-' + sub);
+            if (activeEl) activeEl.classList.remove('hidden');
+            const activeBtn = document.getElementById('autoSubTab-' + sub);
+            if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
+            if (window.lucide) lucide.createIcons();
+        }
 
-            const actionContainer = document.getElementById('wsSubActionContainer');
-            if (actionContainer) {
-                if (subTab === 'kost-list') {
-                    actionContainer.innerHTML = `
+        function switchModSubTab(sub) {
+            currentModSubTab = sub;
+            ['listing', 'submissions', 'features'].forEach(v => {
+                const el = document.getElementById('modSubView-' + v);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('modSubTab-' + v);
+                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
+            });
+            const activeEl = document.getElementById('modSubView-' + sub);
+            if (activeEl) activeEl.classList.remove('hidden');
+            const activeBtn = document.getElementById('modSubTab-' + sub);
+            if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
+            
+            const btnContainer = document.getElementById('modActionBtnContainer');
+            if (btnContainer) {
+                if (sub === 'listing') {
+                    btnContainer.innerHTML = `
                         <button onclick="openAddKostModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Tambah Kos Baru
+                            Tambah Data Baru
                         </button>
                     `;
                 } else {
-                    actionContainer.innerHTML = '';
+                    btnContainer.innerHTML = '';
                 }
             }
             if (window.lucide) lucide.createIcons();
         }
 
+        function switchSysSubTab(sub) {
+            currentSysSubTab = sub;
+            ['owners', 'logs'].forEach(v => {
+                const el = document.getElementById('sysSubView-' + v);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('sysSubTab-' + v);
+                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
+            });
+            const activeEl = document.getElementById('sysSubView-' + sub);
+            if (activeEl) activeEl.classList.remove('hidden');
+            const activeBtn = document.getElementById('sysSubTab-' + sub);
+            if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
+            
+            const btnContainer = document.getElementById('sysActionBtnContainer');
+            if (btnContainer) {
+                if (sub === 'owners') {
+                    btnContainer.innerHTML = `
+                        <button onclick="openAddOwnerModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            Tambah Owner Baru
+                        </button>
+                    `;
+                } else {
+                    btnContainer.innerHTML = `
+                        <button onclick="loadCommandLogs()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            <span>Segarkan Log</span>
+                        </button>
+                    `;
+                }
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // -----------------------------------------------------------------
+        // 4. VIEW MODE TOGGLE (TABLE VS CARDS)
+        // -----------------------------------------------------------------
         function setGroupsViewMode(mode) {
             groupsViewMode = mode;
             localStorage.setItem('view_mode_groups', mode);
@@ -1257,6 +1325,9 @@
             if (window.lucide) lucide.createIcons();
         }
 
+        // -----------------------------------------------------------------
+        // 5. THEME & DEVELOPER MODE
+        // -----------------------------------------------------------------
         function initTheme() {
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -1302,6 +1373,9 @@
             renderGroupsList();
         }
 
+        // -----------------------------------------------------------------
+        // 6. PIN & SUPERUSER SECURITY
+        // -----------------------------------------------------------------
         function updatePinUI() {
             const pinBtn = document.getElementById('sidebarPinBtn');
             const pinIcon = document.getElementById('sidebarPinIcon');
@@ -1397,6 +1471,9 @@
             return true;
         }
 
+        // -----------------------------------------------------------------
+        // 7. SYSTEM STATUS & FETCHING
+        // -----------------------------------------------------------------
         async function fetchStatus(isBackground = false) {
             try {
                 const res = await fetch('/api/system/status');
@@ -1436,25 +1513,33 @@
 
                 const c = s.counts || {};
                 const mTotalGroups = document.getElementById('metricTotalGroups');
+                const mTotalAutoreplies = document.getElementById('metricTotalAutoreplies');
                 const mTotalKost = document.getElementById('metricTotalKost');
-                const mPendingKost = document.getElementById('metricPendingKost');
-                const mPendingSubmissions = document.getElementById('metricPendingSubmissions');
+                const mSubCount = document.getElementById('metricSubmissionsCount');
                 const mTotalMessages = document.getElementById('metricTotalMessages');
                 const mTotalCommands = document.getElementById('metricTotalCommands');
                 const mOwnerCount = document.getElementById('metricOwnerCount');
 
                 if (mTotalGroups) mTotalGroups.textContent = c.groups || 0;
-                if (mTotalKost) mTotalKost.textContent = c.totalKost || 0;
-                if (mPendingKost) mPendingKost.textContent = `${c.pendingKost || 0} Pending`;
-                if (mPendingSubmissions) mPendingSubmissions.textContent = c.pendingSubmissions || 0;
+                if (mTotalAutoreplies) mTotalAutoreplies.textContent = rawAutorepliesData.length || 0;
+                if (mTotalKost) mTotalKost.textContent = c.totalKost || rawKostData.length || 0;
+                if (mSubCount) mSubCount.textContent = `${c.pendingSubmissions || 0} Usulan`;
                 if (mTotalMessages) mTotalMessages.textContent = c.messages || 0;
                 if (mTotalCommands) mTotalCommands.textContent = `${c.commands || 0} Perintah`;
-                if (mOwnerCount) mOwnerCount.textContent = `${c.owners || 1} Owner`;
+                if (mOwnerCount) mOwnerCount.textContent = `${c.owners || 1} Pengelola`;
 
-                const wsKostCount = document.getElementById('wsKostCount');
-                const wsSubCount = document.getElementById('wsSubCount');
-                if (wsKostCount) wsKostCount.textContent = c.totalKost || 0;
-                if (wsSubCount) wsSubCount.textContent = c.pendingSubmissions || 0;
+                // Badge updates
+                const gBadge = document.getElementById('groupsCountBadge');
+                const arBadge = document.getElementById('autoreplyCountBadge');
+                const mlBadge = document.getElementById('modListingCount');
+                const msBadge = document.getElementById('modSubCount');
+                const sysOwnersCount = document.getElementById('sysOwnersCount');
+
+                if (gBadge) gBadge.textContent = c.groups || 0;
+                if (arBadge) arBadge.textContent = rawAutorepliesData.length || 0;
+                if (mlBadge) mlBadge.textContent = c.totalKost || rawKostData.length || 0;
+                if (msBadge) msBadge.textContent = c.pendingSubmissions || 0;
+                if (sysOwnersCount) sysOwnersCount.textContent = c.owners || 1;
 
             } catch (err) {
                 if (!isBackground) {
@@ -1477,6 +1562,7 @@
                     fetchStatus();
                     loadGroups();
                     loadKostList();
+                    loadAutoreplies();
                 } else {
                     showToast(result.message || 'Gagal menyinkronkan database.', 'error');
                 }
@@ -1485,15 +1571,21 @@
             }
         }
 
+        // -----------------------------------------------------------------
+        // 8. HUB & MANAJEMEN GRUP
+        // -----------------------------------------------------------------
         async function loadGroups() {
             try {
                 const res = await fetch('/api/groups');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.groups)) {
-                    rawGroupsData = data.groups;
+                const list = data.groups || data.data || [];
+                if (Array.isArray(list)) {
+                    rawGroupsData = list;
                     filterGroups();
                     populateParentSelects();
                     renderOverviewGroupList();
+                    const badge = document.getElementById('groupsCountBadge');
+                    if (badge) badge.textContent = list.length;
                 } else {
                     showToast('Gagal memuat daftar grup.', 'error');
                 }
@@ -1554,7 +1646,7 @@
             }
 
             if (groupsViewMode === 'table') {
-                let rowsHtml = filteredGroupsData.map((g, idx) => {
+                let rowsHtml = filteredGroupsData.map(g => {
                     const isUndef = g.isUndefined === true;
                     const roleBadge = isUndef 
                         ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">UNDEFINED</span>`
@@ -1844,18 +1936,24 @@
             }
         }
 
+        // -----------------------------------------------------------------
+        // 9. MODUL DATA & LISTING (GENERAL / CUSTOM DB)
+        // -----------------------------------------------------------------
         async function loadKostList() {
             try {
                 const res = await fetch('/api/kost');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.kost)) {
-                    rawKostData = data.kost;
+                const list = data.data || data.kost || [];
+                if (Array.isArray(list)) {
+                    rawKostData = list;
                     filterKost();
+                    const badge = document.getElementById('modListingCount');
+                    if (badge) badge.textContent = list.length;
                 } else {
-                    showToast('Gagal memuat daftar kos.', 'error');
+                    showToast('Gagal memuat listing data.', 'error');
                 }
             } catch (err) {
-                showToast(`Gagal memuat listing kos: ${err.message}`, 'error');
+                showToast(`Gagal memuat listing data: ${err.message}`, 'error');
             }
         }
 
@@ -1878,7 +1976,10 @@
         function filterKost() {
             const q = (document.getElementById('kostSearchInput')?.value || '').toLowerCase().trim();
             filteredKostData = rawKostData.filter(k => {
-                const matchQ = (k.name || '').toLowerCase().includes(q) || (k.description || '').toLowerCase().includes(q) || (k.contact?.whatsapp || '').includes(q);
+                const matchQ = (k.name || '').toLowerCase().includes(q) || 
+                               (k.description || '').toLowerCase().includes(q) || 
+                               (k.instagram || '').toLowerCase().includes(q) || 
+                               (k.contact?.whatsapp || '').includes(q);
                 if (!matchQ) return false;
 
                 if (activeKostStatusFilter === 'pending') return k.status !== 'sent';
@@ -1896,12 +1997,12 @@
                 container.innerHTML = `
                     <div class="py-12 text-center space-y-3">
                         <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
-                            <i data-lucide="building-2" class="w-6 h-6"></i>
+                            <i data-lucide="database" class="w-6 h-6"></i>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Belum Ada Data Kos</h5>
-                        <p class="text-[11px] text-slate-400 max-w-sm mx-auto">Tambahkan listing kos baru atau setujui usulan dari warga grup.</p>
+                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Belum Ada Data Item Terdaftar</h5>
+                        <p class="text-[11px] text-slate-400 max-w-sm mx-auto">Tambahkan data listing baru atau setujui usulan masuk dari warga.</p>
                         <button onclick="openAddKostModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold shadow-xs hover:bg-indigo-700 transition">
-                            Tambah Kos Baru
+                            Tambah Data Baru
                         </button>
                     </div>
                 `;
@@ -1914,9 +2015,13 @@
                     const isSent = k.status === 'sent';
                     const numId = '#' + String(idx + 1).padStart(2, '0');
                     const contacts = [];
-                    if (k.contact?.whatsapp) contacts.push(`<span class="inline-flex items-center gap-1 text-emerald-600 font-mono">📱 ${escapeHtml(k.contact.whatsapp)}</span>`);
-                    if (k.contact?.instagram) contacts.push(`<span class="inline-flex items-center gap-1 text-pink-600">📸 ${escapeHtml(k.contact.instagram)}</span>`);
-                    if (k.contact?.tiktok) contacts.push(`<span class="inline-flex items-center gap-1 text-indigo-600">🎵 ${escapeHtml(k.contact.tiktok)}</span>`);
+                    const wa = k.contact?.whatsapp || k.whatsapp;
+                    const ig = k.contact?.instagram || k.instagram;
+                    const tt = k.contact?.tiktok || k.tiktok;
+
+                    if (wa) contacts.push(`<span class="inline-flex items-center gap-1 text-emerald-600 font-mono font-medium">📱 ${escapeHtml(wa)}</span>`);
+                    if (ig) contacts.push(`<span class="inline-flex items-center gap-1 text-pink-600">📸 @${escapeHtml(ig.replace('@',''))}</span>`);
+                    if (tt) contacts.push(`<span class="inline-flex items-center gap-1 text-indigo-600">🎵 @${escapeHtml(tt.replace('@',''))}</span>`);
 
                     return `
                         <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
@@ -1938,10 +2043,10 @@
                                     <button onclick="toggleKostSent('${escapeHtml(k.id)}', ${!isSent})" title="${isSent ? 'Tandai Pending' : 'Tandai Terkirim'}" class="p-1.5 rounded-lg border ${isSent ? 'border-amber-200 text-amber-600' : 'border-emerald-200 text-emerald-600'} hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                                         <i data-lucide="${isSent ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
                                     </button>
-                                    <button onclick="editKostModal('${escapeHtml(k.id)}')" title="Edit Kos" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                    <button onclick="editKostModal('${escapeHtml(k.id)}')" title="Edit Data" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
                                         <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                     </button>
-                                    <button onclick="deleteKostPrompt('${escapeHtml(k.id)}')" title="Hapus Kos" class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition">
+                                    <button onclick="deleteKostPrompt('${escapeHtml(k.id)}')" title="Hapus Data" class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition">
                                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                     </button>
                                 </div>
@@ -1956,7 +2061,7 @@
                             <thead>
                                 <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                                     <th class="py-3 px-4">#ID</th>
-                                    <th class="py-3 px-4">NAMA KOS & DESKRIPSI</th>
+                                    <th class="py-3 px-4">NAMA ITEM & DETAIL</th>
                                     <th class="py-3 px-4">KONTAK / SOSIAL MEDIA</th>
                                     <th class="py-3 px-4">STATUS</th>
                                     <th class="py-3 px-4 text-right">AKSI</th>
@@ -1969,7 +2074,7 @@
                     </div>
                 `;
             } else {
-                let cardsHtml = filteredKostData.map((k, idx) => {
+                let cardsHtml = filteredKostData.map(k => {
                     const isSent = k.status === 'sent';
                     return `
                         <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between gap-3">
@@ -1981,7 +2086,7 @@
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(k.description || 'Tidak ada deskripsi')}</p>
                             </div>
                             <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
-                                <span class="font-mono text-[11px] text-slate-400">${escapeHtml(k.contact?.whatsapp || '-')}</span>
+                                <span class="font-mono text-[11px] text-slate-400">${escapeHtml(k.contact?.whatsapp || k.whatsapp || '-')}</span>
                                 <div class="flex items-center gap-1.5">
                                     <button onclick="editKostModal('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
                                     <button onclick="deleteKostPrompt('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg border border-rose-200 text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -1997,7 +2102,7 @@
         }
 
         function openAddKostModal() {
-            document.getElementById('kostModalTitle').textContent = 'Tambah Data Kos Baru';
+            document.getElementById('kostModalTitle').textContent = 'Tambah Data Item Baru';
             document.getElementById('kostEditId').value = '';
             document.getElementById('kostName').value = '';
             document.getElementById('kostDesc').value = '';
@@ -2018,13 +2123,13 @@
             const item = rawKostData.find(k => k.id === id);
             if (!item) return;
 
-            document.getElementById('kostModalTitle').textContent = 'Edit Data Kos';
+            document.getElementById('kostModalTitle').textContent = 'Edit Data Item';
             document.getElementById('kostEditId').value = item.id;
             document.getElementById('kostName').value = item.name || '';
             document.getElementById('kostDesc').value = item.description || '';
-            document.getElementById('kostWhatsapp').value = item.contact?.whatsapp || '';
-            document.getElementById('kostInstagram').value = item.contact?.instagram || '';
-            document.getElementById('kostTiktok').value = item.contact?.tiktok || '';
+            document.getElementById('kostWhatsapp').value = item.contact?.whatsapp || item.whatsapp || '';
+            document.getElementById('kostInstagram').value = item.contact?.instagram || item.instagram || '';
+            document.getElementById('kostTiktok').value = item.contact?.tiktok || item.tiktok || '';
             document.getElementById('kostStatus').value = item.status || 'pending';
 
             const modal = document.getElementById('kostModal');
@@ -2055,7 +2160,7 @@
             const status = document.getElementById('kostStatus')?.value || 'pending';
 
             if (!name) {
-                showToast('Nama kos wajib diisi.', 'warning');
+                showToast('Nama data wajib diisi.', 'warning');
                 return;
             }
 
@@ -2067,7 +2172,7 @@
             };
 
             try {
-                showToast('Menyimpan data kos...', 'info');
+                showToast('Menyimpan data...', 'info');
                 const url = editId ? `/api/kost/${encodeURIComponent(editId)}` : '/api/kost';
                 const method = editId ? 'PUT' : 'POST';
 
@@ -2078,12 +2183,12 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    showToast('Data kos berhasil disimpan!', 'success');
+                    showToast('Data berhasil disimpan!', 'success');
                     closeKostModal();
                     loadKostList();
                     fetchStatus();
                 } else {
-                    showToast(result.message || 'Gagal menyimpan kos.', 'error');
+                    showToast(result.message || 'Gagal menyimpan data.', 'error');
                 }
             } catch (err) {
                 showToast(`Error: ${err.message}`, 'error');
@@ -2113,34 +2218,40 @@
 
         async function deleteKostPrompt(id) {
             if (!checkSuperuserOrWarn()) return;
-            if (!confirm('Hapus data kos ini secara permanen?')) return;
+            if (!confirm('Hapus data item ini secara permanen?')) return;
 
             try {
-                showToast('Menghapus data kos...', 'info');
+                showToast('Menghapus data...', 'info');
                 const res = await fetch(`/api/kost/${encodeURIComponent(id)}`, {
                     method: 'DELETE',
                     headers: getAuthHeaders()
                 });
                 const result = await res.json();
                 if (result.success) {
-                    showToast('Data kos berhasil dihapus.', 'success');
+                    showToast('Data berhasil dihapus.', 'success');
                     loadKostList();
                     fetchStatus();
                 } else {
-                    showToast(result.message || 'Gagal menghapus kos.', 'error');
+                    showToast(result.message || 'Gagal menghapus data.', 'error');
                 }
             } catch (err) {
                 showToast(`Error: ${err.message}`, 'error');
             }
         }
 
+        // -----------------------------------------------------------------
+        // 10. USULAN WARGA (SUBMISSIONS)
+        // -----------------------------------------------------------------
         async function loadSubmissionsList() {
             try {
                 const res = await fetch('/api/submissions');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.submissions)) {
-                    rawSubmissionsData = data.submissions;
+                const list = data.submissions || data.data || [];
+                if (Array.isArray(list)) {
+                    rawSubmissionsData = list;
                     renderSubmissionsList();
+                    const badge = document.getElementById('modSubCount');
+                    if (badge) badge.textContent = list.length;
                 }
             } catch (err) {
                 showToast(`Gagal memuat usulan: ${err.message}`, 'error');
@@ -2157,8 +2268,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
                             <i data-lucide="inbox" class="w-6 h-6"></i>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Kotak Usulan Kos Bersih</h5>
-                        <p class="text-[11px] text-slate-400">Belum ada usulan kos baru dari warga grup WhatsApp.</p>
+                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Kotak Usulan Bersih</h5>
+                        <p class="text-[11px] text-slate-400">Belum ada usulan data baru yang masuk dari member WhatsApp.</p>
                     </div>
                 `;
                 if (window.lucide) lucide.createIcons();
@@ -2171,7 +2282,7 @@
                     <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
                         <td class="py-3 px-4 font-mono font-bold text-xs text-slate-400">${numId}</td>
                         <td class="py-3 px-4">
-                            <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(s.name || 'Usulan Kos')}</h6>
+                            <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(s.name || 'Usulan Item')}</h6>
                             <p class="text-[11px] text-slate-400 line-clamp-1">${escapeHtml(s.description || '-')}</p>
                         </td>
                         <td class="py-3 px-4 text-xs font-mono text-emerald-600">${escapeHtml(s.contact?.whatsapp || s.contact || '-')}</td>
@@ -2181,7 +2292,7 @@
                         </td>
                         <td class="py-3 px-4 text-right">
                             <div class="flex items-center justify-end gap-1.5">
-                                <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" title="Setujui & Tambahkan" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition">
+                                <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" title="Setujui & Publikasikan" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition">
                                     Setujui
                                 </button>
                                 <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" title="Tolak Usulan" class="px-2.5 py-1 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-semibold transition">
@@ -2199,7 +2310,7 @@
                         <thead>
                             <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                                 <th class="py-3 px-4">#ID</th>
-                                <th class="py-3 px-4">NAMA KOS & DETAIL</th>
+                                <th class="py-3 px-4">NAMA ITEM & DETAIL</th>
                                 <th class="py-3 px-4">KONTAK DIUSULKAN</th>
                                 <th class="py-3 px-4">PENGUSUL</th>
                                 <th class="py-3 px-4">STATUS</th>
@@ -2226,7 +2337,7 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    showToast(action === 'approve' ? 'Usulan disetujui & dimasukkan ke listing kos.' : 'Usulan ditolak.', 'success');
+                    showToast(action === 'approve' ? 'Usulan disetujui & dimasukkan ke daftar resmi.' : 'Usulan ditolak.', 'success');
                     loadSubmissionsList();
                     loadKostList();
                     fetchStatus();
@@ -2238,13 +2349,21 @@
             }
         }
 
+        // -----------------------------------------------------------------
+        // 11. AUTOREPLIES & WELCOME
+        // -----------------------------------------------------------------
         async function loadAutoreplies() {
             try {
                 const res = await fetch('/api/autoreplies');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.autoreplies)) {
-                    rawAutorepliesData = data.autoreplies;
+                const list = data.data || data.autoreplies || [];
+                if (Array.isArray(list)) {
+                    rawAutorepliesData = list;
                     renderAutorepliesList();
+                    const badge = document.getElementById('autoreplyCountBadge');
+                    if (badge) badge.textContent = list.length;
+                    const mAuto = document.getElementById('metricTotalAutoreplies');
+                    if (mAuto) mAuto.textContent = list.length;
                 }
             } catch (err) {
                 showToast(`Gagal memuat autoreply: ${err.message}`, 'error');
@@ -2261,7 +2380,7 @@
                         <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
                             <i data-lucide="message-square-text" class="w-6 h-6"></i>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Belum Ada Autoreply Kustom</h5>
+                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Belum Ada Autoreply Terdaftar</h5>
                         <p class="text-[11px] text-slate-400">Tambahkan pesan otomatis ketika member mengetik kata kunci tertentu.</p>
                         <button onclick="openAddAutoreplyModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold shadow-xs hover:bg-indigo-700 transition">
                             Tambah Autoreply
@@ -2274,13 +2393,13 @@
 
             let rowsHtml = rawAutorepliesData.map(ar => `
                 <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                    <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">${escapeHtml(ar.trigger)}</td>
-                    <td class="py-3 px-4 text-xs text-slate-700 dark:text-slate-300 line-clamp-2">${escapeHtml(ar.response)}</td>
+                    <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">${escapeHtml(ar.trigger || ar.keyword || '-')}</td>
+                    <td class="py-3 px-4 text-xs text-slate-700 dark:text-slate-300 line-clamp-2">${escapeHtml(ar.response || '')}</td>
                     <td class="py-3 px-4 text-[11px]">
                         ${ar.ownerOnly ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700">OWNER ONLY</span>` : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">SEMUA MEMBER</span>`}
                     </td>
                     <td class="py-3 px-4 text-right">
-                        <button onclick="deleteAutoreplyPrompt('${escapeHtml(ar.trigger)}')" title="Hapus Autoreply" class="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition">
+                        <button onclick="deleteAutoreplyPrompt('${escapeHtml(ar.trigger || ar.keyword)}')" title="Hapus Autoreply" class="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition">
                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                         </button>
                     </td>
@@ -2292,9 +2411,9 @@
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                                <th class="py-3 px-4">TRIGGER</th>
-                                <th class="py-3 px-4">ISI BALASAN</th>
-                                <th class="py-3 px-4">AKSES</th>
+                                <th class="py-3 px-4">TRIGGER / KATA KUNCI</th>
+                                <th class="py-3 px-4">ISI BALASAN PESAN</th>
+                                <th class="py-3 px-4">HAK AKSES</th>
                                 <th class="py-3 px-4 text-right">AKSI</th>
                             </tr>
                         </thead>
@@ -2339,7 +2458,7 @@
                 return;
             }
             if (!response) {
-                showToast('Isi balasan wajib diisi.', 'warning');
+                showToast('Isi balasan pesan wajib diisi.', 'warning');
                 return;
             }
 
@@ -2348,7 +2467,7 @@
                 const res = await fetch('/api/autoreplies', {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ trigger, response, ownerOnly })
+                    body: JSON.stringify({ trigger, keyword: trigger, response, ownerOnly })
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -2421,13 +2540,19 @@
             }
         }
 
+        // -----------------------------------------------------------------
+        // 12. PENGELOLA & OWNERS
+        // -----------------------------------------------------------------
         async function loadOwners() {
             try {
                 const res = await fetch('/api/owners');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.owners)) {
-                    rawOwnersData = data.owners;
+                const list = data.owners || data.data || [];
+                if (Array.isArray(list)) {
+                    rawOwnersData = list;
                     renderOwnersList();
+                    const badge = document.getElementById('sysOwnersCount');
+                    if (badge) badge.textContent = list.length;
                 }
             } catch (err) {
                 showToast(`Gagal memuat daftar owner: ${err.message}`, 'error');
@@ -2552,12 +2677,16 @@
             }
         }
 
+        // -----------------------------------------------------------------
+        // 13. INSPEKTUR FITUR & LOGS
+        // -----------------------------------------------------------------
         async function loadFeatures() {
             try {
                 const res = await fetch('/api/features');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.features)) {
-                    rawFeaturesData = data.features;
+                const list = data.features || data.data || [];
+                if (Array.isArray(list)) {
+                    rawFeaturesData = list;
                     renderFeaturesList();
                 }
             } catch (err) {
@@ -2608,7 +2737,7 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                                    <th class="py-3 px-4">PERINATH</th>
+                                    <th class="py-3 px-4">PERINTAH</th>
                                     <th class="py-3 px-4">KATEGORI</th>
                                     <th class="py-3 px-4">DESKRIPSI & PENGGUNAAN</th>
                                     <th class="py-3 px-4">HAK AKSES</th>
@@ -2640,9 +2769,10 @@
             try {
                 const res = await fetch('/api/logs');
                 const data = await res.json();
-                if (data.success && Array.isArray(data.logs)) {
-                    renderLogsTable(data.logs);
-                    renderOverviewLogList(data.logs);
+                const list = data.logs || data.data || [];
+                if (Array.isArray(list)) {
+                    renderLogsTable(list);
+                    renderOverviewLogList(list);
                 }
             } catch (err) {
                 showToast(`Gagal memuat log: ${err.message}`, 'error');
@@ -2694,6 +2824,9 @@
             `).join('');
         }
 
+        // -----------------------------------------------------------------
+        // 14. SIARAN PESAN (BROADCAST)
+        // -----------------------------------------------------------------
         function openBroadcastModal() {
             document.getElementById('bcMessage').value = '';
             const modal = document.getElementById('broadcastModal');
@@ -2744,6 +2877,41 @@
             }
         }
 
+        async function submitBroadcastInline() {
+            if (!checkSuperuserOrWarn()) return;
+            const target = document.getElementById('bcTargetInline')?.value || 'all';
+            const message = (document.getElementById('bcMessageInline')?.value || '').trim();
+
+            if (!message) {
+                showToast('Isi pesan siaran wajib diisi.', 'warning');
+                return;
+            }
+
+            if (!confirm(`Kirim pesan siaran ini ke target: ${target}?`)) return;
+
+            try {
+                showToast('Mengirimkan pesan siaran...', 'info');
+                const res = await fetch('/api/bot/broadcast', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ target, message })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast(`Siaran sukses terkirim ke ${result.sentCount || 0} grup!`, 'success');
+                    document.getElementById('bcMessageInline').value = '';
+                    loadCommandLogs();
+                } else {
+                    showToast(result.message || 'Gagal mengirim siaran.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // 15. UTILITIES
+        // -----------------------------------------------------------------
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)

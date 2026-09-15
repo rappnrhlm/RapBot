@@ -929,18 +929,18 @@ app.get('/api/logs', (req, res) => {
 // 8. BOT ACTIONS & BROADCAST API
 // ----------------------------------------------------
 
-// Broadcast / Send message to target WhatsApp JID
+// Broadcast / Send message to target WhatsApp JID or group categories
 app.post('/api/bot/broadcast', async (req, res) => {
     try {
-        const { targetJid, message, pin } = req.body;
+        const { target, targetJid, message, pin } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
-        if (!targetJid || !message) {
-            return res.status(400).json({ success: false, message: 'Target JID dan pesan wajib diisi.' });
+        if (!message || !String(message).trim()) {
+            return res.status(400).json({ success: false, message: 'Isi pesan siaran wajib diisi.' });
         }
 
         if (!activeBotSocket) {
@@ -950,15 +950,57 @@ app.post('/api/bot/broadcast', async (req, res) => {
             });
         }
 
-        const cleanJid = normalizeJid(targetJid);
-        await activeBotSocket.sendMessage(cleanJid, { text: String(message) });
+        const registeredGroups = database.getGroups() || [];
+        let targetJids = [];
+
+        if (targetJid) {
+            targetJids = [normalizeJid(targetJid)];
+        } else if (target === 'all' || !target) {
+            targetJids = registeredGroups.map(g => normalizeJid(g.id));
+        } else if (target === 'indukan') {
+            targetJids = registeredGroups.filter(g => g.role === 'indukan').map(g => normalizeJid(g.id));
+        } else if (target === 'cabang') {
+            targetJids = registeredGroups.filter(g => g.role === 'cabang').map(g => normalizeJid(g.id));
+        } else {
+            targetJids = [normalizeJid(target)];
+        }
+
+        targetJids = [...new Set(targetJids.filter(Boolean))];
+
+        if (targetJids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tidak ada grup tujuan yang terdaftar untuk siaran ini.'
+            });
+        }
+
+        let sentCount = 0;
+        const errors = [];
+
+        for (const jid of targetJids) {
+            try {
+                await activeBotSocket.sendMessage(jid, { text: String(message) });
+                sentCount++;
+                // Small delay to avoid rate limit
+                await new Promise(r => setTimeout(r, 400));
+            } catch (sendErr) {
+                console.warn(`[web/server] Gagal mengirim siaran ke ${jid}:`, sendErr.message);
+                errors.push({ jid, error: sendErr.message });
+            }
+        }
+
+        database.logCommand(`broadcast:${target || 'custom'}`, 'system', 'admin', true);
 
         res.json({
             success: true,
-            message: `Pesan berhasil dikirim ke ${cleanJid}.`
+            message: `Pesan siaran berhasil dikirim ke ${sentCount} dari ${targetJids.length} grup.`,
+            sentCount,
+            totalTarget: targetJids.length,
+            errors: errors.length > 0 ? errors : undefined
         });
     } catch (err) {
-        res.status(500).json({ success: false, message: `Gagal mengirim pesan: ${err.message}` });
+        console.error('[web/server] Error broadcast:', err);
+        res.status(500).json({ success: false, message: `Gagal mengirim siaran: ${err.message}` });
     }
 });
 
