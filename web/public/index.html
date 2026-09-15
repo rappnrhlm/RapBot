@@ -933,7 +933,9 @@
             featuresList: [],
             currentFeatureGroup: null,
             featureModalTab: 'all', // 'all' | 'active' | 'locked'
-            searchDebounceTimer: null
+            searchDebounceTimer: null,
+            linkChildId: null,
+            ownersList: []
         };
 
         // Initialize App on DOM Ready
@@ -947,7 +949,9 @@
         });
 
         function initIcons() {
-            lucide.createIcons();
+            if (window.lucide && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
         }
 
         // ==========================================
@@ -969,10 +973,12 @@
 
         function updatePinUI() {
             const btnText = document.getElementById('pinBtnText');
-            if (state.adminPin) {
-                btnText.innerText = 'PIN: Tersimpan';
-            } else {
-                btnText.innerText = 'PIN: Belum diset';
+            if (btnText) {
+                if (state.adminPin) {
+                    btnText.innerText = 'PIN: Tersimpan';
+                } else {
+                    btnText.innerText = 'PIN: Belum diset';
+                }
             }
         }
 
@@ -981,6 +987,15 @@
                 'Content-Type': 'application/json',
                 'x-pin': state.adminPin || ''
             };
+        }
+
+        function handleAuthError(res, data) {
+            if (res.status === 401 || (data && data.message && data.message.toLowerCase().includes('pin'))) {
+                promptPinModal();
+                showToast('⚠️ Masukkan PIN Admin untuk melanjutkan aksi ini', true);
+                return true;
+            }
+            return false;
         }
 
         // ==========================================
@@ -997,6 +1012,7 @@
         function applyDevModeUI() {
             const toggle = document.getElementById('devModeToggle');
             const knob = document.getElementById('devModeKnob');
+            if (!toggle || !knob) return;
             if (state.developerMode) {
                 toggle.classList.remove('bg-slate-300', 'dark:bg-neutral-600');
                 toggle.classList.add('bg-blue-600');
@@ -1031,14 +1047,16 @@
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 const sec = document.getElementById(`section-${t}`);
-                if (t === tabId) {
-                    btn.classList.add('bg-white', 'dark:bg-neutral-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
-                    btn.classList.remove('text-slate-600', 'dark:text-slate-400', 'font-medium');
-                    sec.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('bg-white', 'dark:bg-neutral-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
-                    btn.classList.add('text-slate-600', 'dark:text-slate-400', 'font-medium');
-                    sec.classList.add('hidden');
+                if (btn && sec) {
+                    if (t === tabId) {
+                        btn.classList.add('bg-white', 'dark:bg-neutral-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
+                        btn.classList.remove('text-slate-600', 'dark:text-slate-400', 'font-medium');
+                        sec.classList.remove('hidden');
+                    } else {
+                        btn.classList.remove('bg-white', 'dark:bg-neutral-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
+                        btn.classList.add('text-slate-600', 'dark:text-slate-400', 'font-medium');
+                        sec.classList.add('hidden');
+                    }
                 }
             });
 
@@ -1062,37 +1080,50 @@
                     const badge = document.getElementById('botStatusBadge');
                     const badgeText = document.getElementById('botStatusText');
                     
-                    if (isOnline) {
-                        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
-                        badgeText.innerText = 'Online';
-                        document.getElementById('heroBotStatus').innerText = 'WhatsApp Bot Connected';
-                    } else if (st.botStatus === 'connecting') {
-                        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400';
-                        badgeText.innerText = 'Menghubungkan...';
-                        document.getElementById('heroBotStatus').innerText = 'Connecting to WhatsApp...';
-                    } else {
-                        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400';
-                        badgeText.innerText = 'Offline';
-                        document.getElementById('heroBotStatus').innerText = 'WhatsApp Bot Offline';
+                    if (badge && badgeText) {
+                        if (isOnline) {
+                            badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+                            badgeText.innerText = 'Online';
+                            document.getElementById('heroBotStatus').innerText = 'WhatsApp Bot Connected';
+                        } else if (st.botStatus === 'connecting') {
+                            badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400';
+                            badgeText.innerText = 'Menghubungkan...';
+                            document.getElementById('heroBotStatus').innerText = 'Connecting to WhatsApp...';
+                        } else {
+                            badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400';
+                            badgeText.innerText = 'Offline';
+                            document.getElementById('heroBotStatus').innerText = 'WhatsApp Bot Offline';
+                        }
                     }
 
                     // Hero Banner Elements
-                    document.getElementById('botStatusSub').innerText = `Uptime: ${st.uptimeFormatted}`;
-                    document.getElementById('heroBotUptime').innerText = st.uptimeFormatted;
-                    document.getElementById('heroBotPhone').innerText = st.botUser ? `+${st.botUser.replace(/[^0-9]/g, '')}` : 'Nomor Bot Terhubung';
-                    document.getElementById('heroHeap').innerText = `${st.memory.heapUsedMB} MB`;
-                    document.getElementById('heroRss').innerText = `${st.memory.rssMB} MB`;
-                    document.getElementById('heroMessages').innerText = `${st.counts.messages || 0} pesan`;
+                    const elUptimeSub = document.getElementById('botStatusSub');
+                    if (elUptimeSub) elUptimeSub.innerText = `Uptime: ${st.uptimeFormatted}`;
+                    const elHeroUptime = document.getElementById('heroBotUptime');
+                    if (elHeroUptime) elHeroUptime.innerText = st.uptimeFormatted;
+                    const elHeroPhone = document.getElementById('heroBotPhone');
+                    if (elHeroPhone) elHeroPhone.innerText = st.botUser ? `+${st.botUser.replace(/[^0-9]/g, '')}` : 'Nomor Bot Terhubung';
+                    const elHeroHeap = document.getElementById('heroHeap');
+                    if (elHeroHeap) elHeroHeap.innerText = `${st.memory.heapUsedMB} MB`;
+                    const elHeroRss = document.getElementById('heroRss');
+                    if (elHeroRss) elHeroRss.innerText = `${st.memory.rssMB} MB`;
+                    const elHeroMsg = document.getElementById('heroMessages');
+                    if (elHeroMsg) elHeroMsg.innerText = `${st.counts.messages || 0} pesan`;
 
                     // Quick Stat Cards
-                    document.getElementById('statTotalGroups').innerText = st.counts.groups;
-                    document.getElementById('statTotalCommands').innerText = st.counts.commands;
-                    document.getElementById('statTotalMessages').innerText = `${st.counts.messages} pesan masuk`;
-                    document.getElementById('statTotalStickers').innerText = st.counts.stickers + (st.counts.brats || 0);
-                    document.getElementById('statTotalKost').innerText = st.counts.totalKost || 0;
-                    document.getElementById('statKostPendingSent').innerText = `${st.counts.pendingKost || 0} pending, ${st.counts.sentKost || 0} sent`;
+                    const elTotGroups = document.getElementById('statTotalGroups');
+                    if (elTotGroups) elTotGroups.innerText = st.counts.groups;
+                    const elTotCmds = document.getElementById('statTotalCommands');
+                    if (elTotCmds) elTotCmds.innerText = st.counts.commands;
+                    const elTotMsgs = document.getElementById('statTotalMessages');
+                    if (elTotMsgs) elTotMsgs.innerText = `${st.counts.messages} pesan masuk`;
+                    const elTotStickers = document.getElementById('statTotalStickers');
+                    if (elTotStickers) elTotStickers.innerText = st.counts.stickers + (st.counts.brats || 0);
+                    const elTotKost = document.getElementById('statTotalKost');
+                    if (elTotKost) elTotKost.innerText = st.counts.totalKost || 0;
+                    const elKostPendingSent = document.getElementById('statKostPendingSent');
+                    if (elKostPendingSent) elKostPendingSent.innerText = `${st.counts.pendingKost || 0} pending, ${st.counts.sentKost || 0} sent`;
 
-                    // Render Top Commands visualizer and Quick Groups
                     renderTopCommandsWidget(st.counts);
                     renderQuickGroupsWidget();
                 }
@@ -1105,7 +1136,6 @@
             const container = document.getElementById('topCommandsContainer');
             if (!container) return;
 
-            // Compute command breakdown
             const totalCmds = counts.commands || 1;
             const items = [
                 { name: '!cari & Pencarian', count: Math.max(1, Math.round(totalCmds * 0.35)), color: 'bg-blue-500' },
@@ -1143,7 +1173,7 @@
             }
 
             const topGroups = state.groups.slice(0, 4);
-            container.innerHTML = topGroups.map(g => {
+            container.innerHTML = topGroups.map((g, idx) => {
                 const isInit = g.isInitialized !== false;
                 const isPublic = g.role === 'public';
                 const roleBadge = !isInit 
@@ -1164,11 +1194,11 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1 flex-shrink-0">
-                            <button onclick="openFeatureInspector('${escapeHtml(g.id)}', '${escapeHtml(g.name)}', '${escapeHtml(g.role || 'uninitialized')}', ${isInit})" class="px-2 py-1 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-neutral-800 text-[11px] font-medium transition" title="Cek Fitur">
+                            <button onclick="openFeatureInspectorByIndex(${idx})" class="px-2 py-1 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-neutral-800 text-[11px] font-medium transition" title="Cek Fitur">
                                 🔍 Fitur
                             </button>
                             ${isInit ? `
-                                <button onclick="openWorkspace('${escapeHtml(g.id)}')" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold hover:bg-blue-100 transition">
+                                <button onclick="openWorkspaceByIndex(${idx})" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold hover:bg-blue-100 transition">
                                     Buka →
                                 </button>
                             ` : ''}
@@ -1191,6 +1221,7 @@
                     fetchStatus();
                     loadGroups();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -1203,7 +1234,7 @@
                 const res = await fetch('/api/logs?limit=25');
                 const data = await res.json();
                 const container = document.getElementById('logsContainer');
-                if (data.success && data.logs.length > 0) {
+                if (data.success && data.logs && data.logs.length > 0) {
                     container.innerHTML = data.logs.map(l => `
                         <div class="p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
                             <div class="flex items-center gap-2">
@@ -1255,8 +1286,8 @@
 
         function renderGroupsList() {
             const container = document.getElementById('groupsListContainer');
+            if (!container) return;
             
-            // Calculate group counts
             const total = state.groups.length;
             const initCount = state.groups.filter(g => g.isInitialized !== false).length;
             const uninitCount = state.groups.filter(g => g.isInitialized === false).length;
@@ -1273,12 +1304,11 @@
             if (statInitEl) statInitEl.innerText = initCount;
             if (statUninitEl) statUninitEl.innerText = uninitCount;
 
-            // Filter groups based on active filter
-            let filtered = state.groups;
+            let filtered = state.groups.map((g, idx) => ({ ...g, _originalIndex: idx }));
             if (state.groupFilter === 'initialized') {
-                filtered = state.groups.filter(g => g.isInitialized !== false);
+                filtered = filtered.filter(g => g.isInitialized !== false);
             } else if (state.groupFilter === 'uninitialized') {
-                filtered = state.groups.filter(g => g.isInitialized === false);
+                filtered = filtered.filter(g => g.isInitialized === false);
             }
 
             if (!filtered.length) {
@@ -1294,12 +1324,12 @@
             }
 
             container.innerHTML = filtered.map(g => {
+                const origIdx = g._originalIndex;
                 const isInit = g.isInitialized !== false;
                 const isPublic = g.role === 'public';
                 const hasParent = Boolean(g.parentGroupId);
 
                 if (!isInit) {
-                    // UNDEFINED / UNINITIALIZED GROUP CARD
                     return `
                         <div class="p-5 rounded-3xl bg-amber-50/30 dark:bg-amber-950/10 ios-card-shadow border-2 border-dashed border-amber-300/80 dark:border-amber-700/60 flex flex-col justify-between space-y-4">
                             <div>
@@ -1332,17 +1362,17 @@
                                         <div class="truncate">JID: ${escapeHtml(g.id)}</div>
                                         <div class="flex justify-between text-slate-400">
                                             <span>Seen: ${escapeHtml(g.lastSeen || 'Live')}</span>
-                                            <button onclick='openInspector("Group: ${escapeHtml(g.name)}", ${JSON.stringify(g)})' class="text-blue-400 hover:underline">Inspect JSON</button>
+                                            <button onclick='openInspector("Group: ${escapeHtml(g.name)}", state.groups[${origIdx}])' class="text-blue-400 hover:underline">Inspect JSON</button>
                                         </div>
                                     </div>
                                 ` : ''}
                             </div>
 
                             <div class="flex items-center gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
-                                <button onclick="openFeatureInspector('${escapeHtml(g.id)}', '${escapeHtml(g.name || g.groupName || '')}', 'uninitialized', false)" class="px-3.5 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-800 text-xs font-semibold hover:bg-slate-300 transition flex items-center gap-1.5" title="Cek Fitur yang Aktif">
+                                <button onclick="openFeatureInspectorByIndex(${origIdx})" class="px-3.5 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-800 text-xs font-semibold hover:bg-slate-300 transition flex items-center gap-1.5" title="Cek Fitur yang Aktif">
                                     🔍 Cek Fitur
                                 </button>
-                                <button onclick="openInitUndefinedModal('${escapeHtml(g.id)}', '${escapeHtml(g.name || g.groupName || '')}')" class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
+                                <button onclick="openInitUndefinedByIndex(${origIdx})" class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition active:scale-95">
                                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                                     Inisialisasi Grup
                                 </button>
@@ -1351,7 +1381,6 @@
                     `;
                 }
 
-                // ACTIVE / INITIALIZED GROUP CARD
                 const roleColor = isPublic 
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' 
                     : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
@@ -1360,7 +1389,6 @@
 
                 return `
                     <div class="p-5 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between space-y-4">
-                        <!-- Top Header Card -->
                         <div>
                             <div class="flex items-start justify-between gap-2">
                                 <div>
@@ -1379,7 +1407,6 @@
                                 </div>
                             </div>
 
-                            <!-- Link Status Pill -->
                             <div class="mt-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800/80 text-xs flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="${hasParent ? 'link' : 'shield-check'}" class="w-3.5 h-3.5 ${hasParent ? 'text-blue-500' : 'text-emerald-500'}"></i>
@@ -1387,36 +1414,34 @@
                                         ${hasParent ? `Terhubung ke: <strong>${escapeHtml(g.parentGroupName || g.parentGroupId)}</strong>` : 'Grup Pusat / Mandiri'}
                                     </span>
                                 </div>
-                                <button onclick="openLinkGroupModal('${escapeHtml(g.id)}', '${escapeHtml(g.name)}', '${escapeHtml(g.parentGroupId || '')}')" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                <button onclick="openLinkGroupByIndex(${origIdx})" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
                                     ${hasParent ? 'Ubah Link' : 'Hubungkan'}
                                 </button>
                             </div>
 
-                            <!-- Developer Mode Extra Details -->
                             ${state.developerMode ? `
                                 <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-emerald-400 font-mono text-[10px] space-y-1">
                                     <div class="truncate">JID: ${escapeHtml(g.id)}</div>
                                     <div class="flex justify-between text-slate-400">
                                         <span>Init: ${escapeHtml(g.initializedBy || '-')}</span>
-                                        <button onclick='openInspector("Group: ${escapeHtml(g.name)}", ${JSON.stringify(g)})' class="text-blue-400 hover:underline">Inspect JSON</button>
+                                        <button onclick='openInspector("Group: ${escapeHtml(g.name)}", state.groups[${origIdx}])' class="text-blue-400 hover:underline">Inspect JSON</button>
                                     </div>
                                 </div>
                             ` : ''}
                         </div>
 
-                        <!-- Card Action Buttons -->
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
                             <div class="flex items-center gap-2">
-                                <button onclick="openWorkspace('${escapeHtml(g.id)}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
+                                <button onclick="openWorkspaceByIndex(${origIdx})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
                                     <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
                                     Workspace
                                 </button>
-                                <button onclick="openFeatureInspector('${escapeHtml(g.id)}', '${escapeHtml(g.name)}', '${escapeHtml(g.role || 'admin')}', true)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition active:scale-95">
+                                <button onclick="openFeatureInspectorByIndex(${origIdx})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition active:scale-95">
                                     🔍 Fitur & Izin
                                 </button>
                             </div>
                             <div class="flex items-center gap-1">
-                                <button onclick="deleteGroupPrompt('${escapeHtml(g.id)}', '${escapeHtml(g.name)}')" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition" title="Hapus Grup">
+                                <button onclick="deleteGroupPromptByIndex(${origIdx})" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition" title="Hapus Grup">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
@@ -1431,12 +1456,16 @@
         // ==========================================
         // DYNAMIC FEATURE & PERMISSION INSPECTOR
         // ==========================================
-        async function openFeatureInspector(groupId, groupName, role, isInitialized) {
+        async function openFeatureInspectorByIndex(idx) {
+            const group = state.groups[idx];
+            if (!group) return;
+
+            const isInit = group.isInitialized !== false;
             state.currentFeatureGroup = {
-                id: groupId,
-                name: groupName || 'Grup WhatsApp',
-                role: role || (isInitialized ? 'admin' : 'uninitialized'),
-                isInitialized: isInitialized !== false
+                id: group.id,
+                name: group.name || group.groupName || 'Grup WhatsApp',
+                role: group.role || (isInit ? 'admin' : 'uninitialized'),
+                isInitialized: isInit
             };
 
             document.getElementById('featInspectGroupName').innerText = state.currentFeatureGroup.name;
@@ -1452,19 +1481,17 @@
                 badge.innerText = 'GRUP PUSAT / ADMIN';
             }
 
-            // Reset filters
             document.getElementById('featureModalSearchInput').value = '';
             state.featureModalTab = 'all';
             setFeatureModalTab('all');
 
             openModal('featureInspectorModal');
 
-            // Fetch features from backend
             const container = document.getElementById('featuresListContainer');
             container.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">Memuat izin fitur...</p>';
 
             try {
-                const res = await fetch(`/api/features?groupId=${encodeURIComponent(groupId)}&role=${encodeURIComponent(state.currentFeatureGroup.role)}`);
+                const res = await fetch(`/api/features?groupId=${encodeURIComponent(group.id)}&role=${encodeURIComponent(state.currentFeatureGroup.role)}`);
                 const data = await res.json();
                 if (data.success) {
                     state.featuresList = data.features || [];
@@ -1499,22 +1526,22 @@
 
         function renderFeaturesList() {
             const container = document.getElementById('featuresListContainer');
+            if (!container) return;
+
             const search = (document.getElementById('featureModalSearchInput')?.value || '').toLowerCase().trim();
             const tab = state.featureModalTab;
 
             let list = state.featuresList || [];
 
-            // Filter by search query
             if (search) {
                 list = list.filter(f => 
-                    f.name.toLowerCase().includes(search) ||
+                    (f.name && f.name.toLowerCase().includes(search)) ||
                     (f.aliases && f.aliases.some(a => a.toLowerCase().includes(search))) ||
                     (f.description && f.description.toLowerCase().includes(search)) ||
                     (f.category && f.category.toLowerCase().includes(search))
                 );
             }
 
-            // Filter by Tab (Active vs Locked)
             if (tab === 'active') {
                 list = list.filter(f => f.evaluated?.active);
             } else if (tab === 'locked') {
@@ -1573,8 +1600,6 @@
         // ==========================================
         function openRegisterGroupModal() {
             const picker = document.getElementById('regDiscoveredPicker');
-            
-            // Populate picker with uninitialized and detected groups
             const uninitGroups = state.groups.filter(g => g.isInitialized === false);
             const allGroups = state.groups;
 
@@ -1598,7 +1623,6 @@
             optionsHtml += '<option value="manual">➕ Ketik ID / JID Manual...</option>';
             picker.innerHTML = optionsHtml;
 
-            // Reset inputs
             document.getElementById('regGroupId').value = '';
             document.getElementById('regGroupName').value = '';
             document.getElementById('regGroupType').value = 'kos';
@@ -1646,6 +1670,7 @@
                     closeModal('registerGroupModal');
                     loadGroups();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -1653,16 +1678,18 @@
             }
         }
 
-        // Initialize Undefined Group Modal
-        function openInitUndefinedModal(jid, waSubject) {
-            document.getElementById('initUndefJid').value = jid;
-            document.getElementById('initUndefWaSubject').innerText = waSubject || jid;
-            document.getElementById('initUndefAliasName').value = waSubject || '';
+        function openInitUndefinedByIndex(idx) {
+            const g = state.groups[idx];
+            if (!g) return;
+
+            document.getElementById('initUndefJid').value = g.id;
+            document.getElementById('initUndefWaSubject').innerText = g.name || g.groupName || g.id;
+            document.getElementById('initUndefAliasName').value = g.name || g.groupName || '';
             document.getElementById('initUndefType').value = 'kos';
             document.getElementById('initUndefRole').value = 'public';
 
             const parentSelect = document.getElementById('initUndefParentSelect');
-            const registeredParents = state.groups.filter(g => g.isInitialized !== false && g.id !== jid);
+            const registeredParents = state.groups.filter(grp => grp.isInitialized !== false && grp.id !== g.id);
             if (registeredParents.length > 0) {
                 parentSelect.innerHTML = registeredParents.map(p => `
                     <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} (${(p.role || 'admin').toUpperCase()})</option>
@@ -1678,10 +1705,12 @@
         function onInitRoleChange() {
             const role = document.getElementById('initUndefRole').value;
             const parentRow = document.getElementById('initUndefParentRow');
-            if (role === 'public') {
-                parentRow.style.display = 'block';
-            } else {
-                parentRow.style.display = 'none';
+            if (parentRow) {
+                if (role === 'public') {
+                    parentRow.style.display = 'block';
+                } else {
+                    parentRow.style.display = 'none';
+                }
             }
         }
 
@@ -1716,6 +1745,7 @@
                     closeModal('initUndefinedModal');
                     loadGroups();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -1723,16 +1753,19 @@
             }
         }
 
-        function openLinkGroupModal(childId, childName, currentParentId) {
-            document.getElementById('linkTargetGroupName').innerText = childName;
-            state.linkChildId = childId;
+        function openLinkGroupByIndex(idx) {
+            const g = state.groups[idx];
+            if (!g) return;
+
+            document.getElementById('linkTargetGroupName').innerText = g.name;
+            state.linkChildId = g.id;
 
             const select = document.getElementById('parentGroupSelect');
-            const candidates = state.groups.filter(g => g.isInitialized !== false && g.id !== childId);
+            const candidates = state.groups.filter(grp => grp.isInitialized !== false && grp.id !== g.id);
 
             let optionsHtml = '<option value="">-- Lepas Relasi (Jadikan Grup Mandiri / Admin) --</option>';
             candidates.forEach(p => {
-                const selected = p.id === currentParentId ? 'selected' : '';
+                const selected = p.id === g.parentGroupId ? 'selected' : '';
                 optionsHtml += `<option value="${escapeHtml(p.id)}" ${selected}>${escapeHtml(p.name)} (${(p.role || 'admin').toUpperCase()})</option>`;
             });
 
@@ -1756,6 +1789,7 @@
                     closeModal('linkGroupModal');
                     loadGroups();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -1763,10 +1797,12 @@
             }
         }
 
-        async function deleteGroupPrompt(id, name) {
-            if (!confirm(`Hapus registrasi grup "${name}"? Data di grup akan dikembalikan ke status undefined.`)) return;
+        async function deleteGroupPromptByIndex(idx) {
+            const g = state.groups[idx];
+            if (!g) return;
+            if (!confirm(`Hapus registrasi grup "${g.name}"? Data di grup akan dikembalikan ke status undefined.`)) return;
             try {
-                const res = await fetch(`/api/groups/${encodeURIComponent(id)}`, {
+                const res = await fetch(`/api/groups/${encodeURIComponent(g.id)}`, {
                     method: 'DELETE',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ pin: state.adminPin })
@@ -1776,6 +1812,7 @@
                     showToast('✅ Grup dihapus dari database');
                     loadGroups();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -1786,8 +1823,8 @@
         // ==========================================
         // 3. WORKSPACE (KOST & SUBMISSIONS)
         // ==========================================
-        function openWorkspace(groupId) {
-            const group = state.groups.find(g => g.id === groupId);
+        function openWorkspaceByIndex(idx) {
+            const group = state.groups[idx];
             if (!group) return;
 
             state.activeWorkspaceGroup = group;
@@ -1835,8 +1872,8 @@
         async function loadKostList() {
             if (!state.activeWorkspaceGroup) return;
             const groupId = state.activeWorkspaceGroup.id;
-            const status = document.getElementById('kostStatusFilter').value;
-            const search = document.getElementById('kostSearchInput').value.trim();
+            const status = document.getElementById('kostStatusFilter')?.value || 'all';
+            const search = (document.getElementById('kostSearchInput')?.value || '').trim();
 
             try {
                 let url = `/api/kost?groupId=${encodeURIComponent(groupId)}&status=${encodeURIComponent(status)}`;
@@ -1846,8 +1883,9 @@
                 const data = await res.json();
                 if (data.success) {
                     state.kostList = data.data || [];
-                    document.getElementById('wsKostCount').innerText = data.total || 0;
-                    renderKostCards(data.data || []);
+                    const countEl = document.getElementById('wsKostCount');
+                    if (countEl) countEl.innerText = data.total || state.kostList.length;
+                    renderKostCards(state.kostList);
                 }
             } catch (err) {
                 console.error('Error loading kost:', err);
@@ -1863,6 +1901,8 @@
 
         function renderKostCards(items) {
             const container = document.getElementById('kostItemsContainer');
+            if (!container) return;
+
             if (!items.length) {
                 container.innerHTML = `
                     <div class="col-span-full py-10 text-center text-slate-400 space-y-2">
@@ -1874,14 +1914,14 @@
                 return;
             }
 
-            container.innerHTML = items.map(k => {
+            container.innerHTML = items.map((k, idx) => {
                 const isSent = k.status === 'sent';
                 return `
                     <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex flex-col justify-between space-y-3">
                         <div>
                             <div class="flex items-start justify-between gap-2">
                                 <div>
-                                    <span class="text-[10px] font-mono font-bold text-slate-400">${escapeHtml(k.id)}</span>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400">#${escapeHtml(k.id)}</span>
                                     <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(k.name)}</h4>
                                 </div>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'}">
@@ -1912,13 +1952,17 @@
                         </div>
 
                         <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-neutral-800">
-                            <button onclick="toggleKostSent('${escapeHtml(k.id)}', '${isSent ? 'pending' : 'sent'}')" class="text-xs font-semibold ${isSent ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-700'} flex items-center gap-1">
+                            <button onclick="toggleKostSentByIndex(${idx})" class="text-xs font-semibold ${isSent ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-700'} flex items-center gap-1">
                                 <i data-lucide="${isSent ? 'rotate-ccw' : 'check-circle-2'}" class="w-3.5 h-3.5"></i>
                                 ${isSent ? 'Set Pending' : 'Tandai Sent'}
                             </button>
                             <div class="flex items-center gap-1">
-                                <button onclick="openEditKostModal('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-500"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
-                                <button onclick="deleteKostItem('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950 text-red-500"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="openEditKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-500" title="Edit Kos">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteKostByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950 text-red-500" title="Hapus Kos">
+                                    <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1928,10 +1972,12 @@
             initIcons();
         }
 
-        async function toggleKostSent(id, newStatus) {
-            if (!state.activeWorkspaceGroup) return;
+        async function toggleKostSentByIndex(idx) {
+            const item = state.kostList[idx];
+            if (!item || !state.activeWorkspaceGroup) return;
+
             try {
-                const res = await fetch(`/api/kost/${encodeURIComponent(id)}/sent`, {
+                const res = await fetch(`/api/kost/${encodeURIComponent(item.id)}/sent`, {
                     method: 'POST',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ groupId: state.activeWorkspaceGroup.id, pin: state.adminPin })
@@ -1941,6 +1987,7 @@
                     showToast('Status kos diperbarui');
                     loadKostList();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -1959,12 +2006,12 @@
             openModal('kostModal');
         }
 
-        function openEditKostModal(id) {
-            const item = state.kostList.find(k => k.id === id);
+        function openEditKostByIndex(idx) {
+            const item = state.kostList[idx];
             if (!item) return;
 
-            document.getElementById('kostModalTitle').innerText = `Edit Data Kos (${id})`;
-            document.getElementById('kostEditId').value = id;
+            document.getElementById('kostModalTitle').innerText = `Edit Data Kos (#${item.id})`;
+            document.getElementById('kostEditId').value = item.id;
             document.getElementById('kostFormName').value = item.name || '';
             document.getElementById('kostFormIg').value = item.instagram || '';
             document.getElementById('kostFormWa').value = item.whatsapp || '';
@@ -2025,6 +2072,7 @@
                     closeModal('kostModal');
                     loadKostList();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2032,10 +2080,13 @@
             }
         }
 
-        async function deleteKostItem(id) {
-            if (!confirm(`Hapus data kos ID ${id}?`)) return;
+        async function deleteKostByIndex(idx) {
+            const item = state.kostList[idx];
+            if (!item) return;
+            if (!confirm(`Hapus data kos "${item.name}" (ID #${item.id})?`)) return;
+
             try {
-                const res = await fetch(`/api/kost/${encodeURIComponent(id)}`, {
+                const res = await fetch(`/api/kost/${encodeURIComponent(item.id)}`, {
                     method: 'DELETE',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ groupId: state.activeWorkspaceGroup?.id, pin: state.adminPin })
@@ -2045,6 +2096,7 @@
                     showToast('✅ Data kos dihapus');
                     loadKostList();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2060,8 +2112,9 @@
                 const data = await res.json();
                 if (data.success) {
                     state.submissions = data.data || [];
-                    document.getElementById('wsSubCount').innerText = data.total || 0;
-                    renderSubmissionsCards(data.data || []);
+                    const countEl = document.getElementById('wsSubCount');
+                    if (countEl) countEl.innerText = data.total || state.submissions.length;
+                    renderSubmissionsCards(state.submissions);
                 }
             } catch (err) {
                 console.error('Error loading submissions:', err);
@@ -2070,6 +2123,8 @@
 
         function renderSubmissionsCards(items) {
             const container = document.getElementById('submissionsContainer');
+            if (!container) return;
+
             if (!items.length) {
                 container.innerHTML = `
                     <div class="py-8 text-center text-slate-400 space-y-1">
@@ -2081,7 +2136,7 @@
                 return;
             }
 
-            container.innerHTML = items.map(s => {
+            container.innerHTML = items.map((s, idx) => {
                 const isPending = s.status === 'pending';
                 const isApproved = s.status === 'approved';
                 const statusBadge = isPending 
@@ -2136,6 +2191,7 @@
                     loadSubmissionsList();
                     loadKostList();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2159,6 +2215,7 @@
                     showToast('✅ Pengaturan grup disimpan');
                     loadGroups();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2215,7 +2272,7 @@
                 return;
             }
 
-            tbody.innerHTML = list.map(a => {
+            tbody.innerHTML = list.map((a, idx) => {
                 const matchBadge = a.matchType === 'contains' 
                     ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">Contains</span>'
                     : a.matchType === 'startsWith'
@@ -2235,10 +2292,10 @@
                         </td>
                         <td class="p-3 text-right">
                             <div class="inline-flex items-center gap-1">
-                                <button onclick="openEditAutoreplyModal('${escapeHtml(a.keyword)}')" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-300" title="Edit">
+                                <button onclick="openEditAutoreplyByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-300" title="Edit">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                 </button>
-                                <button onclick="deleteAutoreplyItem('${escapeHtml(a.keyword)}')" class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-red-500" title="Hapus">
+                                <button onclick="deleteAutoreplyByIndex(${idx})" class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-red-500" title="Hapus">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
@@ -2252,6 +2309,7 @@
 
         function insertVariableChip(varTag) {
             const textarea = document.getElementById('autoResponse');
+            if (!textarea) return;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
             const text = textarea.value;
@@ -2269,12 +2327,12 @@
             openModal('autoreplyModal');
         }
 
-        function openEditAutoreplyModal(keyword) {
-            const item = state.autoreplies.find(a => a.keyword === keyword);
+        function openEditAutoreplyByIndex(idx) {
+            const item = state.autoreplies[idx];
             if (!item) return;
 
-            document.getElementById('autoreplyModalTitle').innerText = `Edit Autoreply (${keyword})`;
-            document.getElementById('autoEditOldKeyword').value = keyword;
+            document.getElementById('autoreplyModalTitle').innerText = `Edit Autoreply (${item.keyword})`;
+            document.getElementById('autoEditOldKeyword').value = item.keyword;
             document.getElementById('autoKeyword').value = item.keyword || '';
             document.getElementById('autoResponse').value = item.response || '';
             document.getElementById('autoMatchType').value = item.matchType || 'exact';
@@ -2293,7 +2351,6 @@
             }
 
             try {
-                // If editing and renamed keyword, delete old first
                 if (oldKeyword && oldKeyword !== keyword) {
                     await fetch(`/api/autoreplies/${encodeURIComponent(oldKeyword)}`, {
                         method: 'DELETE',
@@ -2313,6 +2370,7 @@
                     closeModal('autoreplyModal');
                     loadAutoreplies();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2320,10 +2378,13 @@
             }
         }
 
-        async function deleteAutoreplyItem(keyword) {
-            if (!confirm(`Hapus keyword "${keyword}"?`)) return;
+        async function deleteAutoreplyByIndex(idx) {
+            const item = state.autoreplies[idx];
+            if (!item) return;
+            if (!confirm(`Hapus keyword "${item.keyword}"?`)) return;
+
             try {
-                const res = await fetch(`/api/autoreplies/${encodeURIComponent(keyword)}`, {
+                const res = await fetch(`/api/autoreplies/${encodeURIComponent(item.keyword)}`, {
                     method: 'DELETE',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ pin: state.adminPin })
@@ -2333,6 +2394,7 @@
                     showToast('✅ Keyword dihapus');
                     loadAutoreplies();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2367,6 +2429,7 @@
                 if (data.success) {
                     showToast('✅ Pengaturan welcome disimpan');
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2382,9 +2445,16 @@
                 const res = await fetch('/api/owners');
                 const data = await res.json();
                 const container = document.getElementById('ownersListContainer');
-                if (data.success && data.owners.length > 0) {
+                if (data.success) {
+                    state.ownersList = data.owners || [];
                     const superOwner = data.superOwner;
-                    container.innerHTML = data.owners.map(o => {
+
+                    if (!state.ownersList.length) {
+                        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Belum ada owner tambahan.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = state.ownersList.map((o, idx) => {
                         const isSuper = o.number === superOwner || o.isSuper;
                         return `
                             <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
@@ -2396,7 +2466,7 @@
                                     <p class="text-slate-500 font-mono mt-0.5">${escapeHtml(o.number)}</p>
                                 </div>
                                 ${!isSuper ? `
-                                    <button onclick="deleteOwnerItem('${escapeHtml(o.number)}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl">
+                                    <button onclick="deleteOwnerByIndex(${idx})" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl" title="Hapus Owner">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 ` : ''}
@@ -2437,6 +2507,7 @@
                     closeModal('ownerModal');
                     loadOwners();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2444,10 +2515,13 @@
             }
         }
 
-        async function deleteOwnerItem(number) {
-            if (!confirm(`Hapus owner ${number}?`)) return;
+        async function deleteOwnerByIndex(idx) {
+            const o = state.ownersList[idx];
+            if (!o) return;
+            if (!confirm(`Hapus owner ${o.name || o.number}?`)) return;
+
             try {
-                const res = await fetch(`/api/owners/${encodeURIComponent(number)}`, {
+                const res = await fetch(`/api/owners/${encodeURIComponent(o.number)}`, {
                     method: 'DELETE',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ pin: state.adminPin })
@@ -2457,6 +2531,7 @@
                     showToast('✅ Owner dihapus');
                     loadOwners();
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2498,6 +2573,7 @@
                     showToast('✅ Pesan berhasil dikirim!');
                     closeModal('broadcastModal');
                 } else {
+                    if (handleAuthError(res, data)) return;
                     showToast('❌ ' + data.message, true);
                 }
             } catch (err) {
@@ -2509,12 +2585,18 @@
         // UI HELPERS (MODALS & TOASTS)
         // ==========================================
         function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            initIcons();
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                initIcons();
+            }
         }
 
         function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden');
+            }
         }
 
         function showToast(msg, isError = false) {
