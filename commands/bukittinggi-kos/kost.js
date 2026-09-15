@@ -288,12 +288,25 @@ Contoh:
                 return sendReply(detailText);
             }
 
-            // Grup publik dilarang mengakses daftar list admin (!kost, !kost dm, !kost all, dll)
+            // 4. JIKA DI GRUP PUBLIK: tampilkan daftar kos yang sudah dipublikasikan
             if (isPublicGroup) {
-                return sendReply('❌ Perintah daftar kost lengkap hanya untuk grup internal admin.\n\n💡 Gunakan `!cari <kata kunci>` untuk mencari kos yang tersedia.');
+                const publishedList = await database.getKostByStatus('published', from);
+                if (!publishedList.length) {
+                    const emptyMsg = `📋 Belum ada data kos yang dipublikasikan saat ini.\n\n💡 Punya info kos baru? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
+                    return sendReply(emptyMsg);
+                }
+
+                let text = `🏠 *DAFTAR KOS TERSEDIA*\nTotal: ${publishedList.length} kos\n\n`;
+                publishedList.forEach((k, idx) => {
+                    const contacts = getContactDisplayLines(k, database, '   ');
+                    text += `${idx + 1}. *${k.name}*\n${contacts}\n\n`;
+                });
+
+                text += `────────────────────\n📱 Official Instagram: *@bukittinggikos*\n💡 Cari kos spesifik? Gunakan: \`!cari <nama/lokasi>\`\n💡 Usulkan kos baru: \`!usulkost <Nama> > <Kontak>\``;
+                return sendReply(text.trim());
             }
 
-            // 4. DAFTAR RINGKAS / OUTPUT SEDERHANA UNTUK DM: !kost dm / !kost ringkas / !kost simple
+            // 5. DAFTAR RINGKAS / OUTPUT SEDERHANA UNTUK DM (KHUSUS ADMIN): !kost dm / !kost ringkas / !kost simple
             const isDmMode = command === 'listkost' || command === 'kostdm' ||
                              ['dm', 'ringkas', 'simple', 'link'].includes(args[0]?.toLowerCase());
 
@@ -335,7 +348,7 @@ Contoh:
                 return sendReply(text.trim());
             }
 
-            // 5. LIST KOST: !kost [all|pending|sent|published]
+            // 6. LIST KOST LENGKAP ADMIN: !kost [all|pending|sent|published]
             const sub = args[0]?.toLowerCase() || 'pending';
             let filter = 'pending';
             if (['all', 'sent', 'pending', 'published', 'posted'].includes(sub)) {
