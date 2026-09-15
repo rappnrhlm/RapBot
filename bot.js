@@ -24,6 +24,9 @@ async function connectToWhatsApp() {
         printQRInTerminal: false
     });
 
+    const webServer = require('./web/server');
+    webServer.setBotSocket(sock, 'connecting');
+
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', async update => {
@@ -35,6 +38,7 @@ async function connectToWhatsApp() {
         }
 
         if (connection === 'close') {
+            webServer.setBotSocket(null, 'offline');
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
             console.log(`[Baileys] Koneksi terputus (status: ${statusCode || 'unknown'}). Reconnecting...`, shouldReconnect);
@@ -49,6 +53,7 @@ async function connectToWhatsApp() {
         }
 
         if (connection === 'open') {
+            webServer.setBotSocket(sock, 'connected');
             console.log('Bot Baileys Berhasil Terhubung! 🚀');
             console.log('Daftar Owner:', database.getOwners().map(o => o.name || o.number));
         }

@@ -1280,6 +1280,80 @@ async function saveGroups(groups) {
     }
 }
 
+async function updateGroup(id, updates = {}) {
+    const cleanId = normalizeJid(id);
+    if (!cleanId) {
+        return { success: false, message: 'Group ID tidak valid.' };
+    }
+
+    const index = cache.groups.findIndex(g => g.id === cleanId);
+    if (index === -1) {
+        return { success: false, notFound: true, message: 'Grup tidak ditemukan.' };
+    }
+
+    const current = cache.groups[index];
+    const updated = {
+        ...current,
+        name: updates.name !== undefined ? String(updates.name).trim() : current.name,
+        groupName: updates.groupName !== undefined ? String(updates.groupName).trim() : current.groupName,
+        type: updates.type !== undefined ? String(updates.type).trim().toLowerCase() : current.type,
+        role: updates.role !== undefined ? String(updates.role).trim().toLowerCase() : current.role,
+        parentGroupId: updates.parentGroupId !== undefined
+            ? (updates.parentGroupId ? normalizeJid(updates.parentGroupId) : null)
+            : current.parentGroupId,
+        settings: updates.settings !== undefined ? { ...(current.settings || {}), ...(updates.settings || {}) } : (current.settings || {})
+    };
+
+    cache.groups[index] = updated;
+    syncDataFile(GROUPS_FILE, { groups: cache.groups });
+
+    try {
+        const db = getPool();
+        await db.query(
+            `UPDATE bot_groups 
+             SET name = ?, group_name = ?, type = ?, role = ?, parent_group_id = ?, settings_json = ?
+             WHERE id = ?`,
+            [updated.name, updated.groupName, updated.type, updated.role, updated.parentGroupId, JSON.stringify(updated.settings), cleanId]
+        );
+    } catch (err) {
+        console.error('[database] Error updating group in MariaDB:', err.message);
+    }
+
+    return {
+        success: true,
+        group: updated,
+        message: 'Grup berhasil diperbarui.'
+    };
+}
+
+async function deleteGroup(id) {
+    const cleanId = normalizeJid(id);
+    if (!cleanId) {
+        return { success: false, message: 'Group ID tidak valid.' };
+    }
+
+    const index = cache.groups.findIndex(g => g.id === cleanId);
+    if (index === -1) {
+        return { success: false, notFound: true, message: 'Grup tidak ditemukan.' };
+    }
+
+    const deleted = cache.groups.splice(index, 1)[0];
+    syncDataFile(GROUPS_FILE, { groups: cache.groups });
+
+    try {
+        const db = getPool();
+        await db.query('DELETE FROM bot_groups WHERE id = ?', [cleanId]);
+    } catch (err) {
+        console.error('[database] Error deleting group from MariaDB:', err.message);
+    }
+
+    return {
+        success: true,
+        deletedGroup: deleted,
+        message: 'Grup berhasil dihapus.'
+    };
+}
+
 // ====================================================
 // KOST REPOSITORY (MARIADB SINGLE SOURCE OF TRUTH)
 // ====================================================
@@ -1386,19 +1460,29 @@ async function generateNextKostIdFromDb() {
 }
 
 async function getKostList(groupId = null) {
-    await ensureAllTables();
-    const db = getPool();
-    const effectiveGroupId = resolveDataGroupId(groupId);
-    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
-    let query = 'SELECT * FROM kost';
-    const params = [];
-    if (cleanGroupId) {
-        query += ' WHERE group_id = ?';
-        params.push(cleanGroupId);
+    try {
+        await ensureAllTables();
+        const db = getPool();
+        const effectiveGroupId = resolveDataGroupId(groupId);
+        const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
+        let query = 'SELECT * FROM kost';
+        const params = [];
+        if (cleanGroupId) {
+            query += ' WHERE group_id = ?';
+            params.push(cleanGroupId);
+        }
+        query += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
+        const [rows] = await db.query(query, params);
+        return rows.map(mapKostRow);
+    } catch (err) {
+        const list = readJSON(KOST_FILE, []);
+        const effectiveGroupId = resolveDataGroupId(groupId);
+        const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
+        if (cleanGroupId) {
+            return list.filter(k => normalizeJid(k.groupId || k.group_id) === cleanGroupId);
+        }
+        return list;
     }
-    query += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
-    const [rows] = await db.query(query, params);
-    return rows.map(mapKostRow);
 }
 
 async function getKostListByGroup(groupId) {
@@ -2110,6 +2194,8 @@ module.exports = {
     isGroupInitialized,
     resolveDataGroupId,
     addGroup,
+    updateGroup,
+    deleteGroup,
 
     // Submissions
     addKostSubmission,

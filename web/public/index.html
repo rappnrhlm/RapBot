@@ -1,1571 +1,1732 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full bg-[#F2F2F7] dark:bg-[#000000]">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-    <meta
-        name="theme-color"
-        content="#f5f5f7"
-    >
-
-    <title>Bot Owner Manager</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bot Control Center</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ios: {
+                            bg: '#F2F2F7',
+                            card: '#FFFFFF',
+                            blue: '#007AFF',
+                            green: '#34C759',
+                            red: '#FF3B30',
+                            orange: '#FF9500',
+                            purple: '#AF52DE',
+                            teal: '#5AC8FA',
+                            gray: '#8E8E93',
+                            gray2: '#AEAEB2',
+                            gray5: '#E5E5EA',
+                            gray6: '#F2F2F7',
+                        }
+                    },
+                    borderRadius: {
+                        'ios': '1.25rem',
+                        'ios-lg': '1.75rem',
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            color-scheme: light;
-
-            --bg: #f5f5f7;
-            --card: rgba(255, 255, 255, 0.78);
-            --card-solid: #ffffff;
-            --text: #1d1d1f;
-            --secondary: #6e6e73;
-            --border: rgba(0, 0, 0, 0.08);
-            --input: rgba(118, 118, 128, 0.12);
-            --button: #0071e3;
-            --button-hover: #0077ed;
-            --danger: #ff3b30;
-            --danger-bg: rgba(255, 59, 48, 0.10);
-            --overlay: rgba(0, 0, 0, 0.35);
-            --shadow:
-                0 20px 60px rgba(0, 0, 0, 0.08),
-                0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            min-height: 100%;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-
-            background: var(--bg);
-            color: var(--text);
-
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                "SF Pro Display",
-                "SF Pro Text",
-                "Helvetica Neue",
-                Arial,
-                sans-serif;
-
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-        }
-
-        button,
-        input {
-            font: inherit;
-        }
-
-        button {
-            border: 0;
-        }
-
-        .page {
-            width: 100%;
-            min-height: 100vh;
-            padding: 70px 20px 100px;
-        }
-
-        .container {
-            width: min(760px, 100%);
-            margin: 0 auto;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 45px;
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-
-            margin-bottom: 14px;
-
-            color: var(--button);
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #34c759;
-            box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.12);
-        }
-
-        .hero h1 {
-            margin: 0;
-
-            font-size: clamp(34px, 6vw, 52px);
-            line-height: 1.04;
-            letter-spacing: -0.045em;
-            font-weight: 700;
-        }
-
-        .hero p {
-            max-width: 510px;
-            margin: 15px auto 0;
-
-            color: var(--secondary);
-            font-size: 17px;
-            line-height: 1.5;
-            letter-spacing: -0.01em;
-        }
-
-        .main-card {
-            overflow: hidden;
-
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 28px;
-
-            box-shadow: var(--shadow);
-
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-        }
-
-        .section-header {
-            padding: 28px 30px 20px;
-
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 20px;
-        }
-
-        .section-title {
-            margin: 0 0 5px;
-
-            font-size: 21px;
-            font-weight: 650;
-            letter-spacing: -0.025em;
-        }
-
-        .section-description {
-            margin: 0;
-
-            color: var(--secondary);
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .owner-list {
-            padding: 0 16px 16px;
-
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .owner {
-            min-height: 76px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 18px;
-
-            padding: 14px 16px;
-
-            border: 1px solid transparent;
-            border-radius: 17px;
-
-            transition:
-                background 0.2s ease,
-                border-color 0.2s ease,
-                transform 0.2s ease;
-        }
-
-        .owner:hover {
-            background: var(--input);
-            border-color: var(--border);
-        }
-
-        .owner-info {
-            min-width: 0;
-
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .avatar {
-            flex: 0 0 auto;
-
-            width: 44px;
-            height: 44px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 50%;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    #e8e8ed,
-                    #c7c7cc
-                );
-
-            color: #444;
-            font-size: 17px;
-            font-weight: 600;
-        }
-
-        .owner-details {
-            min-width: 0;
-        }
-
-        .owner-name {
-            margin-bottom: 3px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-
-        .owner-number {
-            color: var(--secondary);
-            font-size: 14px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .actions {
-            flex: 0 0 auto;
-
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .action-button {
-            min-width: 58px;
-            height: 36px;
-
-            padding: 0 13px;
-
-            border-radius: 10px;
-
-            background: var(--input);
-            color: var(--text);
-
-            font-size: 13px;
-            font-weight: 600;
-
-            cursor: pointer;
-
-            transition:
-                background 0.18s ease,
-                transform 0.18s ease;
-        }
-
-        .action-button:hover {
-            background: rgba(118, 118, 128, 0.20);
-        }
-
-        .action-button:active {
-            transform: scale(0.96);
-        }
-
-        .delete-button {
-            color: var(--danger);
-            background: var(--danger-bg);
-        }
-
-        .delete-button:hover {
-            background: rgba(255, 59, 48, 0.17);
-        }
-
-        .add-area {
-            padding: 14px 30px 30px;
-            text-align: center;
-        }
-
-        .add-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-
-            height: 46px;
-            padding: 0 21px;
-
-            border-radius: 999px;
-
-            background: var(--button);
-            color: white;
-
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-
-            cursor: pointer;
-
-            box-shadow:
-                0 4px 12px rgba(0, 113, 227, 0.22);
-
-            transition:
-                background 0.18s ease,
-                transform 0.18s ease,
-                box-shadow 0.18s ease;
-        }
-
-        .add-button:hover {
-            background: var(--button-hover);
-            box-shadow:
-                0 7px 18px rgba(0, 113, 227, 0.27);
-        }
-
-        .add-button:active {
-            transform: scale(0.97);
-        }
-
-        .plus {
-            font-size: 20px;
-            font-weight: 400;
-            line-height: 0;
-        }
-
-        .empty {
-            padding: 50px 20px;
-
-            text-align: center;
-            color: var(--secondary);
-
-            font-size: 15px;
-        }
-
-        .message {
-            margin: 0 30px 15px;
-            padding: 12px 15px;
-
-            border-radius: 12px;
-
-            font-size: 14px;
-            line-height: 1.4;
-
-            display: none;
-        }
-
-        .message.show {
-            display: block;
-            animation: messageIn 0.25s ease;
-        }
-
-        .message.success {
-            color: #248a3d;
-            background: rgba(52, 199, 89, 0.12);
-        }
-
-        .message.error {
-            color: var(--danger);
-            background: var(--danger-bg);
-        }
-
-        @keyframes messageIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            padding: 20px;
-
-            background: var(--overlay);
-
-            opacity: 0;
-            visibility: hidden;
-
-            transition:
-                opacity 0.25s ease,
-                visibility 0.25s ease;
-
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        .modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-box {
-            width: min(440px, 100%);
-
-            padding: 28px;
-
-            background: var(--card-solid);
-
-            border: 1px solid var(--border);
-            border-radius: 24px;
-
-            box-shadow:
-                0 30px 100px rgba(0, 0, 0, 0.20);
-
-            transform: translateY(12px) scale(0.97);
-
-            transition:
-                transform 0.3s cubic-bezier(.2, .8, .2, 1);
-        }
-
-        .modal.active .modal-box {
-            transform: translateY(0) scale(1);
-        }
-
-        .modal-icon {
-            width: 48px;
-            height: 48px;
-
-            margin-bottom: 18px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 14px;
-
-            background: var(--input);
-
-            font-size: 21px;
-        }
-
-        .modal-box h2 {
-            margin: 0;
-
-            font-size: 25px;
-            letter-spacing: -0.035em;
-        }
-
-        .modal-description {
-            margin: 8px 0 24px;
-
-            color: var(--secondary);
-
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .field {
-            margin-bottom: 16px;
-        }
-
-        .field label {
-            display: block;
-            margin: 0 0 7px 3px;
-
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-
-        .field input {
-            width: 100%;
-            height: 48px;
-
-            padding: 0 14px;
-
-            border: 1px solid transparent;
-            border-radius: 12px;
-
-            outline: none;
-
-            background: var(--input);
-            color: var(--text);
-
-            font-size: 15px;
-
-            transition:
-                border-color 0.18s ease,
-                box-shadow 0.18s ease,
-                background 0.18s ease;
-        }
-
-        .field input::placeholder {
-            color: var(--secondary);
-            opacity: 0.75;
-        }
-
-        .field input:focus {
-            background: transparent;
-            border-color: var(--button);
-
-            box-shadow:
-                0 0 0 3px rgba(0, 113, 227, 0.12);
-        }
-
-        .modal-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 9px;
-
-            margin-top: 24px;
-        }
-
-        .modal-button {
-            height: 46px;
-
-            border-radius: 12px;
-
-            cursor: pointer;
-
-            font-size: 14px;
-            font-weight: 600;
-
-            transition:
-                transform 0.18s ease,
-                background 0.18s ease;
-        }
-
-        .modal-button:active {
-            transform: scale(0.97);
-        }
-
-        .cancel {
-            background: var(--input);
-            color: var(--text);
-        }
-
-        .cancel:hover {
-            background: rgba(118, 118, 128, 0.20);
-        }
-
-        .confirm {
-            background: var(--button);
-            color: white;
-        }
-
-        .confirm:hover {
-            background: var(--button-hover);
-        }
-
-        .confirm.danger {
-            background: var(--danger);
-        }
-
-        .confirm.danger:hover {
-            background: #ff5a52;
-        }
-
-        .pin-input {
-            text-align: center;
-
-            letter-spacing: 0.45em;
-
-            font-size: 22px !important;
-            font-weight: 600;
-        }
-
-        .delete-warning {
-            padding: 14px;
-
-            border-radius: 12px;
-
-            background: var(--danger-bg);
-            color: var(--danger);
-
-            font-size: 14px;
-            line-height: 1.45;
-        }
-
-        .loading {
-            padding: 45px 20px;
-
-            text-align: center;
-            color: var(--secondary);
-
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .page {
-                padding: 42px 14px 70px;
-            }
-
-            .hero {
-                margin-bottom: 30px;
-            }
-
-            .hero h1 {
-                font-size: 38px;
-            }
-
-            .hero p {
-                font-size: 15px;
-            }
-
-            .main-card {
-                border-radius: 22px;
-            }
-
-            .section-header {
-                padding: 23px 20px 16px;
-            }
-
-            .owner-list {
-                padding: 0 10px 10px;
-            }
-
-            .owner {
-                padding: 13px 11px;
-            }
-
-            .owner-info {
-                gap: 11px;
-            }
-
-            .avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 15px;
-            }
-
-            .actions {
-                gap: 5px;
-            }
-
-            .action-button {
-                min-width: auto;
-                padding: 0 10px;
-            }
-
-            .add-area {
-                padding: 13px 20px 23px;
-            }
-
-            .message {
-                margin-left: 20px;
-                margin-right: 20px;
-            }
-
-            .modal-box {
-                padding: 23px;
-                border-radius: 21px;
-            }
-        }
-
-        @media (max-width: 430px) {
-            .owner {
-                align-items: flex-start;
-            }
-
-            .actions {
-                margin-left: auto;
-            }
-
-            .owner-number {
-                font-size: 13px;
-            }
-        }
+        /* iOS Smooth Scroll & Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+        .ios-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .ios-card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02); }
+        .dark .ios-card-shadow { box-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
+<body class="h-full text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased select-none pb-12">
 
-<body>
-
-<div class="page">
-
-    <main class="container">
-
-        <header class="hero">
-
-            <div style="margin-bottom: 12px;">
-                <a href="/kost" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#ffffff; border:1px solid var(--border); padding:6px 14px; border-radius:10px; font-size:13px; font-weight:500; color:var(--text);">🏠 Bukittinggi Kos Admin &rarr;</a>
-            </div>
-
-            <div class="eyebrow">
-                <span class="status-dot"></span>
-                Bot Owner Manager
-            </div>
-
-            <h1>
-                Manage your owners.
-            </h1>
-
-            <p>
-                Kelola nomor yang diizinkan menggunakan
-                command bot melalui chat pribadi.
-            </p>
-
-        </header>
-
-
-        <section class="main-card">
-
-            <div class="section-header">
-
+    <!-- TOP NAVIGATION BAR (iOS Style Glass Header) -->
+    <header class="sticky top-0 z-40 ios-blur bg-white/80 dark:bg-[#1C1C1E]/80 border-b border-black/5 dark:border-white/10 transition-colors">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- Brand & Status -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i data-lucide="bot" class="w-5 h-5"></i>
+                </div>
                 <div>
-                    <h2 class="section-title">
-                        Owners
-                    </h2>
-
-                    <p class="section-description">
-                        Nomor yang memiliki akses ke bot.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div id="message" class="message"></div>
-
-
-            <div
-                id="ownerList"
-                class="owner-list"
-            >
-                <div class="loading">
-                    Memuat owner...
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base font-semibold tracking-tight">Bot Control Center</h1>
+                        <span id="botStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="botStatusText">Online</span>
+                        </span>
+                    </div>
+                    <p id="botStatusSub" class="text-xs text-slate-500 dark:text-slate-400">Uptime: 0j 0m</p>
                 </div>
             </div>
 
+            <!-- Top Actions: Developer Mode Switch & PIN Lock -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Developer Mode Toggle -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-100/80 dark:bg-neutral-800/80 border border-slate-200/50 dark:border-neutral-700/50">
+                    <i data-lucide="code-2" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    <span class="text-xs font-medium hidden sm:inline text-slate-600 dark:text-slate-300">Mode Dev</span>
+                    <button id="devModeToggle" onclick="toggleDeveloperMode()" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-slate-300 dark:bg-neutral-600 focus:outline-none" role="switch" aria-checked="false">
+                        <span id="devModeKnob" class="translate-x-0 pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"></span>
+                    </button>
+                </div>
 
-            <div class="add-area">
-
-                <button
-                    class="add-button"
-                    onclick="openAddModal()"
-                >
-                    <span class="plus">+</span>
-                    Tambah Owner
+                <!-- PIN Auth Button -->
+                <button onclick="promptPinModal()" id="pinAuthBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
+                    <i data-lucide="lock" class="w-3.5 h-3.5" id="pinIcon"></i>
+                    <span id="pinBtnText">PIN: Set</span>
                 </button>
+            </div>
+        </div>
+    </header>
 
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-6">
+
+        <!-- SEGMENTED CONTROL (iOS Pill Tabs) -->
+        <div class="mb-6">
+            <div class="inline-flex w-full p-1 bg-slate-200/70 dark:bg-neutral-800/70 rounded-2xl ios-blur text-slate-600 dark:text-slate-300">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Ringkasan</span>
+                </button>
+                <button onclick="switchTab('groups')" id="tab-groups" class="tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Grup Saya</span>
+                </button>
+                <button onclick="switchTab('responses')" id="tab-responses" class="tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                    <span>Respon & Pesan</span>
+                </button>
+                <button onclick="switchTab('owners')" id="tab-owners" class="tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                    <span>Pengelola</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================================================= -->
+        <!-- 1. TAB: OVERVIEW (RINGKASAN SISTEM) -->
+        <!-- ================================================= -->
+        <section id="section-overview" class="space-y-6">
+            <!-- Quick Stat Grid (iOS Inset Cards) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Grup</span>
+                        <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"><i data-lucide="users-2" class="w-4 h-4"></i></div>
+                    </div>
+                    <div class="mt-3">
+                        <h3 id="statTotalGroups" class="text-2xl font-bold tracking-tight">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Grup terinisialisasi</p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Command / Msg</span>
+                        <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"><i data-lucide="terminal" class="w-4 h-4"></i></div>
+                    </div>
+                    <div class="mt-3">
+                        <h3 id="statTotalCommands" class="text-2xl font-bold tracking-tight">0</h3>
+                        <p id="statTotalMessages" class="text-[11px] text-slate-400 mt-0.5">0 pesan diproses</p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Stiker & Brat</span>
+                        <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+                    </div>
+                    <div class="mt-3">
+                        <h3 id="statTotalStickers" class="text-2xl font-bold tracking-tight">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Stiker dibuat</p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Memori RAM</span>
+                        <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400"><i data-lucide="cpu" class="w-4 h-4"></i></div>
+                    </div>
+                    <div class="mt-3">
+                        <h3 id="statMemoryHeap" class="text-2xl font-bold tracking-tight">0 MB</h3>
+                        <p id="statMemoryRss" class="text-[11px] text-slate-400 mt-0.5">RSS: 0 MB</p>
+                    </div>
+                </div>
             </div>
 
+            <!-- Quick Action Hub (iOS Grouped List) -->
+            <div class="rounded-3xl bg-white dark:bg-[#1C1C1E] p-5 ios-card-shadow border border-black/5 dark:border-white/5">
+                <h3 class="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                    Aksi Cepat
+                </h3>
+                <div class="flex flex-wrap gap-2.5">
+                    <button onclick="syncCacheWithDb()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs sm:text-sm font-medium transition active:scale-95">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-500"></i>
+                        Sinkronisasi Cache & Database
+                    </button>
+                    <button onclick="openBroadcastModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs sm:text-sm font-medium transition active:scale-95">
+                        <i data-lucide="send" class="w-4 h-4 text-emerald-500"></i>
+                        Kirim Pesan / Pengumuman ke Grup
+                    </button>
+                    <button onclick="fetchStatus()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs sm:text-sm font-medium transition active:scale-95">
+                        <i data-lucide="activity" class="w-4 h-4 text-purple-500"></i>
+                        Segarkan Status
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Activity Log -->
+            <div class="rounded-3xl bg-white dark:bg-[#1C1C1E] p-5 ios-card-shadow border border-black/5 dark:border-white/5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-blue-500"></i>
+                        Aktivitas Command Terakhir
+                    </h3>
+                    <button onclick="loadCommandLogs()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Muat Ulang</button>
+                </div>
+                <div id="logsContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-400 text-center py-6">Memuat log aktivitas...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================= -->
+        <!-- 2. TAB: GROUP HUB (GRUP SAYA) -->
+        <!-- ================================================= -->
+        <section id="section-groups" class="hidden space-y-6">
+            <!-- Header with Register Group Button -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5">
+                <div>
+                    <h2 class="text-base font-bold tracking-tight">Daftar Grup WhatsApp</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola grup, atur relasi link data ke grup induk, atau buka workspace khusus.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openRegisterGroupModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-blue-500/20 active:scale-95">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        + Daftarkan Grup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Groups Card Grid -->
+            <div id="groupsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-full text-center py-12 text-slate-400">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-blue-500"></i>
+                    <p class="text-xs">Memuat daftar grup...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================= -->
+        <!-- 3. TAB: RESPONSES & AUTOREPLIES (RESPON & PESAN) -->
+        <!-- ================================================= -->
+        <section id="section-responses" class="hidden space-y-6">
+            <!-- Autoreply Manager -->
+            <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold tracking-tight flex items-center gap-2">
+                            <i data-lucide="bot" class="w-4 h-4 text-blue-500"></i>
+                            Pesan Respon Otomatis (Autoreply)
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Balasan otomatis saat member mengetik kata kunci tertentu.</p>
+                    </div>
+                    <button onclick="openAddAutoreplyModal()" class="px-3.5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95">
+                        + Tambah Keyword
+                    </button>
+                </div>
+
+                <!-- Autoreplies List -->
+                <div id="autoreplyListContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-400 text-center py-6">Memuat autoreply...</p>
+                </div>
+            </div>
+
+            <!-- Welcome Message Editor -->
+            <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
+                <div>
+                    <h3 class="text-sm font-bold tracking-tight flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-500"></i>
+                        Pesan Sambutan Member Baru (Welcome)
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Gunakan tag <code class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-[11px]">@user</code> dan <code class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-[11px]">@group</code>.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Status Fitur Welcome:</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="welcomeEnabledSwitch" class="sr-only peer" checked>
+                            <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+                    <textarea id="welcomeTextarea" rows="3" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ketik pesan sambutan..."></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="saveWelcomeConfig()" class="px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition active:scale-95">
+                            Simpan Pengaturan Welcome
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================= -->
+        <!-- 4. TAB: OWNERS (PENGELOLA) -->
+        <!-- ================================================= -->
+        <section id="section-owners" class="hidden space-y-6">
+            <div class="bg-white dark:bg-[#1C1C1E] p-5 rounded-3xl ios-card-shadow border border-black/5 dark:border-white/5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold tracking-tight">Daftar Owner & Pengelola Bot</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Nomor-nomor yang memiliki akses ke perintah admin bot.</p>
+                    </div>
+                    <button onclick="openAddOwnerModal()" class="px-3.5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95">
+                        + Tambah Owner
+                    </button>
+                </div>
+
+                <div id="ownersListContainer" class="space-y-2.5">
+                    <p class="text-xs text-slate-400 text-center py-6">Memuat owner...</p>
+                </div>
+            </div>
         </section>
 
     </main>
 
-</div>
+    <!-- ================================================= -->
+    <!-- GROUP WORKSPACE MODAL / DRAWER (MODUL KHUSUS GRUP) -->
+    <!-- ================================================= -->
+    <div id="workspaceModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <!-- Workspace Header -->
+            <div class="p-4 sm:p-5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-neutral-900/50">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeWorkspaceModal()" class="p-2 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-700 dark:text-slate-200 transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 id="wsGroupName" class="text-base font-bold tracking-tight">Nama Grup</h2>
+                            <span id="wsGroupRoleBadge" class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">ADMIN</span>
+                        </div>
+                        <p id="wsGroupSubtitle" class="text-xs text-slate-500 dark:text-slate-400">Tipe: Kos | Status: Terhubung</p>
+                    </div>
+                </div>
+                <button onclick="closeWorkspaceModal()" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-400">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
 
+            <!-- Workspace Sub-tabs for KOS module -->
+            <div id="wsKosSubTabs" class="px-5 pt-3 border-b border-black/5 dark:border-white/10 flex gap-4 text-xs font-semibold">
+                <button onclick="switchWsTab('kost-list')" id="wsTab-kost-list" class="pb-2.5 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400">
+                    🏠 Daftar Listing Kos (<span id="wsKostCount">0</span>)
+                </button>
+                <button onclick="switchWsTab('submissions')" id="wsTab-submissions" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white">
+                    📥 Usulan Warga (<span id="wsSubCount">0</span>)
+                </button>
+                <button onclick="switchWsTab('settings')" id="wsTab-settings" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white">
+                    ⚙️ Pengaturan Grup
+                </button>
+            </div>
 
-<div
-    id="formModal"
-    class="modal"
-    onclick="closeOnBackdrop(event, 'formModal')"
->
+            <!-- Workspace Body Content -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+                
+                <!-- SUB-VIEW 1: KOST LIST -->
+                <div id="wsView-kost-list" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="relative w-full sm:w-72">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                            <input type="text" id="kostSearchInput" oninput="debounceKostSearch()" placeholder="Cari nama atau sosmed kos..." class="w-full pl-9 pr-3 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <select id="kostStatusFilter" onchange="loadKostList()" class="px-3 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-medium focus:outline-none">
+                                <option value="all">Semua Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="sent">Sent (Terkirim)</option>
+                            </select>
+                            <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                Tambah Kos
+                            </button>
+                        </div>
+                    </div>
 
-    <div
-        class="modal-box"
-        onclick="event.stopPropagation()"
-    >
+                    <!-- Kost Grid / Table -->
+                    <div id="kostItemsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <p class="text-xs text-slate-400 text-center col-span-full py-8">Memuat data kos...</p>
+                    </div>
+                </div>
 
-        <div class="modal-icon">
-            <span id="formIcon">＋</span>
+                <!-- SUB-VIEW 2: SUBMISSIONS -->
+                <div id="wsView-submissions" class="hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Daftar usulan info kos dari warga yang masuk via perintah WhatsApp <code class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800">!usulkost</code>.</p>
+                        <button onclick="loadSubmissionsList()" class="text-xs text-blue-600 hover:underline">Segarkan</button>
+                    </div>
+                    <div id="submissionsContainer" class="space-y-3">
+                        <p class="text-xs text-slate-400 text-center py-8">Memuat usulan masuk...</p>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 3: GROUP SETTINGS -->
+                <div id="wsView-settings" class="hidden space-y-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900/60 border border-slate-200 dark:border-neutral-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">Konfigurasi Grup</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[11px] font-medium text-slate-500">Nama / Alias Grup:</label>
+                                <input type="text" id="wsEditGroupName" class="w-full mt-1 p-2 rounded-xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-xs">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-medium text-slate-500">Peran Grup:</label>
+                                <select id="wsEditGroupRole" class="w-full mt-1 p-2 rounded-xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-xs">
+                                    <option value="admin">Admin (Grup Induk / Akses Penuh)</option>
+                                    <option value="public">Publik (Terhubung ke Data Induk)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-2">
+                            <button onclick="saveGroupSettings()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition active:scale-95">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <h2 id="formTitle">
-            Tambah Owner
-        </h2>
-
-        <p
-            id="formDescription"
-            class="modal-description"
-        >
-            Tambahkan nomor baru yang boleh menggunakan
-            bot melalui chat pribadi.
-        </p>
-
-
-        <input
-            type="hidden"
-            id="oldNumber"
-        >
-
-
-        <div class="field">
-
-            <label for="name">
-                Nama
-            </label>
-
-            <input
-                id="name"
-                type="text"
-                autocomplete="off"
-                placeholder="Contoh: Raffa"
-            >
-
-        </div>
-
-
-        <div class="field">
-
-            <label for="number">
-                Nomor WhatsApp
-            </label>
-
-            <input
-                id="number"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                placeholder="628123456789"
-            >
-
-        </div>
-
-
-        <div class="modal-actions">
-
-            <button
-                class="modal-button cancel"
-                onclick="closeModal('formModal')"
-            >
-                Batal
-            </button>
-
-            <button
-                class="modal-button confirm"
-                onclick="openPinModal()"
-            >
-                Lanjut
-            </button>
-
-        </div>
-
     </div>
 
-</div>
+    <!-- ================================================= -->
+    <!-- MODAL: VISUAL 1-CLICK GROUP LINKING -->
+    <!-- ================================================= -->
+    <div id="linkGroupModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="link" class="w-4 h-4"></i></div>
+                    <h3 class="text-sm font-bold tracking-tight">Hubungkan ke Grup Induk</h3>
+                </div>
+                <button onclick="closeModal('linkGroupModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
 
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Pilih grup induk untuk grup <strong id="linkTargetGroupName" class="text-slate-800 dark:text-slate-200">Grup</strong> agar dapat membaca dan mencari database secara terpusat.
+            </p>
 
-<div
-    id="pinModal"
-    class="modal"
-    onclick="closeOnBackdrop(event, 'pinModal')"
->
+            <div>
+                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pilih Grup Induk:</label>
+                <select id="parentGroupSelect" class="mt-1.5 w-full p-3 rounded-2xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
 
-    <div
-        class="modal-box"
-        onclick="event.stopPropagation()"
-    >
-
-        <div class="modal-icon">
-            🔐
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button onclick="closeModal('linkGroupModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold text-slate-700 dark:text-slate-300">Batal</button>
+                <button onclick="submitGroupLink()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 active:scale-95">Simpan Koneksi</button>
+            </div>
         </div>
-
-        <h2>
-            Konfirmasi
-        </h2>
-
-        <p class="modal-description">
-            Masukkan PIN admin untuk mengonfirmasi
-            perubahan ini.
-        </p>
-
-
-        <div class="field">
-
-            <label for="pin">
-                PIN Admin
-            </label>
-
-            <input
-                id="pin"
-                class="pin-input"
-                type="password"
-                inputmode="numeric"
-                maxlength="6"
-                autocomplete="off"
-                placeholder="••••••"
-                onkeydown="handlePinKey(event)"
-            >
-
-        </div>
-
-
-        <div class="modal-actions">
-
-            <button
-                class="modal-button cancel"
-                onclick="closeModal('pinModal')"
-            >
-                Batal
-            </button>
-
-            <button
-                id="pinConfirm"
-                class="modal-button confirm"
-                onclick="submitAction()"
-            >
-                Konfirmasi
-            </button>
-
-        </div>
-
     </div>
 
-</div>
+    <!-- ================================================= -->
+    <!-- MODAL: REGISTER NEW GROUP -->
+    <!-- ================================================= -->
+    <div id="registerGroupModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Daftarkan Grup Baru</h3>
+                <button onclick="closeModal('registerGroupModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">WhatsApp Group ID (JID):</label>
+                    <input type="text" id="regGroupId" placeholder="Contoh: 1203634... @g.us" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama / Alias Grup:</label>
+                    <input type="text" id="regGroupName" placeholder="Contoh: Bukittinggi Kos" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipe Grup:</label>
+                        <select id="regGroupType" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                            <option value="kos">Kos-kosan</option>
+                            <option value="general">Umum / Komunitas</option>
+                            <option value="marketplace">Marketplace</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Peran Awal:</label>
+                        <select id="regGroupRole" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                            <option value="admin">Admin (Induk)</option>
+                            <option value="public">Publik (Cabang)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('registerGroupModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="submitRegisterGroup()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95">Daftarkan</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- ================================================= -->
+    <!-- MODAL: ADD / EDIT KOST -->
+    <!-- ================================================= -->
+    <div id="kostModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <h3 id="kostModalTitle" class="text-sm font-bold tracking-tight">Tambah Data Kos</h3>
+                <button onclick="closeModal('kostModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <input type="hidden" id="kostEditId">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama Kos / Penginapan:</label>
+                    <input type="text" id="kostFormName" placeholder="Contoh: Kost Farrel" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Instagram (opsional):</label>
+                    <input type="text" id="kostFormIg" placeholder="Contoh: kostfarrel_bkt atau @username" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">WhatsApp (opsional):</label>
+                    <input type="text" id="kostFormWa" placeholder="Contoh: 08123456789" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">TikTok (opsional):</label>
+                    <input type="text" id="kostFormTiktok" placeholder="Contoh: @kostfarrel" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div id="kostStatusRow">
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Status:</label>
+                    <select id="kostFormStatus" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                        <option value="pending">Pending</option>
+                        <option value="sent">Sent (Sudah dikirim)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('kostModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="submitKostForm()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95">Simpan Data</button>
+            </div>
+        </div>
+    </div>
 
-<script>
+    <!-- ================================================= -->
+    <!-- MODAL: ADD AUTOREPLY -->
+    <!-- ================================================= -->
+    <div id="autoreplyModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Tambah Respon Otomatis</h3>
+                <button onclick="closeModal('autoreplyModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Kata Kunci Pemicu (Trigger):</label>
+                    <input type="text" id="autoKeyword" placeholder="Contoh: info kos, lokasi" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipe Pencocokan:</label>
+                    <select id="autoMatchType" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                        <option value="exact">Sama Persis (Exact Match)</option>
+                        <option value="contains">Mengandung Kata (Contains)</option>
+                        <option value="startsWith">Diawali Kata (Starts With)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pesan Balasan Bot:</label>
+                    <textarea id="autoResponse" rows="3" placeholder="Ketik teks balasan bot..." class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('autoreplyModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="submitAutoreply()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95">Simpan</button>
+            </div>
+        </div>
+    </div>
 
-    let currentAction = 'add';
+    <!-- ================================================= -->
+    <!-- MODAL: ADD OWNER -->
+    <!-- ================================================= -->
+    <div id="ownerModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Tambah Owner Bot</h3>
+                <button onclick="closeModal('ownerModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama Owner:</label>
+                    <input type="text" id="ownerNameInput" placeholder="Contoh: Raffa" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nomor WhatsApp:</label>
+                    <input type="text" id="ownerNumberInput" placeholder="Contoh: 08123456789 atau 628123..." class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('ownerModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="submitAddOwner()" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold active:scale-95">Tambahkan</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- ================================================= -->
+    <!-- MODAL: BROADCAST MESSAGE -->
+    <!-- ================================================= -->
+    <div id="broadcastModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Kirim Pesan ke Grup</h3>
+                <button onclick="closeModal('broadcastModal')" class="p-1 rounded-full text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pilih Grup Tujuan:</label>
+                    <select id="broadcastTargetSelect" class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Teks Pesan:</label>
+                    <textarea id="broadcastTextInput" rows="4" placeholder="Ketik pesan yang akan dikirim bot ke grup..." class="mt-1 w-full p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('broadcastModal')" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="submitBroadcast()" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold active:scale-95 flex items-center gap-1.5">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    Kirim Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
 
-    async function loadOwners() {
+    <!-- ================================================= -->
+    <!-- MODAL: PIN INPUT / AUTH -->
+    <!-- ================================================= -->
+    <div id="pinModal" class="fixed inset-0 z-50 bg-black/50 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl max-w-xs w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 text-center animate-in fade-in zoom-in-95 duration-200">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 mx-auto flex items-center justify-center">
+                <i data-lucide="key-round" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold tracking-tight">Kunci Keamanan PIN</h3>
+                <p class="text-xs text-slate-500 mt-1">Masukkan PIN Admin untuk otorisasi aksi perubahan data.</p>
+            </div>
+            <input type="password" id="pinInputField" placeholder="Ketik PIN..." class="w-full text-center tracking-widest text-base font-bold p-2.5 rounded-xl bg-slate-100 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="flex justify-center gap-2 pt-1">
+                <button onclick="closeModal('pinModal')" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 text-xs font-semibold">Batal</button>
+                <button onclick="saveAdminPin()" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold shadow-md shadow-blue-500/20 active:scale-95">Simpan PIN</button>
+            </div>
+        </div>
+    </div>
 
-        try {
+    <!-- ================================================= -->
+    <!-- RAW JSON / DEVELOPER INSPECTOR MODAL -->
+    <!-- ================================================= -->
+    <div id="devInspectorModal" class="fixed inset-0 z-50 bg-black/60 ios-blur flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 text-slate-100 rounded-3xl max-w-2xl w-full p-5 shadow-2xl border border-slate-700 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 id="devInspectorTitle" class="text-xs font-mono font-semibold text-emerald-400">Raw JSON Payload</h3>
+                <button onclick="closeModal('devInspectorModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <pre id="devInspectorJson" class="flex-1 overflow-auto text-[11px] font-mono p-3 bg-black/50 rounded-xl my-3 text-slate-300"></pre>
+            <div class="flex justify-end gap-2">
+                <button onclick="copyInspectorJson()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white flex items-center gap-1.5">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    Salin JSON
+                </button>
+                <button onclick="closeModal('devInspectorModal')" class="px-4 py-2 rounded-xl bg-blue-600 text-xs font-semibold text-white">Tutup</button>
+            </div>
+        </div>
+    </div>
 
-            const response =
-                await fetch('/api/owners');
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Global Application State
+        const state = {
+            developerMode: localStorage.getItem('bot_dev_mode') === 'true',
+            adminPin: localStorage.getItem('bot_admin_pin') || '',
+            activeTab: 'overview',
+            groups: [],
+            activeWorkspaceGroup: null,
+            kostList: [],
+            submissions: [],
+            searchDebounceTimer: null
+        };
 
-            const data =
-                await response.json();
+        // Initialize App on DOM Ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initIcons();
+            applyDevModeUI();
+            updatePinUI();
+            fetchStatus();
+            loadGroups();
+            loadCommandLogs();
+        });
 
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    'Gagal mengambil owner.'
-                );
+        function initIcons() {
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // PIN & AUTHENTICATION
+        // ==========================================
+        function promptPinModal() {
+            document.getElementById('pinInputField').value = state.adminPin || '';
+            openModal('pinModal');
+        }
+
+        function saveAdminPin() {
+            const val = document.getElementById('pinInputField').value.trim();
+            state.adminPin = val;
+            localStorage.setItem('bot_admin_pin', val);
+            updatePinUI();
+            closeModal('pinModal');
+            showToast(val ? 'PIN berhasil disimpan' : 'PIN dihapus');
+        }
+
+        function updatePinUI() {
+            const btnText = document.getElementById('pinBtnText');
+            if (state.adminPin) {
+                btnText.innerText = 'PIN: Tersimpan';
+            } else {
+                btnText.innerText = 'PIN: Belum diset';
+            }
+        }
+
+        function getAuthHeader() {
+            return {
+                'Content-Type': 'application/json',
+                'x-pin': state.adminPin || ''
+            };
+        }
+
+        // ==========================================
+        // DEVELOPER MODE
+        // ==========================================
+        function toggleDeveloperMode() {
+            state.developerMode = !state.developerMode;
+            localStorage.setItem('bot_dev_mode', String(state.developerMode));
+            applyDevModeUI();
+            showToast(state.developerMode ? 'Mode Developer Aktif 🛠️' : 'Mode Normal Aktif ✨');
+            renderGroupsList();
+        }
+
+        function applyDevModeUI() {
+            const toggle = document.getElementById('devModeToggle');
+            const knob = document.getElementById('devModeKnob');
+            if (state.developerMode) {
+                toggle.classList.remove('bg-slate-300', 'dark:bg-neutral-600');
+                toggle.classList.add('bg-blue-600');
+                knob.classList.add('translate-x-4');
+                toggle.setAttribute('aria-checked', 'true');
+            } else {
+                toggle.classList.add('bg-slate-300', 'dark:bg-neutral-600');
+                toggle.classList.remove('bg-blue-600');
+                knob.classList.remove('translate-x-4');
+                toggle.setAttribute('aria-checked', 'false');
+            }
+        }
+
+        function openInspector(title, data) {
+            document.getElementById('devInspectorTitle').innerText = title;
+            document.getElementById('devInspectorJson').innerText = JSON.stringify(data, null, 2);
+            openModal('devInspectorModal');
+        }
+
+        function copyInspectorJson() {
+            const text = document.getElementById('devInspectorJson').innerText;
+            navigator.clipboard.writeText(text);
+            showToast('JSON berhasil disalin ke clipboard');
+        }
+
+        // ==========================================
+        // TAB SWITCHING
+        // ==========================================
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            const tabs = ['overview', 'groups', 'responses', 'owners'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const sec = document.getElementById(`section-${t}`);
+                if (t === tabId) {
+                    btn.classList.add('bg-white', 'dark:bg-neutral-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
+                    btn.classList.remove('text-slate-600', 'dark:text-slate-400', 'font-medium');
+                    sec.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('bg-white', 'dark:bg-neutral-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
+                    btn.classList.add('text-slate-600', 'dark:text-slate-400', 'font-medium');
+                    sec.classList.add('hidden');
+                }
+            });
+
+            if (tabId === 'groups') loadGroups();
+            if (tabId === 'responses') { loadAutoreplies(); loadWelcomeConfig(); }
+            if (tabId === 'owners') loadOwners();
+            initIcons();
+        }
+
+        // ==========================================
+        // 1. OVERVIEW & STATUS
+        // ==========================================
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/system/status');
+                const data = await res.json();
+                if (data.success) {
+                    const st = data.status;
+                    const isOnline = st.botStatus === 'connected';
+                    const badge = document.getElementById('botStatusBadge');
+                    const badgeText = document.getElementById('botStatusText');
+                    
+                    if (isOnline) {
+                        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+                        badgeText.innerText = 'Online';
+                    } else if (st.botStatus === 'connecting') {
+                        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400';
+                        badgeText.innerText = 'Menghubungkan...';
+                    } else {
+                        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400';
+                        badgeText.innerText = 'Offline';
+                    }
+
+                    document.getElementById('botStatusSub').innerText = `Uptime: ${st.uptimeFormatted}`;
+                    document.getElementById('statTotalGroups').innerText = st.counts.groups;
+                    document.getElementById('statTotalCommands').innerText = st.counts.commands;
+                    document.getElementById('statTotalMessages').innerText = `${st.counts.messages} pesan diproses`;
+                    document.getElementById('statTotalStickers').innerText = st.counts.stickers + (st.counts.brats || 0);
+                    document.getElementById('statMemoryHeap').innerText = `${st.memory.heapUsedMB} MB`;
+                    document.getElementById('statMemoryRss').innerText = `RSS: ${st.memory.rssMB} MB`;
+                }
+            } catch (err) {
+                console.error('Error fetching status:', err);
+            }
+        }
+
+        async function syncCacheWithDb() {
+            try {
+                const res = await fetch('/api/bot/sync', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ ' + data.message);
+                    fetchStatus();
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ Gagal sinkronisasi cache: ' + err.message, true);
+            }
+        }
+
+        async function loadCommandLogs() {
+            try {
+                const res = await fetch('/api/logs?limit=25');
+                const data = await res.json();
+                const container = document.getElementById('logsContainer');
+                if (data.success && data.logs.length > 0) {
+                    container.innerHTML = data.logs.map(l => `
+                        <div class="p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-blue-600 dark:text-blue-400">!${escapeHtml(l.command || 'unknown')}</span>
+                                <span class="text-slate-500 truncate max-w-[140px] sm:max-w-xs">${escapeHtml(l.groupName || l.from || 'Private')}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-400">${escapeHtml(l.time || '')}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Belum ada aktivitas command.</p>';
+                }
+            } catch (err) {
+                console.error('Error loading logs:', err);
+            }
+        }
+
+        // ==========================================
+        // 2. GROUPS & LINKING MANAGEMENT
+        // ==========================================
+        async function loadGroups() {
+            try {
+                const res = await fetch('/api/groups');
+                const data = await res.json();
+                if (data.success) {
+                    state.groups = data.groups || [];
+                    renderGroupsList();
+                }
+            } catch (err) {
+                console.error('Error loading groups:', err);
+            }
+        }
+
+        function renderGroupsList() {
+            const container = document.getElementById('groupsListContainer');
+            if (!state.groups.length) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white dark:bg-[#1C1C1E] p-8 rounded-3xl text-center ios-card-shadow border border-black/5 dark:border-white/5 space-y-2">
+                        <i data-lucide="users-2" class="w-10 h-10 mx-auto text-slate-300"></i>
+                        <h4 class="text-sm font-semibold">Belum Ada Grup Terdaftar</h4>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Grup yang diinisialisasi melalui perintah WhatsApp atau form ini akan muncul di sini.</p>
+                        <button onclick="openRegisterGroupModal()" class="mt-2 px-4 py-2 rounded-2xl bg-blue-600 text-white text-xs font-semibold">Daftarkan Sekarang</button>
+                    </div>
+                `;
+                initIcons();
+                return;
             }
 
-            renderOwners(data.owners || []);
+            container.innerHTML = state.groups.map(g => {
+                const isPublic = g.role === 'public';
+                const hasParent = Boolean(g.parentGroupId);
+                const roleColor = isPublic 
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' 
+                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
+                
+                const typeLabel = (g.type || 'kos').toUpperCase();
 
-        } catch (error) {
-
-            document.getElementById(
-                'ownerList'
-            ).innerHTML = `
-                <div class="empty">
-                    Gagal memuat daftar owner.
-                </div>
-            `;
-
-            showMessage(
-                error.message,
-                'error'
-            );
-
-        }
-
-    }
-
-
-    function renderOwners(owners) {
-
-        const list =
-            document.getElementById(
-                'ownerList'
-            );
-
-
-        if (!owners.length) {
-
-            list.innerHTML = `
-                <div class="empty">
-                    Belum ada owner.
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        list.innerHTML =
-            owners
-                .map(owner => {
-
-                    const initial =
-                        String(owner.name || '?')
-                            .trim()
-                            .charAt(0)
-                            .toUpperCase();
-
-                    return `
-                        <div class="owner">
-
-                            <div class="owner-info">
-
-                                <div class="avatar">
-                                    ${escapeHtml(initial)}
+                return `
+                    <div class="p-5 rounded-3xl bg-white dark:bg-[#1C1C1E] ios-card-shadow border border-black/5 dark:border-white/5 flex flex-col justify-between space-y-4">
+                        <!-- Top Header Card -->
+                        <div>
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h3 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
+                                        ${escapeHtml(g.name)}
+                                    </h3>
+                                    ${g.groupName ? `<p class="text-xs text-slate-400 mt-0.5">WA: ${escapeHtml(g.groupName)}</p>` : ''}
                                 </div>
-
-                                <div class="owner-details">
-
-                                    <div class="owner-name">
-                                        ${escapeHtml(owner.name)}
-                                    </div>
-
-                                    <div class="owner-number">
-                                        ${escapeHtml(owner.number)}
-                                    </div>
-
+                                <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${roleColor}">
+                                        ${isPublic ? 'CABANG / PUBLIK' : 'INDUK / ADMIN'}
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300">
+                                        ${typeLabel}
+                                    </span>
                                 </div>
-
                             </div>
 
-
-                            <div class="actions">
-
-                                <button
-                                    class="action-button"
-                                    onclick='openEditModal(${JSON.stringify(owner)})'
-                                >
-                                    Edit
+                            <!-- Link Status Pill -->
+                            <div class="mt-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800/80 text-xs flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="${hasParent ? 'link' : 'shield-check'}" class="w-3.5 h-3.5 ${hasParent ? 'text-blue-500' : 'text-emerald-500'}"></i>
+                                    <span class="text-slate-600 dark:text-slate-300 truncate">
+                                        ${hasParent ? `Terhubung ke: <strong>${escapeHtml(g.parentGroupName || g.parentGroupId)}</strong>` : 'Grup Pusat / Mandiri'}
+                                    </span>
+                                </div>
+                                <button onclick="openLinkGroupModal('${escapeHtml(g.id)}', '${escapeHtml(g.name)}', '${escapeHtml(g.parentGroupId || '')}')" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                    ${hasParent ? 'Ubah Link' : 'Hubungkan'}
                                 </button>
-
-                                <button
-                                    class="action-button delete-button"
-                                    onclick='openDeleteModal(${JSON.stringify(owner)})'
-                                >
-                                    Hapus
-                                </button>
-
                             </div>
 
+                            <!-- Developer Mode Extra Details -->
+                            ${state.developerMode ? `
+                                <div class="mt-2.5 p-2 rounded-xl bg-slate-900 text-emerald-400 font-mono text-[10px] space-y-1">
+                                    <div class="truncate">JID: ${escapeHtml(g.id)}</div>
+                                    <div class="flex justify-between text-slate-400">
+                                        <span>Init: ${escapeHtml(g.initializedBy || '-')}</span>
+                                        <button onclick='openInspector("Group: ${escapeHtml(g.name)}", ${JSON.stringify(g)})' class="text-blue-400 hover:underline">Inspect JSON</button>
+                                    </div>
+                                </div>
+                            ` : ''}
                         </div>
-                    `;
 
-                })
-                .join('');
+                        <!-- Card Action Buttons -->
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
+                            <button onclick="openWorkspace('${escapeHtml(g.id)}')" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 transition active:scale-95">
+                                <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
+                                Buka Workspace
+                            </button>
+                            <div class="flex items-center gap-1">
+                                <button onclick="deleteGroupPrompt('${escapeHtml(g.id)}', '${escapeHtml(g.name)}')" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition" title="Hapus Grup">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
-    }
+            initIcons();
+        }
 
+        // Visual Linking Modal
+        let currentLinkingChildId = null;
+        function openLinkGroupModal(childId, childName, currentParentId) {
+            currentLinkingChildId = childId;
+            document.getElementById('linkTargetGroupName').innerText = childName;
 
-    function openAddModal() {
+            const select = document.getElementById('parentGroupSelect');
+            // Filter out the child group itself from potential parents
+            const eligibleParents = state.groups.filter(g => g.id !== childId);
 
-        currentAction = 'add';
+            let optionsHtml = `<option value="">(Tidak Terhubung / Jadikan Grup Mandiri)</option>`;
+            eligibleParents.forEach(p => {
+                const selected = p.id === currentParentId ? 'selected' : '';
+                optionsHtml += `<option value="${escapeHtml(p.id)}" ${selected}>${escapeHtml(p.name)} (${(p.role || 'admin').toUpperCase()})</option>`;
+            });
 
-        document.getElementById(
-            'formTitle'
-        ).textContent = 'Tambah Owner';
+            select.innerHTML = optionsHtml;
+            openModal('linkGroupModal');
+        }
 
-        document.getElementById(
-            'formDescription'
-        ).textContent =
-            'Tambahkan nomor baru yang boleh menggunakan bot melalui chat pribadi.';
+        async function submitGroupLink() {
+            if (!currentLinkingChildId) return;
+            const parentId = document.getElementById('parentGroupSelect').value;
 
-        document.getElementById(
-            'formIcon'
-        ).textContent = '＋';
+            try {
+                const res = await fetch('/api/groups/link', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({
+                        childGroupId: currentLinkingChildId,
+                        parentGroupId: parentId || null,
+                        pin: state.adminPin
+                    })
+                });
 
-        document.getElementById(
-            'name'
-        ).value = '';
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ ' + data.message);
+                    closeModal('linkGroupModal');
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ Gagal mengubah link: ' + err.message, true);
+            }
+        }
 
-        document.getElementById(
-            'number'
-        ).value = '';
+        // Register New Group
+        function openRegisterGroupModal() {
+            document.getElementById('regGroupId').value = '';
+            document.getElementById('regGroupName').value = '';
+            openModal('registerGroupModal');
+        }
 
-        document.getElementById(
-            'oldNumber'
-        ).value = '';
+        async function submitRegisterGroup() {
+            const id = document.getElementById('regGroupId').value.trim();
+            const name = document.getElementById('regGroupName').value.trim();
+            const type = document.getElementById('regGroupType').value;
+            const role = document.getElementById('regGroupRole').value;
 
-        document.getElementById(
-            'formModal'
-        ).classList.add('active');
+            if (!id || !name) {
+                showToast('Mohon isi ID grup dan nama grup', true);
+                return;
+            }
 
-        setTimeout(() => {
+            try {
+                const res = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ id, name, type, role, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Grup berhasil didaftarkan');
+                    closeModal('registerGroupModal');
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
 
-            document.getElementById(
-                'name'
-            ).focus();
+        async function deleteGroupPrompt(id, name) {
+            if (!confirm(`Hapus registrasi grup "${name}"?`)) return;
+            try {
+                const res = await fetch(`/api/groups/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Grup berhasil dihapus');
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
 
-        }, 250);
+        // ==========================================
+        // 3. GROUP WORKSPACE & KOS MODULE
+        // ==========================================
+        function openWorkspace(groupId) {
+            const group = state.groups.find(g => g.id === groupId);
+            if (!group) return;
 
-    }
+            state.activeWorkspaceGroup = group;
+            document.getElementById('wsGroupName').innerText = group.name;
+            document.getElementById('wsGroupRoleBadge').innerText = (group.role || 'admin').toUpperCase();
+            document.getElementById('wsGroupSubtitle').innerText = `Tipe: ${(group.type || 'kos').toUpperCase()} | Link: ${group.parentGroupName || 'Pusat'}`;
 
+            document.getElementById('wsEditGroupName').value = group.name || '';
+            document.getElementById('wsEditGroupRole').value = group.role || 'admin';
 
-    function openEditModal(owner) {
+            // Check if group is kos type
+            const isKos = (group.type || 'kos') === 'kos';
+            document.getElementById('wsKosSubTabs').style.display = isKos ? 'flex' : 'none';
 
-        currentAction = 'edit';
+            switchWsTab('kost-list');
+            loadKostList();
+            loadSubmissionsList();
+            openModal('workspaceModal');
+        }
 
-        document.getElementById(
-            'formTitle'
-        ).textContent = 'Edit Owner';
+        function closeWorkspaceModal() {
+            closeModal('workspaceModal');
+            state.activeWorkspaceGroup = null;
+        }
 
-        document.getElementById(
-            'formDescription'
-        ).textContent =
-            'Perbarui nama atau nomor WhatsApp owner ini.';
+        function switchWsTab(tabId) {
+            const tabs = ['kost-list', 'submissions', 'settings'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`wsTab-${t}`);
+                const view = document.getElementById(`wsView-${t}`);
+                if (btn && view) {
+                    if (t === tabId) {
+                        btn.className = 'pb-2.5 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 font-bold';
+                        view.classList.remove('hidden');
+                    } else {
+                        btn.className = 'pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium';
+                        view.classList.add('hidden');
+                    }
+                }
+            });
+            initIcons();
+        }
 
-        document.getElementById(
-            'formIcon'
-        ).textContent = '✎';
+        async function loadKostList() {
+            if (!state.activeWorkspaceGroup) return;
+            const groupId = state.activeWorkspaceGroup.id;
+            const status = document.getElementById('kostStatusFilter').value;
+            const search = document.getElementById('kostSearchInput').value.trim();
 
-        document.getElementById(
-            'name'
-        ).value = owner.name;
+            try {
+                let url = `/api/kost?groupId=${encodeURIComponent(groupId)}&status=${encodeURIComponent(status)}`;
+                if (search) url += `&query=${encodeURIComponent(search)}`;
 
-        document.getElementById(
-            'number'
-        ).value = owner.number;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    state.kostList = data.data || [];
+                    document.getElementById('wsKostCount').innerText = data.total || 0;
+                    renderKostCards(data.data || []);
+                }
+            } catch (err) {
+                console.error('Error loading kost:', err);
+            }
+        }
 
-        document.getElementById(
-            'oldNumber'
-        ).value = owner.number;
+        function debounceKostSearch() {
+            clearTimeout(state.searchDebounceTimer);
+            state.searchDebounceTimer = setTimeout(() => {
+                loadKostList();
+            }, 300);
+        }
 
-        document.getElementById(
-            'formModal'
-        ).classList.add('active');
+        function renderKostCards(items) {
+            const container = document.getElementById('kostItemsContainer');
+            if (!items.length) {
+                container.innerHTML = `
+                    <div class="col-span-full py-10 text-center text-slate-400 space-y-2">
+                        <i data-lucide="home" class="w-8 h-8 mx-auto text-slate-300"></i>
+                        <p class="text-xs">Tidak ada data kos yang cocok.</p>
+                    </div>
+                `;
+                initIcons();
+                return;
+            }
 
-        setTimeout(() => {
+            container.innerHTML = items.map(k => {
+                const isSent = k.status === 'sent';
+                return `
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400">${escapeHtml(k.id)}</span>
+                                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">${escapeHtml(k.name)}</h4>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isSent ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'}">
+                                    ${isSent ? 'TERKIRIM' : 'PENDING'}
+                                </span>
+                            </div>
 
-            document.getElementById(
-                'name'
-            ).focus();
+                            <!-- Contacts -->
+                            <div class="mt-2.5 space-y-1 text-xs">
+                                ${k.instagram ? `
+                                    <div class="flex items-center gap-1.5 text-pink-600 dark:text-pink-400">
+                                        <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
+                                        <a href="https://instagram.com/${escapeHtml(k.instagram)}" target="_blank" class="hover:underline truncate">@${escapeHtml(k.instagram)}</a>
+                                    </div>
+                                ` : ''}
+                                ${k.whatsapp ? `
+                                    <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                                        <i data-lucide="phone" class="w-3.5 h-3.5"></i>
+                                        <a href="https://wa.me/${escapeHtml(k.whatsapp)}" target="_blank" class="hover:underline truncate">${escapeHtml(k.whatsapp)}</a>
+                                    </div>
+                                ` : ''}
+                                ${k.tiktok ? `
+                                    <div class="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+                                        <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                                        <span class="truncate">@${escapeHtml(k.tiktok)}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
 
-        }, 250);
+                        <!-- Card Action Tools -->
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-neutral-800">
+                            <button onclick="toggleKostSent('${escapeHtml(k.id)}', '${isSent ? 'pending' : 'sent'}')" class="text-xs font-semibold ${isSent ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-700'} flex items-center gap-1">
+                                <i data-lucide="${isSent ? 'rotate-ccw' : 'check-circle-2'}" class="w-3.5 h-3.5"></i>
+                                ${isSent ? 'Set Pending' : 'Tandai Sent'}
+                            </button>
+                            <div class="flex items-center gap-1">
+                                <button onclick="openEditKostModal('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-500"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="deleteKostItem('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950 text-red-500"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
-    }
+            initIcons();
+        }
 
+        async function toggleKostSent(id, newStatus) {
+            if (!state.activeWorkspaceGroup) return;
+            try {
+                const res = await fetch(`/api/kost/${encodeURIComponent(id)}/sent`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ groupId: state.activeWorkspaceGroup.id, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Status kos diperbarui');
+                    loadKostList();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
 
-    function openDeleteModal(owner) {
+        function openAddKostModal() {
+            document.getElementById('kostModalTitle').innerText = 'Tambah Data Kos';
+            document.getElementById('kostEditId').value = '';
+            document.getElementById('kostFormName').value = '';
+            document.getElementById('kostFormIg').value = '';
+            document.getElementById('kostFormWa').value = '';
+            document.getElementById('kostFormTiktok').value = '';
+            document.getElementById('kostStatusRow').style.display = 'none';
+            openModal('kostModal');
+        }
 
-        currentAction = 'delete';
+        function openEditKostModal(id) {
+            const item = state.kostList.find(k => k.id === id);
+            if (!item) return;
 
-        document.getElementById(
-            'formTitle'
-        ).textContent =
-            `Hapus ${owner.name}?`;
+            document.getElementById('kostModalTitle').innerText = `Edit Data Kos (${id})`;
+            document.getElementById('kostEditId').value = id;
+            document.getElementById('kostFormName').value = item.name || '';
+            document.getElementById('kostFormIg').value = item.instagram || '';
+            document.getElementById('kostFormWa').value = item.whatsapp || '';
+            document.getElementById('kostFormTiktok').value = item.tiktok || '';
+            document.getElementById('kostFormStatus').value = item.status || 'pending';
+            document.getElementById('kostStatusRow').style.display = 'block';
+            openModal('kostModal');
+        }
 
-        document.getElementById(
-            'formDescription'
-        ).innerHTML = `
-            <div class="delete-warning">
-                Owner <strong>${escapeHtml(owner.name)}</strong>
-                dengan nomor
-                <strong>${escapeHtml(owner.number)}</strong>
-                akan dihapus dari daftar akses bot.
-            </div>
-        `;
-
-        document.getElementById(
-            'formIcon'
-        ).textContent = '⌫';
-
-        document.getElementById(
-            'name'
-        ).value = owner.name;
-
-        document.getElementById(
-            'number'
-        ).value = owner.number;
-
-        document.getElementById(
-            'oldNumber'
-        ).value = owner.number;
-
-        document.getElementById(
-            'formModal'
-        ).classList.add('active');
-
-    }
-
-
-    function openPinModal() {
-
-        if (currentAction !== 'delete') {
-
-            const name =
-                document.getElementById(
-                    'name'
-                ).value.trim();
-
-            const number =
-                document.getElementById(
-                    'number'
-                ).value.trim();
+        async function submitKostForm() {
+            if (!state.activeWorkspaceGroup) return;
+            const editId = document.getElementById('kostEditId').value;
+            const name = document.getElementById('kostFormName').value.trim();
+            const ig = document.getElementById('kostFormIg').value.trim();
+            const wa = document.getElementById('kostFormWa').value.trim();
+            const tt = document.getElementById('kostFormTiktok').value.trim();
+            const status = document.getElementById('kostFormStatus').value;
 
             if (!name) {
-
-                showMessage(
-                    'Nama wajib diisi.',
-                    'error'
-                );
-
+                showToast('Nama kos wajib diisi', true);
                 return;
-
             }
 
-            if (!number) {
+            try {
+                let res;
+                if (editId) {
+                    res = await fetch(`/api/kost/${encodeURIComponent(editId)}`, {
+                        method: 'PUT',
+                        headers: getAuthHeader(),
+                        body: JSON.stringify({
+                            name,
+                            instagram: ig,
+                            whatsapp: wa,
+                            tiktok: tt,
+                            status,
+                            groupId: state.activeWorkspaceGroup.id,
+                            pin: state.adminPin
+                        })
+                    });
+                } else {
+                    res = await fetch('/api/kost', {
+                        method: 'POST',
+                        headers: getAuthHeader(),
+                        body: JSON.stringify({
+                            name,
+                            instagram: ig,
+                            whatsapp: wa,
+                            tiktok: tt,
+                            groupId: state.activeWorkspaceGroup.id,
+                            pin: state.adminPin
+                        })
+                    });
+                }
 
-                showMessage(
-                    'Nomor WhatsApp wajib diisi.',
-                    'error'
-                );
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Data kos berhasil disimpan');
+                    closeModal('kostModal');
+                    loadKostList();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
 
+        async function deleteKostItem(id) {
+            if (!confirm(`Hapus data kos ID ${id}?`)) return;
+            try {
+                const res = await fetch(`/api/kost/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ groupId: state.activeWorkspaceGroup?.id, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Data kos dihapus');
+                    loadKostList();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
+
+        // Submissions Management
+        async function loadSubmissionsList() {
+            if (!state.activeWorkspaceGroup) return;
+            try {
+                const res = await fetch(`/api/submissions?groupId=${encodeURIComponent(state.activeWorkspaceGroup.id)}&status=all`);
+                const data = await res.json();
+                if (data.success) {
+                    state.submissions = data.data || [];
+                    document.getElementById('wsSubCount').innerText = data.total || 0;
+                    renderSubmissions(data.data || []);
+                }
+            } catch (err) {
+                console.error('Error loading submissions:', err);
+            }
+        }
+
+        function renderSubmissions(items) {
+            const container = document.getElementById('submissionsContainer');
+            if (!items.length) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada usulan masuk dari warga.</p>';
                 return;
-
             }
 
+            container.innerHTML = items.map(s => {
+                const isPending = s.status === 'pending';
+                return `
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-900 dark:text-white">#${escapeHtml(String(s.id))} ${escapeHtml(s.name)}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : (s.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')}">
+                                    ${escapeHtml(s.status.toUpperCase())}
+                                </span>
+                            </div>
+                            <p class="text-slate-600 dark:text-slate-300">Kontak: <span class="font-medium">${escapeHtml(s.contactsRaw || '-')}</span></p>
+                            <p class="text-[11px] text-slate-400">Diusulkan oleh: ${escapeHtml(s.submittedBy || 'Warga')}</p>
+                        </div>
+                        ${isPending ? `
+                            <div class="flex items-center gap-2 justify-end">
+                                <button onclick="reviewSubmission(${s.id}, 'approved')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition active:scale-95">
+                                    Terima (Acc)
+                                </button>
+                                <button onclick="reviewSubmission(${s.id}, 'rejected')" class="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition">
+                                    Tolak
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
-
-        closeModal('formModal');
-
-
-        document.getElementById(
-            'pin'
-        ).value = '';
-
-
-        const confirmButton =
-            document.getElementById(
-                'pinConfirm'
-            );
-
-
-        if (currentAction === 'delete') {
-
-            confirmButton.textContent =
-                'Hapus';
-
-            confirmButton.classList.add(
-                'danger'
-            );
-
-        } else {
-
-            confirmButton.textContent =
-                'Konfirmasi';
-
-            confirmButton.classList.remove(
-                'danger'
-            );
-
+        async function reviewSubmission(id, action) {
+            try {
+                const res = await fetch(`/api/submissions/${id}/review`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ action, autoAddKost: true, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ ' + data.message);
+                    loadSubmissionsList();
+                    loadKostList();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
         }
 
+        async function saveGroupSettings() {
+            if (!state.activeWorkspaceGroup) return;
+            const name = document.getElementById('wsEditGroupName').value.trim();
+            const role = document.getElementById('wsEditGroupRole').value;
 
-        document.getElementById(
-            'pinModal'
-        ).classList.add('active');
-
-
-        setTimeout(() => {
-
-            document.getElementById(
-                'pin'
-            ).focus();
-
-        }, 250);
-
-    }
-
-
-    async function submitAction() {
-
-        const pin =
-            document.getElementById(
-                'pin'
-            ).value.trim();
-
-
-        if (!pin) {
-
-            showMessage(
-                'Masukkan PIN admin.',
-                'error'
-            );
-
-            return;
-
+            try {
+                const res = await fetch(`/api/groups/${encodeURIComponent(state.activeWorkspaceGroup.id)}`, {
+                    method: 'PUT',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ name, role, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Pengaturan grup disimpan');
+                    loadGroups();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
         }
 
-
-        let response;
-
-
-        try {
-
-            if (currentAction === 'add') {
-
-                response =
-                    await fetch(
-                        '/api/owners',
-                        {
-                            method: 'POST',
-
-                            headers: {
-                                'Content-Type':
-                                    'application/json'
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    name:
-                                        document
-                                            .getElementById(
-                                                'name'
-                                            )
-                                            .value
-                                            .trim(),
-
-                                    number:
-                                        document
-                                            .getElementById(
-                                                'number'
-                                            )
-                                            .value
-                                            .trim(),
-
-                                    pin
-                                })
-                        }
-                    );
-
+        // ==========================================
+        // 4. RESPONSES & AUTOREPLIES
+        // ==========================================
+        async function loadAutoreplies() {
+            try {
+                const res = await fetch('/api/autoreplies');
+                const data = await res.json();
+                const container = document.getElementById('autoreplyListContainer');
+                if (data.success && data.data.length > 0) {
+                    container.innerHTML = data.data.map(a => `
+                        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200 font-mono">${escapeHtml(a.keyword)}</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-neutral-800 text-slate-500">${escapeHtml(a.matchType || 'exact')}</span>
+                                </div>
+                                <p class="text-slate-500 truncate max-w-sm mt-0.5">${escapeHtml(a.response)}</p>
+                            </div>
+                            <button onclick="deleteAutoreplyItem('${escapeHtml(a.keyword)}')" class="text-red-500 p-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada autoreply terdaftar.</p>';
+                }
+                initIcons();
+            } catch (err) {
+                console.error('Error loading autoreplies:', err);
             }
+        }
 
+        function openAddAutoreplyModal() {
+            document.getElementById('autoKeyword').value = '';
+            document.getElementById('autoResponse').value = '';
+            openModal('autoreplyModal');
+        }
 
-            if (currentAction === 'edit') {
+        async function submitAutoreply() {
+            const keyword = document.getElementById('autoKeyword').value.trim();
+            const response = document.getElementById('autoResponse').value.trim();
+            const matchType = document.getElementById('autoMatchType').value;
 
-                const oldNumber =
-                    document.getElementById(
-                        'oldNumber'
-                    ).value;
-
-
-                response =
-                    await fetch(
-                        `/api/owners/${encodeURIComponent(oldNumber)}`,
-                        {
-                            method: 'PUT',
-
-                            headers: {
-                                'Content-Type':
-                                    'application/json'
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    name:
-                                        document
-                                            .getElementById(
-                                                'name'
-                                            )
-                                            .value
-                                            .trim(),
-
-                                    number:
-                                        document
-                                            .getElementById(
-                                                'number'
-                                            )
-                                            .value
-                                            .trim(),
-
-                                    pin
-                                })
-                        }
-                    );
-
-            }
-
-
-            if (currentAction === 'delete') {
-
-                const number =
-                    document.getElementById(
-                        'oldNumber'
-                    ).value;
-
-
-                response =
-                    await fetch(
-                        `/api/owners/${encodeURIComponent(number)}`,
-                        {
-                            method: 'DELETE',
-
-                            headers: {
-                                'Content-Type':
-                                    'application/json'
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    pin
-                                })
-                        }
-                    );
-
-            }
-
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                showMessage(
-                    data.message ||
-                    'Terjadi kesalahan.',
-                    'error'
-                );
-
+            if (!keyword || !response) {
+                showToast('Keyword dan respon wajib diisi', true);
                 return;
-
             }
 
-
-            closeModal('pinModal');
-
-
-            renderOwners(
-                data.owners || []
-            );
-
-
-            showMessage(
-                data.message ||
-                'Berhasil.',
-                'success'
-            );
-
-
-        } catch (error) {
-
-            showMessage(
-                'Tidak dapat terhubung ke server.',
-                'error'
-            );
-
+            try {
+                const res = await fetch('/api/autoreplies', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ keyword, response, matchType, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Autoreply disimpan');
+                    closeModal('autoreplyModal');
+                    loadAutoreplies();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
         }
 
-    }
-
-
-    function closeModal(id) {
-
-        document
-            .getElementById(id)
-            .classList.remove('active');
-
-    }
-
-
-    function closeOnBackdrop(event, id) {
-
-        if (
-            event.target === event.currentTarget
-        ) {
-            closeModal(id);
+        async function deleteAutoreplyItem(keyword) {
+            if (!confirm(`Hapus keyword "${keyword}"?`)) return;
+            try {
+                const res = await fetch(`/api/autoreplies/${encodeURIComponent(keyword)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Keyword dihapus');
+                    loadAutoreplies();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
         }
 
-    }
-
-
-    function handlePinKey(event) {
-
-        if (event.key === 'Enter') {
-            submitAction();
+        async function loadWelcomeConfig() {
+            try {
+                const res = await fetch('/api/welcome');
+                const data = await res.json();
+                if (data.success && data.config) {
+                    const cfg = data.config;
+                    document.getElementById('welcomeEnabledSwitch').checked = cfg.enabled !== false;
+                    document.getElementById('welcomeTextarea').value = cfg.text || '';
+                }
+            } catch (err) {
+                console.error('Error loading welcome:', err);
+            }
         }
 
-        if (event.key === 'Escape') {
-            closeModal('pinModal');
+        async function saveWelcomeConfig() {
+            const enabled = document.getElementById('welcomeEnabledSwitch').checked;
+            const text = document.getElementById('welcomeTextarea').value.trim();
+            try {
+                const res = await fetch('/api/welcome', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ config: { enabled, text }, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Pengaturan welcome disimpan');
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
         }
 
-    }
+        // ==========================================
+        // 5. OWNERS MANAGEMENT
+        // ==========================================
+        async function loadOwners() {
+            try {
+                const res = await fetch('/api/owners');
+                const data = await res.json();
+                const container = document.getElementById('ownersListContainer');
+                if (data.success && data.owners.length > 0) {
+                    const superOwner = data.superOwner;
+                    container.innerHTML = data.owners.map(o => {
+                        const isSuper = o.number === superOwner || o.isSuper;
+                        return `
+                            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${escapeHtml(o.name || 'Owner')}</span>
+                                        ${isSuper ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">SUPER OWNER</span>' : ''}
+                                    </div>
+                                    <p class="text-slate-500 font-mono mt-0.5">${escapeHtml(o.number)}</p>
+                                </div>
+                                ${!isSuper ? `
+                                    <button onclick="deleteOwnerItem('${escapeHtml(o.number)}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                }
+                initIcons();
+            } catch (err) {
+                console.error('Error loading owners:', err);
+            }
+        }
 
+        function openAddOwnerModal() {
+            document.getElementById('ownerNameInput').value = '';
+            document.getElementById('ownerNumberInput').value = '';
+            openModal('ownerModal');
+        }
 
-    document.addEventListener(
-        'keydown',
-        event => {
+        async function submitAddOwner() {
+            const name = document.getElementById('ownerNameInput').value.trim();
+            const number = document.getElementById('ownerNumberInput').value.trim();
 
-            if (event.key === 'Escape') {
-
-                closeModal('formModal');
-                closeModal('pinModal');
-
+            if (!name || !number) {
+                showToast('Nama dan nomor WhatsApp wajib diisi', true);
+                return;
             }
 
+            try {
+                const res = await fetch('/api/owners', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ name, number, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Owner berhasil ditambahkan');
+                    closeModal('ownerModal');
+                    loadOwners();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
         }
-    );
 
+        async function deleteOwnerItem(number) {
+            if (!confirm(`Hapus owner ${number}?`)) return;
+            try {
+                const res = await fetch(`/api/owners/${encodeURIComponent(number)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Owner dihapus');
+                    loadOwners();
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
 
-    function showMessage(
-        text,
-        type
-    ) {
+        // ==========================================
+        // 6. BROADCAST MESSAGE
+        // ==========================================
+        function openBroadcastModal() {
+            const select = document.getElementById('broadcastTargetSelect');
+            if (state.groups.length > 0) {
+                select.innerHTML = state.groups.map(g => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.name)} (${escapeHtml(g.id.substring(0, 15))}...)</option>`).join('');
+            } else {
+                select.innerHTML = '<option value="">(Belum ada grup terdaftar)</option>';
+            }
+            document.getElementById('broadcastTextInput').value = '';
+            openModal('broadcastModal');
+        }
 
-        const element =
-            document.getElementById(
-                'message'
-            );
+        async function submitBroadcast() {
+            const targetJid = document.getElementById('broadcastTargetSelect').value;
+            const message = document.getElementById('broadcastTextInput').value.trim();
 
+            if (!targetJid || !message) {
+                showToast('Grup tujuan dan pesan wajib diisi', true);
+                return;
+            }
 
-        element.textContent = text;
+            try {
+                const res = await fetch('/api/bot/broadcast', {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ targetJid, message, pin: state.adminPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Pesan berhasil dikirim!');
+                    closeModal('broadcastModal');
+                } else {
+                    showToast('❌ ' + data.message, true);
+                }
+            } catch (err) {
+                showToast('❌ ' + err.message, true);
+            }
+        }
 
-        element.className =
-            `message show ${type}`;
+        // ==========================================
+        // UI HELPERS (MODALS & TOASTS)
+        // ==========================================
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            initIcons();
+        }
 
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
 
-        setTimeout(() => {
+        function showToast(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xl ios-blur text-white transition-all transform duration-300 animate-in fade-in slide-in-from-bottom-3 ${isError ? 'bg-red-600/90' : 'bg-slate-900/90 dark:bg-neutral-800/90'}`;
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-            element.classList.remove(
-                'show'
-            );
-
-        }, 3500);
-
-    }
-
-
-    function escapeHtml(value) {
-
-        return String(value ?? '')
-            .replaceAll(
-                '&',
-                '&amp;'
-            )
-            .replaceAll(
-                '<',
-                '&lt;'
-            )
-            .replaceAll(
-                '>',
-                '&gt;'
-            )
-            .replaceAll(
-                '"',
-                '&quot;'
-            )
-            .replaceAll(
-                "'",
-                '&#039;'
-            );
-
-    }
-
-
-    loadOwners();
-
-</script>
-
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
 </body>
 </html>
