@@ -594,18 +594,28 @@
 
                 <!-- 4B. Sub-View: Usulan Warga -->
                 <div id="modSubView-submissions" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex items-center justify-between">
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Kotak Masuk Usulan Data dari Member</h4>
-                            <p class="text-[11px] text-slate-400">Review usulan sebelum dipublikasikan ke daftar resmi bot</p>
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                        <div class="relative flex-1 max-w-md">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="submissionSearchInput" oninput="filterSubmissions()" placeholder="Cari nama kos, kontak, pengusul..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                         </div>
-                        <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                            <button onclick="setSubmissionsViewMode('table')" id="btnViewTable-submissions" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
-                                <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="setSubmissionsViewMode('cards')" id="btnViewCards-submissions" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
-                                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
-                            </button>
+
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                <button onclick="filterSubmissionStatus('all')" id="filterSub-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Usulan</button>
+                                <button onclick="filterSubmissionStatus('pending')" id="filterSub-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">⏳ Menunggu Review</button>
+                                <button onclick="filterSubmissionStatus('approved')" id="filterSub-approved" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">✅ Disetujui</button>
+                                <button onclick="filterSubmissionStatus('rejected')" id="filterSub-rejected" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">❌ Ditolak</button>
+                            </div>
+
+                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
+                                <button onclick="setSubmissionsViewMode('table')" id="btnViewTable-submissions" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
+                                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="setSubmissionsViewMode('cards')" id="btnViewCards-submissions" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
+                                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1006,12 +1016,14 @@
         let rawKostData = [];
         let filteredKostData = [];
         let rawSubmissionsData = [];
+        let filteredSubmissionsData = [];
         let rawAutorepliesData = [];
         let rawFeaturesData = [];
         let rawOwnersData = [];
 
         let activeGroupRoleFilter = 'all';
         let activeKostStatusFilter = 'all';
+        let activeSubmissionStatusFilter = 'all';
 
         // DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
@@ -2302,6 +2314,13 @@
         // -----------------------------------------------------------------
         // 10. USULAN WARGA (SUBMISSIONS)
         // -----------------------------------------------------------------
+        function setSubmissionsViewMode(mode) {
+            submissionsViewMode = mode;
+            localStorage.setItem('view_mode_submissions', mode);
+            updateViewToggleIcons();
+            renderSubmissionsList();
+        }
+
         async function loadSubmissionsList() {
             try {
                 const res = await fetch('/api/submissions');
@@ -2309,80 +2328,179 @@
                 const list = data.submissions || data.data || [];
                 if (Array.isArray(list)) {
                     rawSubmissionsData = list;
-                    renderSubmissionsList();
+                    filterSubmissions();
+                    const pendingCount = list.filter(s => (s.status || 'pending').toLowerCase() === 'pending').length;
                     const badge = document.getElementById('modSubCount');
-                    if (badge) badge.textContent = list.length;
+                    if (badge) badge.textContent = pendingCount > 0 ? pendingCount : list.length;
                 }
             } catch (err) {
                 showToast(`Gagal memuat usulan: ${err.message}`, 'error');
             }
         }
 
+        function filterSubmissionStatus(status) {
+            activeSubmissionStatusFilter = status;
+            const statuses = ['all', 'pending', 'approved', 'rejected'];
+            statuses.forEach(s => {
+                const el = document.getElementById('filterSub-' + s);
+                if (el) {
+                    if (s === status) {
+                        el.className = "px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs";
+                    } else {
+                        el.className = "px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white";
+                    }
+                }
+            });
+            filterSubmissions();
+        }
+
+        function filterSubmissions() {
+            const q = (document.getElementById('submissionSearchInput')?.value || '').toLowerCase().trim();
+            filteredSubmissionsData = rawSubmissionsData.filter(s => {
+                const name = (s.name || '').toLowerCase();
+                const contact = (s.contactsRaw || s.contact?.whatsapp || s.contact || '').toLowerCase();
+                const submitter = (s.submittedBy || s.submitted_by || s.sender || '').toLowerCase();
+                const matchQ = name.includes(q) || contact.includes(q) || submitter.includes(q);
+                if (!matchQ) return false;
+
+                const st = (s.status || 'pending').toLowerCase();
+                if (activeSubmissionStatusFilter === 'pending') return st === 'pending';
+                if (activeSubmissionStatusFilter === 'approved') return st === 'approved';
+                if (activeSubmissionStatusFilter === 'rejected') return st === 'rejected';
+                return true;
+            });
+            renderSubmissionsList();
+        }
+
         function renderSubmissionsList() {
             const container = document.getElementById('submissionsContainer');
             if (!container) return;
 
-            if (rawSubmissionsData.length === 0) {
+            if (filteredSubmissionsData.length === 0) {
                 container.innerHTML = `
                     <div class="py-12 text-center space-y-2">
                         <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
                             <i data-lucide="inbox" class="w-6 h-6"></i>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Kotak Usulan Bersih</h5>
-                        <p class="text-[11px] text-slate-400">Belum ada usulan data baru yang masuk dari member WhatsApp.</p>
+                        <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300">Tidak Ada Usulan</h5>
+                        <p class="text-[11px] text-slate-400">Belum ada data usulan warga yang cocok dengan filter saat ini.</p>
                     </div>
                 `;
                 if (window.lucide) lucide.createIcons();
                 return;
             }
 
-            let rowsHtml = rawSubmissionsData.map((s, idx) => {
-                const numId = '#' + String(idx + 1).padStart(2, '0');
-                return `
-                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                        <td class="py-3 px-4 font-mono font-bold text-xs text-slate-400">${numId}</td>
-                        <td class="py-3 px-4">
-                            <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(s.name || 'Usulan Item')}</h6>
-                            <p class="text-[11px] text-slate-400 line-clamp-1">${escapeHtml(s.description || '-')}</p>
-                        </td>
-                        <td class="py-3 px-4 text-xs font-mono text-emerald-600">${escapeHtml(s.contact?.whatsapp || s.contact || '-')}</td>
-                        <td class="py-3 px-4 text-[11px] text-slate-500">${escapeHtml(s.sender || 'Member')}</td>
-                        <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase">${escapeHtml(s.status || 'PENDING')}</span>
-                        </td>
-                        <td class="py-3 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" title="Setujui & Publikasikan" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition">
-                                    Setujui
-                                </button>
-                                <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" title="Tolak Usulan" class="px-2.5 py-1 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-semibold transition">
-                                    Tolak
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            if (submissionsViewMode === 'table') {
+                let rowsHtml = filteredSubmissionsData.map((s, idx) => {
+                    const numId = '#' + String(s.id || (idx + 1)).padStart(2, '0');
+                    const rawContact = s.contactsRaw || s.contact?.whatsapp || s.contact || s.whatsapp || '-';
+                    const submitter = s.submittedBy || s.submitted_by || s.sender || 'Warga';
+                    const submitTime = s.submittedAt ? new Date(s.submittedAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                    const st = (s.status || 'pending').toLowerCase();
 
-            container.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                                <th class="py-3 px-4">#ID</th>
-                                <th class="py-3 px-4">NAMA ITEM & DETAIL</th>
-                                <th class="py-3 px-4">KONTAK DIUSULKAN</th>
-                                <th class="py-3 px-4">PENGUSUL</th>
-                                <th class="py-3 px-4">STATUS</th>
-                                <th class="py-3 px-4 text-right">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
-                            ${rowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+                    let statusBadge = '';
+                    if (st === 'approved') {
+                        statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">✅ DISETUJUI</span>`;
+                    } else if (st === 'rejected') {
+                        statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">❌ DITOLAK</span>`;
+                    } else {
+                        statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">⏳ MENUNGGU REVIEW</span>`;
+                    }
+
+                    return `
+                        <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                            <td class="py-3 px-4 font-mono font-bold text-xs text-slate-400">${numId}</td>
+                            <td class="py-3 px-4">
+                                <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(s.name || 'Usulan Item')}</h6>
+                                <p class="text-[11px] text-slate-400">Masuk: ${submitTime}</p>
+                            </td>
+                            <td class="py-3 px-4 text-xs font-mono text-emerald-600 dark:text-emerald-400">${escapeHtml(rawContact)}</td>
+                            <td class="py-3 px-4 text-[11px] text-slate-600 dark:text-slate-400 font-mono">${escapeHtml(submitter)}</td>
+                            <td class="py-3 px-4">${statusBadge}</td>
+                            <td class="py-3 px-4 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    ${st === 'pending' ? `
+                                        <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" title="Setujui & Buat Data Kos Baru" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition active:scale-95 shadow-xs">
+                                            Setujui
+                                        </button>
+                                        <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" title="Tolak Usulan" class="px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-[11px] font-semibold transition">
+                                            Tolak
+                                        </button>
+                                    ` : ''}
+                                    <button onclick="deleteSubmissionPrompt('${escapeHtml(s.id)}')" title="Hapus Usulan Ini" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                container.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                                    <th class="py-3 px-4">#ID</th>
+                                    <th class="py-3 px-4">NAMA KOS / ITEM</th>
+                                    <th class="py-3 px-4">KONTAK DIUSULKAN</th>
+                                    <th class="py-3 px-4">PENGUSUL</th>
+                                    <th class="py-3 px-4">STATUS</th>
+                                    <th class="py-3 px-4 text-right">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                let cardsHtml = filteredSubmissionsData.map(s => {
+                    const rawContact = s.contactsRaw || s.contact?.whatsapp || s.contact || s.whatsapp || '-';
+                    const submitter = s.submittedBy || s.submitted_by || s.sender || 'Warga';
+                    const submitTime = s.submittedAt ? new Date(s.submittedAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                    const st = (s.status || 'pending').toLowerCase();
+
+                    let badgeClass = 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400';
+                    let badgeLabel = '⏳ PENDING';
+                    if (st === 'approved') {
+                        badgeClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400';
+                        badgeLabel = '✅ DISETUJUI';
+                    } else if (st === 'rejected') {
+                        badgeClass = 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400';
+                        badgeLabel = '❌ DITOLAK';
+                    }
+
+                    return `
+                        <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between gap-3">
+                            <div class="space-y-1.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(s.name || 'Usulan Kos')}</h6>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">${badgeLabel}</span>
+                                </div>
+                                <div class="text-[11px] space-y-0.5 text-slate-500 dark:text-slate-400">
+                                    <p>📱 Kontak: <span class="font-mono text-emerald-600 dark:text-emerald-400">${escapeHtml(rawContact)}</span></p>
+                                    <p>👤 Oleh: <span class="font-mono">${escapeHtml(submitter)}</span> • ${submitTime}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+                                <span class="font-mono text-[10px] text-slate-400">#${escapeHtml(String(s.id))}</span>
+                                <div class="flex items-center gap-1.5">
+                                    ${st === 'pending' ? `
+                                        <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold">Setujui</button>
+                                        <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" class="px-2.5 py-1 rounded-lg border border-rose-200 text-rose-600 text-[11px] font-semibold">Tolak</button>
+                                    ` : ''}
+                                    <button onclick="deleteSubmissionPrompt('${escapeHtml(s.id)}')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">${cardsHtml}</div>`;
+            }
+
             if (window.lucide) lucide.createIcons();
         }
 
@@ -2397,12 +2515,35 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    showToast(action === 'approve' ? 'Usulan disetujui & dimasukkan ke daftar resmi.' : 'Usulan ditolak.', 'success');
+                    showToast(action === 'approve' ? 'Usulan disetujui & otomatis ditambahkan ke daftar item 🟢' : 'Usulan ditolak ❌', 'success');
                     loadSubmissionsList();
                     loadKostList();
                     fetchStatus();
                 } else {
                     showToast(result.message || 'Gagal memproses usulan.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        async function deleteSubmissionPrompt(id) {
+            if (!checkSuperuserOrWarn()) return;
+            if (!confirm('Hapus data usulan ini secara permanen?')) return;
+
+            try {
+                showToast('Menghapus usulan...', 'info');
+                const res = await fetch(`/api/submissions/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Usulan berhasil dihapus.', 'success');
+                    loadSubmissionsList();
+                    fetchStatus();
+                } else {
+                    showToast(result.message || 'Gagal menghapus usulan.', 'error');
                 }
             } catch (err) {
                 showToast(`Error: ${err.message}`, 'error');

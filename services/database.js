@@ -447,6 +447,36 @@ async function autoSeedTablesIfEmpty(db) {
     } catch (e) {
         console.error('[database] Auto-seed bot_stats check error:', e.message);
     }
+
+    // 7. Seed kost_submissions
+    try {
+        const [cntSub] = await db.query('SELECT COUNT(*) as cnt FROM kost_submissions');
+        if (cntSub[0]?.cnt === 0) {
+            const fileSubs = readJSON(SUBMISSIONS_FILE, []);
+            if (Array.isArray(fileSubs) && fileSubs.length > 0) {
+                for (const sub of fileSubs) {
+                    await db.query(
+                        `INSERT INTO kost_submissions (id, group_id, name, contacts_raw, submitted_by, submitted_at, status, reviewed_by, reviewed_at)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            sub.id || null,
+                            sub.groupId || '',
+                            sub.name || 'Usulan',
+                            sub.contactsRaw || '',
+                            sub.submittedBy || '',
+                            sub.submittedAt ? new Date(sub.submittedAt) : new Date(),
+                            sub.status || 'pending',
+                            sub.reviewedBy || null,
+                            sub.reviewedAt ? new Date(sub.reviewedAt) : null
+                        ]
+                    );
+                }
+                console.log(`[database] Auto-seeded ${fileSubs.length} kost submissions ke MariaDB.`);
+            }
+        }
+    } catch (e) {
+        console.error('[database] Auto-seed kost submissions check error:', e.message);
+    }
 }
 
 // Refresh in-memory cache directly from MariaDB
@@ -2223,6 +2253,17 @@ async function reviewKostSubmission(id, newStatus, reviewerNumber = '') {
     };
 }
 
+async function deleteKostSubmission(id) {
+    const cleanId = Number(id);
+    if (!cleanId || isNaN(cleanId)) return { success: false, message: 'ID usulan tidak valid.' };
+    await ensureAllTables();
+    const db = getPool();
+    await db.query('DELETE FROM kost_submissions WHERE id = ?', [cleanId]);
+    cache.submissions = cache.submissions.filter(s => Number(s.id) !== cleanId);
+    syncDataFile(SUBMISSIONS_FILE, cache.submissions);
+    return { success: true, message: 'Usulan berhasil dihapus.' };
+}
+
 module.exports = {
     DATA_DIR,
     SUPER_OWNER,
@@ -2312,5 +2353,6 @@ module.exports = {
     addKostSubmission,
     getKostSubmissions,
     getKostSubmissionById,
-    reviewKostSubmission
+    reviewKostSubmission,
+    deleteKostSubmission
 };

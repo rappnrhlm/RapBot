@@ -903,6 +903,27 @@ app.post('/api/submissions/:id/review', async (req, res) => {
     }
 });
 
+// Delete Submission
+app.delete('/api/submissions/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const currentPin = extractPin(req);
+
+        if (!validatePin(currentPin)) {
+            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        const result = await database.deleteKostSubmission(id);
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ----------------------------------------------------
 // 5. AUTOREPLIES API
 // ----------------------------------------------------
