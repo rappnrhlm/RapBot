@@ -528,125 +528,348 @@
             <!-- ========================================================= -->
             <div id="section-modules" class="hidden space-y-4">
                 
-                <!-- Sub-tabs Header for Modular Data -->
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
-                            <i data-lucide="building" class="w-3.5 h-3.5"></i>
-                            <span>Modul Iklan & Kos (<span id="modListingCount">0</span>)</span>
-                        </button>
-                        <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
-                            <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
-                            <span>Kotak Usulan (<span id="modSubCount">0</span>)</span>
-                        </button>
-                        <button onclick="switchModSubTab('features')" id="modSubTab-features" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
-                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                            <span>Inspektur Fitur & Izin</span>
-                        </button>
+                <!-- 4.1 KATALOG MODUL BISNIS (DIRECTORY / CARDS OVERVIEW) -->
+                <div id="modView-catalog" class="space-y-4">
+                    <div class="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/40 border border-indigo-500/20 rounded-3xl p-6 card-shadow backdrop-blur-md relative overflow-hidden">
+                        <div class="relative z-10 max-w-2xl space-y-2">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-bold tracking-wide uppercase">
+                                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                                Hub Database & Modul Bisnis Global
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight">Katalog Modul Bisnis & Data Bot</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                RapBot dirancang modular dan multi-tenant untuk berbagai kebutuhan bisnis dan komunitas WhatsApp. Pilih modul di bawah untuk mengelola database, status tayang, penawaran, atau usulan warga.
+                            </p>
+                        </div>
                     </div>
 
-                    <div id="modActionBtnContainer">
-                        <button onclick="openAddKostModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Tambah Data Baru
-                        </button>
+                    <!-- Module Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <!-- Card 1: Modul Kos & Hunian -->
+                        <div class="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 card-shadow hover:border-indigo-500/40 transition-all duration-200 flex flex-col justify-between gap-4 group">
+                            <div class="space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition">
+                                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                        🟢 MODUL AKTIF
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition">Manajemen Kos & Properti</h4>
+                                    <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                                        Database listing kos-kosan, pencarian publik (<code class="text-indigo-500">!cari</code>), prospek penawaran DM promosi (<code class="text-indigo-500">!dm</code>/<code class="text-indigo-500">!sent</code>), dan usulan warga (<code class="text-indigo-500">!usulkost</code>).
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-slate-900 dark:text-white" id="catTotalKos">0</div>
+                                        <div class="text-[10px] text-slate-400">Total Kos</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-emerald-600" id="catPublishedKos">0</div>
+                                        <div class="text-[10px] text-slate-400">Tayang Publik</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-amber-600" id="catSubmissionsKos">0</div>
+                                        <div class="text-[10px] text-slate-400">Usulan Masuk</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openModuleWorkspace('kost')" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-2 transition active:scale-98">
+                                <span>Buka & Kelola Data Kos</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Card 2: Modul Marketplace & Jual Beli -->
+                        <div class="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 card-shadow hover:border-emerald-500/40 transition-all duration-200 flex flex-col justify-between gap-4 group">
+                            <div class="space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition">
+                                        <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                        🛍️ MULTI-GRUP
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">Marketplace & Jual Beli Komunitas</h4>
+                                    <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                                        Katalog barang jualan member grup, verifikasi penjual terpercaya, sistem pencarian harga produk otomatis, dan promosi berkala.
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-slate-900 dark:text-white">Siap</div>
+                                        <div class="text-[10px] text-slate-400">Arsitektur</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-indigo-600">Global</div>
+                                        <div class="text-[10px] text-slate-400">Skalabilitas</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-emerald-600">Terbuka</div>
+                                        <div class="text-[10px] text-slate-400">Integrasi</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openModuleWorkspace('marketplace')" class="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                                <span>Buka Modul Marketplace</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Card 3: Modul Direktori Jasa & Bisnis Lokal -->
+                        <div class="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 card-shadow hover:border-amber-500/40 transition-all duration-200 flex flex-col justify-between gap-4 group">
+                            <div class="space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-105 transition">
+                                        <i data-lucide="briefcase" class="w-6 h-6"></i>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                        💼 DIREKTORI UMKM
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition">Direktori Jasa & UMKM Lokal</h4>
+                                    <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                                        Pencarian kontak penyedia jasa (servis AC, tukang, catering, laundry, les privat, rental kendaraan) berbasis kata kunci interaktif bot.
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-slate-900 dark:text-white">Katalog</div>
+                                        <div class="text-[10px] text-slate-400">Fitur</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-amber-600">Kontak</div>
+                                        <div class="text-[10px] text-slate-400">Verifikasi</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-emerald-600">Auto-DM</div>
+                                        <div class="text-[10px] text-slate-400">Promosi</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openModuleWorkspace('services')" class="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                                <span>Buka Direktori Jasa</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Card 4: Modul Inspektur Fitur & Izin -->
+                        <div class="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 card-shadow hover:border-purple-500/40 transition-all duration-200 flex flex-col justify-between gap-4 group">
+                            <div class="space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-105 transition">
+                                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                                        🛡️ SISTEM BOT
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">Inspektur Fitur & Izin Global</h4>
+                                    <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                                        Pusat pengawasan hak akses seluruh perintah WhatsApp bot (<code class="text-purple-500">commands/</code>), pembagian izin grup publik vs grup admin internal.
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-slate-900 dark:text-white" id="catTotalFeatures">25</div>
+                                        <div class="text-[10px] text-slate-400">Perintah</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-purple-600">Admin/Pub</div>
+                                        <div class="text-[10px] text-slate-400">Roles</div>
+                                    </div>
+                                    <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                                        <div class="font-bold text-xs text-emerald-600">Aktif</div>
+                                        <div class="text-[10px] text-slate-400">Status</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openModuleWorkspace('features')" class="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                                <span>Buka Inspektur Fitur</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 4A. Sub-View: Listing Data (Kost / Katalog) -->
-                <div id="modSubView-listing" class="space-y-4">
-                    <!-- Filters & Search -->
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                        <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama iklan, detail, kontak WhatsApp/IG..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                <!-- 4.2 WORKSPACE MODUL SPESIFIK (SHOWN AFTER CLICKING A CARD) -->
+                <div id="modView-workspace" class="hidden space-y-4">
+                    
+                    <!-- Top Breadcrumb & Header of Active Module -->
+                    <div class="bg-white dark:bg-[#111827] rounded-3xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <button onclick="closeModuleWorkspace()" title="Kembali ke Katalog Modul" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 text-xs font-semibold">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                <span>Katalog Modul</span>
+                            </button>
+                            <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                            <div>
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2" id="activeModTitle">
+                                    <span>🏠 Manajemen Kos & Properti</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-400" id="activeModSubtitle">Kelola listing data kos, status visibilitas penawaran, dan usulan warga.</p>
+                            </div>
                         </div>
 
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                <button onclick="filterKostStatus('all')" id="filterKost-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Data</button>
-                                <button onclick="filterKostStatus('published')" id="filterKost-published" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟢 Sudah Diposting (Publik)</button>
-                                <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">📩 Terkirim Penawaran / DM</button>
-                                <button onclick="filterKostStatus('pending')" id="filterKost-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟡 Belum Ditawarkan</button>
+                        <!-- Dynamic Action Button inside Module -->
+                        <div id="modActionBtnContainer">
+                            <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                Tambah Data Baru
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sub-tabs Navigation inside Active Module -->
+                    <div id="modWorkspaceTabs" class="flex items-center gap-2 overflow-x-auto pb-1">
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
+                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5">
+                                <i data-lucide="building" class="w-3.5 h-3.5"></i>
+                                <span>Listing Data & Status (<span id="modListingCount">0</span>)</span>
+                            </button>
+                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-4 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                                <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
+                                <span>Kotak Usulan Masuk (<span id="modSubCount">0</span>)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4A. Sub-View: Listing Data (Kost / Katalog) -->
+                    <div id="modSubView-listing" class="space-y-4">
+                        <!-- Filters & Search -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                            <div class="relative flex-1 max-w-md">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama iklan, detail, kontak WhatsApp/IG..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            </div>
+
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                    <button onclick="filterKostStatus('all')" id="filterKost-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Data</button>
+                                    <button onclick="filterKostStatus('published')" id="filterKost-published" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟢 Sudah Diposting (Publik)</button>
+                                    <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">📩 Terkirim Penawaran / DM</button>
+                                    <button onclick="filterKostStatus('pending')" id="filterKost-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟡 Belum Ditawarkan</button>
+                                </div>
+
+                                <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
+                                    <button onclick="setKostViewMode('table')" id="btnViewTable-kost" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
+                                        <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="setKostViewMode('cards')" id="btnViewCards-kost" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
+                                        <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Listing Table Container -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                            <div id="kostContainer" class="p-4 sm:p-5">
+                                <div class="text-xs text-slate-400 py-12 text-center flex flex-col items-center justify-center gap-2">
+                                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-indigo-600"></i>
+                                    <span>Memuat data listing...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4B. Sub-View: Usulan Warga -->
+                    <div id="modSubView-submissions" class="hidden space-y-4">
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                            <div class="relative flex-1 max-w-md">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="submissionSearchInput" oninput="filterSubmissions()" placeholder="Cari nama kos, kontak, pengusul..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            </div>
+
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                    <button onclick="filterSubmissionStatus('all')" id="filterSub-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Usulan</button>
+                                    <button onclick="filterSubmissionStatus('pending')" id="filterSub-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">⏳ Menunggu Review</button>
+                                    <button onclick="filterSubmissionStatus('approved')" id="filterSub-approved" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">✅ Disetujui</button>
+                                    <button onclick="filterSubmissionStatus('rejected')" id="filterSub-rejected" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">❌ Ditolak</button>
+                                </div>
+
+                                <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
+                                    <button onclick="setSubmissionsViewMode('table')" id="btnViewTable-submissions" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
+                                        <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="setSubmissionsViewMode('cards')" id="btnViewCards-submissions" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
+                                        <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                            <div id="submissionsContainer" class="p-4 sm:p-5">
+                                <div class="text-xs text-slate-400 py-12 text-center">Memuat data usulan...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4C. Sub-View: Marketplace Generic View -->
+                    <div id="modSubView-marketplace" class="hidden space-y-4">
+                        <div class="bg-white dark:bg-[#111827] rounded-3xl p-8 border border-slate-200/70 dark:border-slate-800 card-shadow text-center space-y-3">
+                            <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 mx-auto flex items-center justify-center">
+                                <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Modul Marketplace & Katalog Jual Beli</h4>
+                            <p class="text-xs text-slate-400 max-w-md mx-auto">
+                                Modul ini disiapkan untuk mendukung katalog produk jualan otomatis di grup WhatsApp, pencarian barang, dan verifikasi seller.
+                            </p>
+                            <div class="pt-2 flex items-center justify-center gap-2">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">Multi-Grup Support</span>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">Siap Integrasi</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4D. Sub-View: Services Generic View -->
+                    <div id="modSubView-services" class="hidden space-y-4">
+                        <div class="bg-white dark:bg-[#111827] rounded-3xl p-8 border border-slate-200/70 dark:border-slate-800 card-shadow text-center space-y-3">
+                            <div class="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-600 mx-auto flex items-center justify-center">
+                                <i data-lucide="briefcase" class="w-7 h-7"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Modul Direktori Jasa & Mitra Lokal</h4>
+                            <p class="text-xs text-slate-400 max-w-md mx-auto">
+                                Modul pencarian penyedia jasa, kuliner, dan UMKM berbasis pencarian bot interaktif siap digunakan.
+                            </p>
+                            <div class="pt-2 flex items-center justify-center gap-2">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">Auto-Reply Keyword</span>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">Direktori Terbuka</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4E. Sub-View: Inspektur Fitur & Izin Bot -->
+                    <div id="modSubView-features" class="hidden space-y-4">
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                            <div class="relative flex-1 max-w-md">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="featureSearchInput" oninput="filterFeatures()" placeholder="Cari nama perintah atau kategori..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                             </div>
 
                             <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                                <button onclick="setKostViewMode('table')" id="btnViewTable-kost" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
+                                <button onclick="setFeaturesViewMode('table')" id="btnViewTable-features" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
                                     <i data-lucide="table" class="w-3.5 h-3.5"></i>
                                 </button>
-                                <button onclick="setKostViewMode('cards')" id="btnViewCards-kost" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
+                                <button onclick="setFeaturesViewMode('cards')" id="btnViewCards-features" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
                                     <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Main Listing Table Container -->
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                        <div id="kostContainer" class="p-4 sm:p-5">
-                            <div class="text-xs text-slate-400 py-12 text-center flex flex-col items-center justify-center gap-2">
-                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-indigo-600"></i>
-                                <span>Memuat data listing...</span>
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
+                            <div id="featuresContainer" class="p-4 sm:p-5">
+                                <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar fitur & izin...</div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4B. Sub-View: Usulan Warga -->
-                <div id="modSubView-submissions" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                        <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="submissionSearchInput" oninput="filterSubmissions()" placeholder="Cari nama kos, kontak, pengusul..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                        </div>
-
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                <button onclick="filterSubmissionStatus('all')" id="filterSub-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Usulan</button>
-                                <button onclick="filterSubmissionStatus('pending')" id="filterSub-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">⏳ Menunggu Review</button>
-                                <button onclick="filterSubmissionStatus('approved')" id="filterSub-approved" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">✅ Disetujui</button>
-                                <button onclick="filterSubmissionStatus('rejected')" id="filterSub-rejected" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">❌ Ditolak</button>
-                            </div>
-
-                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                                <button onclick="setSubmissionsViewMode('table')" id="btnViewTable-submissions" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
-                                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button onclick="setSubmissionsViewMode('cards')" id="btnViewCards-submissions" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
-                                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                        <div id="submissionsContainer" class="p-4 sm:p-5">
-                            <div class="text-xs text-slate-400 py-12 text-center">Memuat data usulan...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4C. Sub-View: Inspektur Fitur & Izin Bot -->
-                <div id="modSubView-features" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                        <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="featureSearchInput" oninput="filterFeatures()" placeholder="Cari nama perintah atau kategori..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                        </div>
-
-                        <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                            <button onclick="setFeaturesViewMode('table')" id="btnViewTable-features" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
-                                <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="setFeaturesViewMode('cards')" id="btnViewCards-features" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
-                                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                        <div id="featuresContainer" class="p-4 sm:p-5">
-                            <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar fitur & izin...</div>
                         </div>
                     </div>
                 </div>
@@ -1221,24 +1444,123 @@
             if (window.lucide) lucide.createIcons();
         }
 
+        let activeBusinessModule = null;
+
+        function openModuleWorkspace(moduleKey) {
+            activeBusinessModule = moduleKey;
+            const catView = document.getElementById('modView-catalog');
+            const wsView = document.getElementById('modView-workspace');
+            if (catView) catView.classList.add('hidden');
+            if (wsView) wsView.classList.remove('hidden');
+
+            const titleEl = document.getElementById('activeModTitle');
+            const subEl = document.getElementById('activeModSubtitle');
+            const tabsContainer = document.getElementById('modWorkspaceTabs');
+            const actionContainer = document.getElementById('modActionBtnContainer');
+
+            if (moduleKey === 'kost') {
+                if (titleEl) titleEl.innerHTML = '<i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i><span>Manajemen Kos & Properti</span>';
+                if (subEl) subEl.textContent = 'Kelola listing data kos, status tayang publik, penawaran DM, dan usulan masuk warga.';
+                if (tabsContainer) {
+                    tabsContainer.innerHTML = `
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
+                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5">
+                                <i data-lucide="building" class="w-3.5 h-3.5"></i>
+                                <span>Listing Data & Status (<span id="modListingCount">${rawKostData.length}</span>)</span>
+                            </button>
+                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-4 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                                <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
+                                <span>Kotak Usulan Masuk (<span id="modSubCount">${rawSubmissionsData.length}</span>)</span>
+                            </button>
+                        </div>
+                    `;
+                }
+                if (actionContainer) {
+                    actionContainer.innerHTML = `
+                        <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            Tambah Data Baru
+                        </button>
+                    `;
+                }
+                switchModSubTab('listing');
+            } else if (moduleKey === 'marketplace') {
+                if (titleEl) titleEl.innerHTML = '<i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-600"></i><span>Marketplace & Jual Beli Komunitas</span>';
+                if (subEl) subEl.textContent = 'Katalog produk barang jualan member, verifikasi seller, dan integrasi toko multi-grup.';
+                if (tabsContainer) {
+                    tabsContainer.innerHTML = `
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
+                            <button onclick="switchModSubTab('marketplace')" id="modSubTab-marketplace" class="px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                                <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                                <span>Katalog Jual Beli</span>
+                            </button>
+                        </div>
+                    `;
+                }
+                if (actionContainer) actionContainer.innerHTML = '';
+                switchModSubTab('marketplace');
+            } else if (moduleKey === 'services') {
+                if (titleEl) titleEl.innerHTML = '<i data-lucide="briefcase" class="w-4 h-4 text-amber-600"></i><span>Direktori Jasa & UMKM Lokal</span>';
+                if (subEl) subEl.textContent = 'Database penyedia jasa, kuliner, dan usaha lokal dengan pencarian bot interaktif.';
+                if (tabsContainer) {
+                    tabsContainer.innerHTML = `
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
+                            <button onclick="switchModSubTab('services')" id="modSubTab-services" class="px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1.5">
+                                <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                                <span>Direktori Jasa</span>
+                            </button>
+                        </div>
+                    `;
+                }
+                if (actionContainer) actionContainer.innerHTML = '';
+                switchModSubTab('services');
+            } else if (moduleKey === 'features') {
+                if (titleEl) titleEl.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4 text-purple-600"></i><span>Inspektur Fitur & Izin Global</span>';
+                if (subEl) subEl.textContent = 'Pusat pengawasan hak akses seluruh perintah bot (commands/) dan perizinan grup.';
+                if (tabsContainer) {
+                    tabsContainer.innerHTML = `
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
+                            <button onclick="switchModSubTab('features')" id="modSubTab-features" class="px-4 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1.5">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                <span>Daftar Perintah & Izin</span>
+                            </button>
+                        </div>
+                    `;
+                }
+                if (actionContainer) actionContainer.innerHTML = '';
+                switchModSubTab('features');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeModuleWorkspace() {
+            activeBusinessModule = null;
+            const catView = document.getElementById('modView-catalog');
+            const wsView = document.getElementById('modView-workspace');
+            if (catView) catView.classList.remove('hidden');
+            if (wsView) wsView.classList.add('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+
         function switchModSubTab(sub) {
             currentModSubTab = sub;
-            ['listing', 'submissions', 'features'].forEach(v => {
+            ['listing', 'submissions', 'marketplace', 'services', 'features'].forEach(v => {
                 const el = document.getElementById('modSubView-' + v);
                 if (el) el.classList.add('hidden');
                 const btn = document.getElementById('modSubTab-' + v);
-                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
+                if (btn) btn.className = "px-4 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 font-medium";
             });
             const activeEl = document.getElementById('modSubView-' + sub);
             if (activeEl) activeEl.classList.remove('hidden');
             const activeBtn = document.getElementById('modSubTab-' + sub);
-            if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
+            if (activeBtn) activeBtn.className = "px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5 shadow-xs";
             
             const btnContainer = document.getElementById('modActionBtnContainer');
-            if (btnContainer) {
+            if (btnContainer && activeBusinessModule === 'kost') {
                 if (sub === 'listing') {
                     btnContainer.innerHTML = `
-                        <button onclick="openAddKostModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                        <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                             Tambah Data Baru
                         </button>
@@ -1971,6 +2293,15 @@
                     filterKost();
                     const badge = document.getElementById('modListingCount');
                     if (badge) badge.textContent = list.length;
+
+                    // Update catalog card metrics
+                    const catTot = document.getElementById('catTotalKos');
+                    if (catTot) catTot.textContent = list.length;
+                    const catPub = document.getElementById('catPublishedKos');
+                    if (catPub) catPub.textContent = list.filter(k => {
+                        const st = (k.status || '').toLowerCase();
+                        return st === 'published' || st === 'posted';
+                    }).length;
                 } else {
                     showToast('Gagal memuat listing data.', 'error');
                 }
@@ -2332,6 +2663,10 @@
                     const pendingCount = list.filter(s => (s.status || 'pending').toLowerCase() === 'pending').length;
                     const badge = document.getElementById('modSubCount');
                     if (badge) badge.textContent = pendingCount > 0 ? pendingCount : list.length;
+
+                    // Update catalog card metrics
+                    const catSub = document.getElementById('catSubmissionsKos');
+                    if (catSub) catSub.textContent = pendingCount > 0 ? pendingCount : list.length;
                 }
             } catch (err) {
                 showToast(`Gagal memuat usulan: ${err.message}`, 'error');
