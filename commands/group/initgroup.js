@@ -143,8 +143,6 @@ module.exports = {
                 type = 'umum';
             }
         }
-            return sendReply(formatMsg);
-        }
 
         // 4. Ambil metadata grup WhatsApp jika tersedia
         let groupSubject = '';
