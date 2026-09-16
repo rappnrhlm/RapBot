@@ -102,70 +102,79 @@
                 </button>
             </div>
 
-            <!-- Consolidated Navigation Menu (4 Main Tabs) -->
+                        <!-- Consolidated Navigation Menu (8 Tabs, 2 Groups) -->
             <div class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-320px)]">
                 <div class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    NAVIGASI UTAMA
+                    UTAMA
                 </div>
 
                 <!-- 1. Dashboard -->
-                <button onclick="switchTab('overview')" id="nav-overview" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                    <span>Dashboard & Metrik</span>
+                    <span>Dashboard</span>
                 </button>
 
-                <!-- 2. Groups & Community -->
-                <button onclick="switchTab('groups')" id="nav-groups" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="users-round" class="w-4 h-4"></i>
-                    <span>Grup & Komunitas</span>
+                <!-- 2. Device -->
+                <button onclick="switchTab('device')" id="nav-device" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="smartphone" class="w-4 h-4"></i>
+                    <span>Device</span>
                 </button>
 
-                <!-- 3. Automation & Autoreply -->
-                <button onclick="switchTab('automation')" id="nav-automation" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                <!-- 3. Send -->
+                <button onclick="switchTab('send')" id="nav-send" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span>Send</span>
+                </button>
+
+                <!-- 4. Autoreply -->
+                <button onclick="switchTab('autoreply')" id="nav-autoreply" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
                     <i data-lucide="message-square-text" class="w-4 h-4"></i>
-                    <span>Pesan & Otomasi</span>
+                    <span>Autoreply</span>
                 </button>
 
-                <!-- 4. Business Modules & Data -->
-                <button onclick="switchTab('modules')" id="nav-modules" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="boxes" class="w-4 h-4"></i>
-                    <span>Modul Bisnis & Data</span>
+                <div class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    PENGEMBANG
+                </div>
+
+                <!-- 5. Extension -->
+                <button onclick="switchTab('extension')" id="nav-extension" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="puzzle" class="w-4 h-4"></i>
+                    <span>Extension</span>
                 </button>
 
-                <!-- 5. System & Settings -->
-                <button onclick="switchTab('system')" id="nav-system" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
-                    <i data-lucide="settings-2" class="w-4 h-4"></i>
-                    <span>Sistem & Pengelola</span>
+                <!-- 6. API & Webhook -->
+                <button onclick="switchTab('api')" id="nav-api" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="webhook" class="w-4 h-4"></i>
+                    <span>API & Webhook</span>
+                </button>
+
+                <!-- 7. Statistik -->
+                <button onclick="switchTab('statistik')" id="nav-statistik" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>Statistik</span>
+                </button>
+
+                <!-- 8. Profil & Setting -->
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-150">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Profil & Setting</span>
                 </button>
             </div>
         </div>
 
-        <!-- Bottom Sidebar Section (Dev Mode & Server Info) -->
-        <div class="p-4 border-t border-slate-100 dark:border-slate-800/50 space-y-3">
-            
-            <!-- Developer Mode Toggle -->
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="code-2" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Mode Dev</span>
-                </div>
-                <button id="devModeToggle" onclick="toggleDeveloperMode()" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-slate-300 dark:bg-slate-700 focus:outline-none" role="switch" aria-checked="false">
-                    <span id="devModeKnob" class="translate-x-0 pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"></span>
-                </button>
-            </div>
-
-            <!-- Server Status Footer -->
+                <!-- Bottom Sidebar Section -->
+        <div class="p-4 border-t border-slate-100 dark:border-slate-800/50 space-y-2">
             <div class="px-1 text-[11px] text-slate-400 dark:text-slate-500 space-y-1">
                 <div class="flex items-center justify-between">
-                    <span>RAM STB:</span>
-                    <span class="font-mono text-slate-600 dark:text-slate-400" id="sidebarRam">0 MB</span>
+                    <span>Status:</span>
+                    <span class="font-semibold" id="sidebarBotStatus">Offline</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span>Uptime:</span>
-                    <span class="font-mono text-slate-600 dark:text-slate-400" id="sidebarUptime">0j 0m</span>
+                    <span>Versi:</span>
+                    <span class="font-mono text-slate-600 dark:text-slate-400">v2.5</span>
                 </div>
                 <p class="pt-1 text-[10px] text-slate-400/80 dark:text-slate-600 flex items-center gap-1">
-                    <i data-lucide="shield" class="w-3 h-3 inline"></i> Platform Siap Pakai & Jual
+                    <i data-lucide="shield" class="w-3 h-3 inline"></i> WaBot Studio Platform
                 </p>
             </div>
         </div>
@@ -287,8 +296,7 @@
 
             <!-- ========================================================= -->
             <!-- TAB 1: DASHBOARD & METRIK                                 -->
-            <!-- ========================================================= -->
-            <div id="section-overview" class="space-y-6">
+<div id="section-dashboard" class="space-y-6">
                 
                 <!-- Hero Banner -->
                 <div class="rounded-3xl bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-800 p-6 text-white card-shadow-lg relative overflow-hidden">
@@ -362,108 +370,213 @@
                 </div>
             </div>
 
+            
             <!-- ========================================================= -->
-            <!-- TAB 2: GRUP & KOMUNITAS (COMMUNITY & HUB)                 -->
+            <!-- TAB 2: DEVICE                                              -->
             <!-- ========================================================= -->
-            <div id="section-groups" class="hidden space-y-4">
+            <div id="section-device" class="space-y-6" style="display:none">
                 
-                <!-- Sub-tabs Header -->
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <button onclick="switchGroupSubTab('list')" id="groupSubTab-list" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
-                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
-                            <span>Daftar Grup (<span id="groupsCountBadge">0</span>)</span>
-                        </button>
-                        <button onclick="switchGroupSubTab('broadcast')" id="groupSubTab-broadcast" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
-                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                            <span>Siaran Pesan (Broadcast)</span>
-                        </button>
+                <!-- Device Info Card -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <!-- Main Device Card -->
+                    <div class="lg:col-span-2 bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+                                    <i data-lucide="smartphone" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Informasi Device</h4>
+                            </div>
+                            <span id="deviceStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                <span id="deviceStatusText">Memuat...</span>
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4" id="deviceInfoGrid">
+                            <div class="space-y-1">
+                                <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Nomor Bot</p>
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white font-mono" id="devicePhone">-</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Nama Profil</p>
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white" id="deviceName">-</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Platform</p>
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white" id="devicePlatform">Baileys</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Uptime</p>
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white" id="deviceUptime">0j 0m</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <button onclick="openRegisterGroupModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
+                    <!-- Resource Monitor -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                                <i data-lucide="cpu" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Resource Monitor</h4>
+                        </div>
+                        <div class="space-y-3" id="deviceResourceGrid">
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-500">RAM Heap</span><span class="font-mono font-semibold text-slate-700 dark:text-slate-300" id="deviceHeapMB">0 MB</span></div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2"><div id="deviceHeapBar" class="bg-blue-500 h-2 rounded-full transition-all" style="width:0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-500">RAM RSS</span><span class="font-mono font-semibold text-slate-700 dark:text-slate-300" id="deviceRssMB">0 MB</span></div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2"><div id="deviceRssBar" class="bg-indigo-500 h-2 rounded-full transition-all" style="width:0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-500">OS Memory</span><span class="font-mono font-semibold text-slate-700 dark:text-slate-300" id="deviceOsMem">0 / 0 MB</span></div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2"><div id="deviceOsMemBar" class="bg-emerald-500 h-2 rounded-full transition-all" style="width:0%"></div></div>
+                            </div>
+                            <div class="pt-1 grid grid-cols-2 gap-2 text-xs text-slate-500">
+                                <div>CPU: <span class="font-semibold text-slate-700 dark:text-slate-300" id="deviceCpus">-</span></div>
+                                <div>Host: <span class="font-semibold text-slate-700 dark:text-slate-300" id="deviceHostname">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Sub-Tabs -->
+                <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <button onclick="switchDeviceSubTab('groups')" id="deviceSubTab-groups" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 transition">Grup Terkoneksi</button>
+                    <button onclick="switchDeviceSubTab('owners')" id="deviceSubTab-owners" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition">Pengelola Bot</button>
+                    <div class="flex-1"></div>
+                    <button id="deviceActionBtn" onclick="handleDeviceAction()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition active:scale-95 flex items-center gap-1.5">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        Daftarkan Grup Baru
+                        <span id="deviceActionBtnText">Daftarkan Grup</span>
                     </button>
                 </div>
 
-                <!-- 2A. Sub-View: Daftar Grup -->
-                <div id="groupSubView-list" class="space-y-4">
-                    <!-- Filters & Search -->
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                        <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="groupSearchInput" oninput="filterGroups()" placeholder="Cari nama grup atau JID..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                <!-- Device Sub-View: Groups -->
+                <div id="deviceSubView-groups" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="relative flex-1">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="groupSearchInput" placeholder="Cari nama grup atau JID..." oninput="filterGroups()" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-xs focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition">
                         </div>
-
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                <button onclick="filterGroupRole('all')" id="filterGroup-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua</button>
-                                <button onclick="filterGroupRole('indukan')" id="filterGroup-indukan" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Indukan</button>
-                                <button onclick="filterGroupRole('cabang')" id="filterGroup-cabang" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Cabang</button>
-                                <button onclick="filterGroupRole('undefined')" id="filterGroup-undefined" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">Undefined</button>
-                            </div>
-
-                            <!-- Table vs Card Toggle Switcher -->
-                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                                <button onclick="setGroupsViewMode('table')" id="btnViewTable-groups" title="Mode Tabel" class="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs">
-                                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button onclick="setGroupsViewMode('cards')" id="btnViewCards-groups" title="Mode Kartu" class="p-1.5 rounded-lg hover:text-slate-800 dark:hover:text-slate-200">
-                                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <button onclick="filterGroupRole('all')" class="group-role-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold transition bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300" data-role="all">Semua</button>
+                            <button onclick="filterGroupRole('indukan')" class="group-role-pill px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition" data-role="indukan">Indukan</button>
+                            <button onclick="filterGroupRole('cabang')" class="group-role-pill px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition" data-role="cabang">Cabang</button>
+                            <button onclick="filterGroupRole('undefined')" class="group-role-pill px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition" data-role="undefined">Belum Diatur</button>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <button onclick="setGroupsViewMode('table')" id="groupsViewTable" title="Tampilan Tabel" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition text-indigo-600 dark:text-indigo-400">
+                                <i data-lucide="table" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="setGroupsViewMode('cards')" id="groupsViewCards" title="Tampilan Kartu" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-400">
+                                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     </div>
-
-                    <!-- Groups Container -->
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                        <div id="groupsContainer" class="p-4 sm:p-5">
-                            <div class="text-xs text-slate-400 py-12 text-center flex flex-col items-center justify-center gap-2">
-                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-indigo-600"></i>
-                                <span>Memuat daftar grup WhatsApp...</span>
-                            </div>
-                        </div>
+                    <div id="groupsContainer" class="space-y-2">
+                        <div class="text-xs text-slate-400 py-8 text-center">Memuat daftar grup...</div>
                     </div>
                 </div>
 
-                <!-- 2B. Sub-View: Siaran Pesan (Broadcast) Panel -->
-                <div id="groupSubView-broadcast" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200/70 dark:border-slate-800 card-shadow max-w-2xl mx-auto space-y-4">
-                        <div class="border-b border-slate-100 dark:border-slate-800/60 pb-3">
-                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Siaran Pesan ke Grup WhatsApp</h4>
-                            <p class="text-xs text-slate-400">Kirim pengumuman resmi ke seluruh grup terdaftar secara aman</p>
-                        </div>
-
-                        <div class="space-y-3 text-xs">
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Pengiriman:</label>
-                                <select id="bcTargetInline" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
-                                    <option value="all">Semua Grup Terdaftar</option>
-                                    <option value="indukan">Hanya Grup Indukan (Master)</option>
-                                    <option value="cabang">Hanya Grup Cabang (Public)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Isi Pesan Siaran <span class="text-rose-500">*</span></label>
-                                <textarea id="bcMessageInline" rows="5" placeholder="Tulis pengumuman atau instruksi resmi di sini..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end pt-2">
-                            <button onclick="submitBroadcastInline()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-sm flex items-center gap-2">
-                                <i data-lucide="send" class="w-4 h-4"></i>
-                                Kirim Siaran Sekarang
-                            </button>
-                        </div>
+                <!-- Device Sub-View: Owners -->
+                <div id="deviceSubView-owners" class="space-y-4" style="display:none">
+                    <div id="ownersContainer" class="space-y-2">
+                        <div class="text-xs text-slate-400 py-8 text-center">Memuat daftar pengelola...</div>
                     </div>
                 </div>
             </div>
 
             <!-- ========================================================= -->
-            <!-- TAB 3: PESAN & OTOMASI (AUTOMATION & AUTOREPLY)           -->
+            <!-- TAB 3: SEND                                                -->
             <!-- ========================================================= -->
-            <div id="section-automation" class="hidden space-y-4">
+            <div id="section-send" class="space-y-6" style="display:none">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Send to Group (Broadcast) -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                                <i data-lucide="megaphone" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Siaran ke Grup</h4>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Target Grup</label>
+                                <select id="sendBcTarget" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none transition">
+                                    <option value="all">📢 Semua Grup Terdaftar</option>
+                                    <option value="indukan">🏠 Hanya Grup Indukan (Admin)</option>
+                                    <option value="cabang">🔗 Hanya Grup Cabang (Publik)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Pesan</label>
+                                <textarea id="sendBcMessage" rows="5" placeholder="Tulis pesan siaran..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none transition resize-none"></textarea>
+                            </div>
+                            <button onclick="submitSendBroadcast()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Kirim Siaran
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Send to Individual Number -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Kirim ke Nomor</h4>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Nomor WhatsApp</label>
+                                <input type="text" id="sendDirectNumber" placeholder="contoh: 6281234567890" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none transition font-mono">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Pesan</label>
+                                <textarea id="sendDirectMessage" rows="5" placeholder="Tulis pesan..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none transition resize-none"></textarea>
+                            </div>
+                            <button onclick="submitSendDirect()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Kirim Pesan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Send History -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
+                                <i data-lucide="history" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Riwayat Pengiriman</h4>
+                        </div>
+                        <button onclick="loadSendHistory()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="sendHistoryContainer" class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-800">
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Waktu</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Tipe</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Tujuan</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Pesan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sendHistoryBody">
+                                <tr><td colspan="4" class="text-center py-8 text-slate-400">Belum ada riwayat pengiriman</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<div id="section-autoreply" class="hidden space-y-4">
                 
                 <!-- Sub-tabs Header -->
                 <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -523,10 +636,8 @@
                 </div>
             </div>
 
-            <!-- ========================================================= -->
-            <!-- TAB 4: MODUL BISNIS & DATA (BUSINESS MODULES / DATA HUB)  -->
-            <!-- ========================================================= -->
-            <div id="section-modules" class="hidden space-y-4">
+            
+<div id="section-extension" class="hidden space-y-4">
                 
                 <!-- 4.1 KATALOG MODUL BISNIS (DIRECTORY / CARDS OVERVIEW) -->
                 <div id="modView-catalog" class="space-y-4">
@@ -536,7 +647,7 @@
                                 <i data-lucide="layers" class="w-3.5 h-3.5"></i>
                                 Hub Database & Modul Bisnis Global
                             </div>
-                            <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight">Katalog Modul Bisnis & Data Bot</h3>
+                            <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight">Katalog Extension Bot</h3>
                             <p class="text-xs text-slate-300 leading-relaxed">
                                 RapBot dirancang modular dan multi-tenant untuk berbagai kebutuhan bisnis dan komunitas WhatsApp. Pilih modul di bawah untuk mengelola database, status tayang, penawaran, atau usulan warga.
                             </p>
@@ -552,8 +663,8 @@
                                     <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition">
                                         <i data-lucide="building-2" class="w-6 h-6"></i>
                                     </div>
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                        🟢 MODUL AKTIF
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="download" class="w-3 h-3 inline mr-1"></i> Terinstal
                                     </span>
                                 </div>
                                 <div>
@@ -590,8 +701,8 @@
                                     <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition">
                                         <i data-lucide="shopping-bag" class="w-6 h-6"></i>
                                     </div>
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                        🛍️ MULTI-GRUP
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="download" class="w-3 h-3 inline mr-1"></i> Terinstal
                                     </span>
                                 </div>
                                 <div>
@@ -628,8 +739,8 @@
                                     <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-105 transition">
                                         <i data-lucide="briefcase" class="w-6 h-6"></i>
                                     </div>
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                        💼 DIREKTORI UMKM
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="download" class="w-3 h-3 inline mr-1"></i> Terinstal
                                     </span>
                                 </div>
                                 <div>
@@ -666,8 +777,8 @@
                                     <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-105 transition">
                                         <i data-lucide="shield-check" class="w-6 h-6"></i>
                                     </div>
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
-                                        🛡️ SISTEM BOT
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="download" class="w-3 h-3 inline mr-1"></i> Terinstal
                                     </span>
                                 </div>
                                 <div>
@@ -875,61 +986,259 @@
                 </div>
             </div>
 
+            
             <!-- ========================================================= -->
-            <!-- TAB 5: SISTEM & PENGELOLA (SYSTEM & SETTINGS)             -->
+            <!-- TAB 6: API & WEBHOOK                                       -->
             <!-- ========================================================= -->
-            <div id="section-system" class="hidden space-y-4">
+            <div id="section-api" class="space-y-6" style="display:none">
                 
-                <!-- Sub-tabs Header for System -->
-                <div class="bg-white dark:bg-[#111827] rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <button onclick="switchSysSubTab('owners')" id="sysSubTab-owners" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5">
-                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                            <span>Pengelola Bot (<span id="sysOwnersCount">0</span>)</span>
-                        </button>
-                        <button onclick="switchSysSubTab('logs')" id="sysSubTab-logs" class="px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
-                            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-                            <span>Log Aktivitas Server STB</span>
-                        </button>
-                    </div>
-
-                    <div id="sysActionBtnContainer">
-                        <button onclick="openAddOwnerModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Tambah Owner Baru
-                        </button>
+                <!-- API Overview Card -->
+                <div class="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white card-shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-56 h-56 rounded-full bg-white/10 blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-semibold backdrop-blur-md mb-2">
+                            <i data-lucide="webhook" class="w-3.5 h-3.5"></i>
+                            <span>REST API v2.5</span>
+                        </div>
+                        <h3 class="text-xl font-black tracking-tight">API & Webhook</h3>
+                        <p class="text-xs text-purple-100/90 mt-1">Dokumentasi endpoint API yang tersedia dan konfigurasi webhook untuk integrasi eksternal.</p>
                     </div>
                 </div>
 
-                <!-- 5A. Sub-View: Pengelola (Owners) -->
-                <div id="sysSubView-owners" class="space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                        <div id="ownersContainer" class="p-4 sm:p-5">
-                            <div class="text-xs text-slate-400 py-12 text-center">Memuat daftar pengelola...</div>
+                <!-- API Endpoints Documentation -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
+                                <i data-lucide="book-open" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Daftar Endpoint API</h4>
+                        </div>
+                        <span class="text-[11px] font-mono text-slate-400">Base: http://localhost:3001</span>
+                    </div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-3 flex items-start gap-2">
+                        <i data-lucide="info" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"></i>
+                        <span>Endpoint yang memerlukan autentikasi harus menyertakan header <code class="font-mono bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded">x-pin: YOUR_PIN</code></span>
+                    </div>
+                    <div id="apiDocsContainer" class="overflow-x-auto">
+                        <div class="text-xs text-slate-400 py-4 text-center">Memuat dokumentasi API...</div>
+                    </div>
+                </div>
+
+                <!-- Webhook Config Placeholder -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">API Key</h4>
+                        </div>
+                        <div class="py-6 text-center">
+                            <div class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="lock" class="w-6 h-6 text-sky-400"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Segera Hadir</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Kelola API Key untuk akses eksternal yang aman</p>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400">
+                                <i data-lucide="webhook" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Webhook</h4>
+                        </div>
+                        <div class="py-6 text-center">
+                            <div class="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="radio" class="w-6 h-6 text-orange-400"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Segera Hadir</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Konfigurasi webhook URL & events untuk notifikasi real-time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- TAB 7: STATISTIK                                           -->
+            <!-- ========================================================= -->
+            <div id="section-statistik" class="space-y-6" style="display:none">
+                
+                <!-- Stats Summary Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow text-center">
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">TOTAL PESAN</p>
+                        <h4 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="statTotalMessages">0</h4>
+                    </div>
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow text-center">
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">TOTAL COMMAND</p>
+                        <h4 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="statTotalCommands">0</h4>
+                    </div>
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow text-center">
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">TOTAL STICKER</p>
+                        <h4 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="statTotalStickers">0</h4>
+                    </div>
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow text-center">
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">TOTAL BRAT</p>
+                        <h4 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="statTotalBrats">0</h4>
+                    </div>
+                </div>
+
+                <!-- Top Commands -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
+                                <i data-lucide="trophy" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Top Commands</h4>
+                        </div>
+                        <button onclick="loadCommandStats()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="topCommandsContainer" class="space-y-2">
+                        <div class="text-xs text-slate-400 py-4 text-center">Memuat statistik command...</div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
+                                <i data-lucide="scroll-text" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Log Aktivitas Server</h4>
+                        </div>
+                        <button onclick="loadCommandLogs()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Segarkan
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-800">
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Waktu</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Perintah</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Pengirim</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Grup</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statsLogsTableBody">
+                                <tr><td colspan="4" class="text-center py-8 text-slate-400">Memuat log aktivitas...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- TAB 8: PROFIL & SETTING                                    -->
+            <!-- ========================================================= -->
+            <div id="section-settings" class="space-y-6" style="display:none">
+                
+                <!-- Bot Profile Card -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white">Profil Bot</h4>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Nama Bot</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white">WaBot Studio</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Versi</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white">v2.5</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Prefix</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white font-mono">!</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 5B. Sub-View: Log Aktivitas Server -->
-                <div id="sysSubView-logs" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-xs">
-                                <thead>
-                                    <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                                        <th class="py-3 px-4">WAKTU</th>
-                                        <th class="py-3 px-4">PERINTAH</th>
-                                        <th class="py-3 px-4">PENGIRIM</th>
-                                        <th class="py-3 px-4">LOKASI / GRUP</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="logsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-[11px]">
-                                    <tr>
-                                        <td colspan="4" class="py-8 text-center text-slate-400 font-sans">Memuat riwayat log...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <!-- Settings Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- PIN Superuser -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">PIN Superuser</h4>
                         </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300" id="settingsPinStatus">Status: Terkunci</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">PIN digunakan untuk mengakses fitur admin</p>
+                            </div>
+                            <button onclick="promptPinModal()" class="px-3.5 py-2 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 text-xs font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition">
+                                <span id="settingsPinBtnText">Unlock</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Developer Mode -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400">
+                                <i data-lucide="code-2" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Developer Mode</h4>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Mode Pengembang</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Tampilkan informasi teknis dan debug</p>
+                            </div>
+                            <button id="settingsDevModeToggle" onclick="toggleDeveloperMode()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-slate-300 dark:bg-slate-700 focus:outline-none" role="switch" aria-checked="false">
+                                <span id="settingsDevModeKnob" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Inspector (Sub-section) -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
+                                <i data-lucide="scan-search" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Inspektur Fitur & Perintah</h4>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="relative">
+                                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="settingsFeatureSearch" placeholder="Cari command..." oninput="filterFeaturesSettings()" class="pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-xs focus:ring-2 focus:ring-indigo-500/30 outline-none transition w-48">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="settingsFeaturesContainer" class="space-y-2">
+                        <div class="text-xs text-slate-400 py-4 text-center">Memuat daftar fitur...</div>
+                    </div>
+                </div>
+
+                <!-- Sync & Cache -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+                            <i data-lucide="database" class="w-4 h-4"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white">Database & Cache</h4>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="syncCacheWithDb()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition active:scale-95 flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            Sinkronkan Cache ke Database
+                        </button>
+                        <p class="text-[11px] text-slate-400">Memaksa sinkronisasi data memori dengan file database JSON</p>
                     </div>
                 </div>
             </div>
@@ -1276,7 +1585,7 @@
         // -----------------------------------------------------------------
         // 1. STATE & INITIALIZATION
         // -----------------------------------------------------------------
-        let currentTab = 'overview';
+        let currentTab = 'dashboard';
         let currentGroupSubTab = 'list';
         let currentAutoSubTab = 'autoreply';
         let currentModSubTab = 'listing';
@@ -1313,8 +1622,12 @@
             updateDevModeUI();
             updateViewToggleIcons();
             
+            // Initial tab display
+            switchTab('dashboard');
+
             // Initial data fetch
             fetchStatus();
+            loadDeviceInfo();
             loadGroups();
             loadKostList();
             loadSubmissionsList();
@@ -1323,6 +1636,8 @@
             loadCommandLogs();
             loadWelcomeConfig();
             loadFeatures();
+            loadCommandStats();
+            loadApiDocs();
 
             // Periodic auto-refresh (every 15s)
             setInterval(() => {
@@ -1397,15 +1712,19 @@
         }
 
         // -----------------------------------------------------------------
-        // 3. TAB & SUB-TAB SWITCHING (CONSOLIDATED 5 CATEGORIES)
+        // 3. TAB & SUB-TAB SWITCHING (8 CATEGORIES)
         // -----------------------------------------------------------------
+        const ALL_TABS = ['dashboard', 'device', 'send', 'autoreply', 'extension', 'api', 'statistik', 'settings'];
+
         function switchTab(tabId) {
             currentTab = tabId;
 
-            const sections = ['overview', 'groups', 'automation', 'modules', 'system'];
-            sections.forEach(s => {
+            ALL_TABS.forEach(s => {
                 const secEl = document.getElementById('section-' + s);
-                if (secEl) secEl.classList.add('hidden');
+                if (secEl) {
+                    secEl.style.display = 'none';
+                    secEl.classList.add('hidden');
+                }
                 
                 const navEl = document.getElementById('nav-' + s);
                 if (navEl) {
@@ -1414,7 +1733,10 @@
             });
 
             const activeSec = document.getElementById('section-' + tabId);
-            if (activeSec) activeSec.classList.remove('hidden');
+            if (activeSec) {
+                activeSec.style.display = 'block';
+                activeSec.classList.remove('hidden');
+            }
 
             const activeNav = document.getElementById('nav-' + tabId);
             if (activeNav) {
@@ -1422,6 +1744,23 @@
             }
 
             updateHeaderForTab(tabId);
+            
+            // Tab specific data loads
+            if (tabId === 'device') {
+                loadDeviceInfo();
+                loadGroups();
+                loadOwners();
+            } else if (tabId === 'send') {
+                loadSendHistory();
+            } else if (tabId === 'api') {
+                loadApiDocs();
+            } else if (tabId === 'statistik') {
+                loadCommandStats();
+                loadCommandLogs();
+            } else if (tabId === 'settings') {
+                loadFeatures();
+            }
+
             if (window.lucide) lucide.createIcons();
         }
 
@@ -1431,60 +1770,174 @@
             const topBtn = document.getElementById('topActionBtn');
             const topBtnText = document.getElementById('topActionBtnText');
 
-            if (tabId === 'overview') {
+            if (tabId === 'dashboard') {
                 titleEl.textContent = 'Dashboard & Metrik 📊';
                 subEl.textContent = 'Ringkasan operasional dan kesehatan sistem WhatsApp Bot';
                 topBtn.classList.remove('hidden');
-                topBtnText.textContent = 'Daftarkan Grup';
-            } else if (tabId === 'groups') {
-                titleEl.textContent = 'Grup & Komunitas 👥';
-                subEl.textContent = `${rawGroupsData.length} grup WhatsApp terdaftar dalam sistem`;
+                topBtnText.textContent = 'Siaran Pesan';
+            } else if (tabId === 'device') {
+                titleEl.textContent = 'Device & Koneksi 📱';
+                subEl.textContent = 'Status koneksi nomor bot WhatsApp, resource STB, grup dan pengelola';
                 topBtn.classList.remove('hidden');
                 topBtnText.textContent = 'Daftarkan Grup';
-            } else if (tabId === 'automation') {
-                titleEl.textContent = 'Pesan & Otomasi 💬';
+            } else if (tabId === 'send') {
+                titleEl.textContent = 'Hub Kirim Pesan ✉️';
+                subEl.textContent = 'Kirim siaran pesan ke grup atau pesan langsung ke nomor WhatsApp';
+                topBtn.classList.add('hidden');
+            } else if (tabId === 'autoreply') {
+                titleEl.textContent = 'Autoreply & Otomasi 💬';
                 subEl.textContent = `${rawAutorepliesData.length} aturan autoreply & respon sambutan aktif`;
                 topBtn.classList.remove('hidden');
                 topBtnText.textContent = 'Tambah Autoreply';
-            } else if (tabId === 'modules') {
-                titleEl.textContent = 'Modul Bisnis & Data 📦';
-                subEl.textContent = `${rawKostData.length} item listing & ${rawSubmissionsData.length} usulan masuk`;
+            } else if (tabId === 'extension') {
+                titleEl.textContent = 'Extension & Modul Bisnis 🧩';
+                subEl.textContent = 'Katalog modul fitur tambahan bot yang dapat diaktifkan sesuai kebutuhan';
                 topBtn.classList.remove('hidden');
-                topBtnText.textContent = 'Tambah Data';
-            } else if (tabId === 'system') {
-                titleEl.textContent = 'Sistem & Pengelola ⚙️';
-                subEl.textContent = `${rawOwnersData.length} pengelola & riwayat log server STB`;
+                topBtnText.textContent = 'Buka Workspace';
+            } else if (tabId === 'api') {
+                titleEl.textContent = 'API & Webhook ⚡';
+                subEl.textContent = 'Dokumentasi REST API & konfigurasi integrasi webhook pihak ketiga';
+                topBtn.classList.add('hidden');
+            } else if (tabId === 'statistik') {
+                titleEl.textContent = 'Statistik & Analisis 📈';
+                subEl.textContent = 'Metrik performa, frekuensi pemakaian perintah, dan log eksekusi';
                 topBtn.classList.remove('hidden');
-                topBtnText.textContent = 'Tambah Owner';
+                topBtnText.textContent = 'Segarkan Data';
+            } else if (tabId === 'settings') {
+                titleEl.textContent = 'Profil & Pengaturan ⚙️';
+                subEl.textContent = 'Konfigurasi bot, hak akses PIN superuser, dan audit seluruh perintah';
+                topBtn.classList.remove('hidden');
+                topBtnText.textContent = 'Sinkron Cache';
             }
         }
 
         function handleTopAction() {
-            if (currentTab === 'overview' || currentTab === 'groups') {
-                openRegisterGroupModal();
-            } else if (currentTab === 'automation') {
+            if (currentTab === 'dashboard') {
+                switchTab('send');
+            } else if (currentTab === 'device') {
+                if (currentDeviceSubTab === 'owners') {
+                    openAddOwnerModal();
+                } else {
+                    openRegisterGroupModal();
+                }
+            } else if (currentTab === 'autoreply') {
                 openAddAutoreplyModal();
-            } else if (currentTab === 'modules') {
-                openAddKostModal();
-            } else if (currentTab === 'system') {
-                openAddOwnerModal();
+            } else if (currentTab === 'extension') {
+                openModuleWorkspace('kost');
+            } else if (currentTab === 'statistik') {
+                loadCommandStats();
+                loadCommandLogs();
+                fetchStatus();
+                showToast('Data statistik berhasil disegarkan.', 'info');
+            } else if (currentTab === 'settings') {
+                syncCacheWithDb();
             }
         }
 
-        // Sub-Tab Switchers
-        function switchGroupSubTab(sub) {
-            currentGroupSubTab = sub;
-            ['list', 'broadcast'].forEach(v => {
-                const el = document.getElementById('groupSubView-' + v);
-                if (el) el.classList.add('hidden');
-                const btn = document.getElementById('groupSubTab-' + v);
-                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5";
-            });
-            const activeEl = document.getElementById('groupSubView-' + sub);
-            if (activeEl) activeEl.classList.remove('hidden');
-            const activeBtn = document.getElementById('groupSubTab-' + sub);
-            if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center gap-1.5";
+        // -----------------------------------------------------------------
+        // Device Sub-Tab Switching
+        // -----------------------------------------------------------------
+        let currentDeviceSubTab = 'groups';
+        function switchDeviceSubTab(sub) {
+            currentDeviceSubTab = sub;
+            const btnGroups = document.getElementById('deviceSubTab-groups');
+            const btnOwners = document.getElementById('deviceSubTab-owners');
+            const viewGroups = document.getElementById('deviceSubView-groups');
+            const viewOwners = document.getElementById('deviceSubView-owners');
+            const actBtnText = document.getElementById('deviceActionBtnText');
+
+            if (sub === 'groups') {
+                if (viewGroups) viewGroups.style.display = 'block';
+                if (viewOwners) viewOwners.style.display = 'none';
+                if (btnGroups) btnGroups.className = "px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 transition";
+                if (btnOwners) btnOwners.className = "px-4 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition";
+                if (actBtnText) actBtnText.textContent = "Daftarkan Grup";
+                loadGroups();
+            } else {
+                if (viewGroups) viewGroups.style.display = 'none';
+                if (viewOwners) viewOwners.style.display = 'block';
+                if (btnGroups) btnGroups.className = "px-4 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition";
+                if (btnOwners) btnOwners.className = "px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 transition";
+                if (actBtnText) actBtnText.textContent = "Tambah Owner";
+                loadOwners();
+            }
             if (window.lucide) lucide.createIcons();
+        }
+
+        function handleDeviceAction() {
+            if (currentDeviceSubTab === 'owners') {
+                openAddOwnerModal();
+            } else {
+                openRegisterGroupModal();
+            }
+        }
+
+        async function loadDeviceInfo() {
+            try {
+                const res = await fetch('/api/device/info');
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const d = data.data;
+                    const phoneEl = document.getElementById('devicePhone');
+                    const nameEl = document.getElementById('deviceName');
+                    const platEl = document.getElementById('devicePlatform');
+                    const uptimeEl = document.getElementById('deviceUptime');
+                    const statusBadge = document.getElementById('deviceStatusBadge');
+                    const statusText = document.getElementById('deviceStatusText');
+
+                    if (phoneEl) phoneEl.textContent = d.phone || '-';
+                    if (nameEl) nameEl.textContent = d.name || 'WaBot Bot';
+                    if (platEl) platEl.textContent = `${d.platform || 'Baileys'} (v${d.version || '6.7'})`;
+                    
+                    const uptimeSec = Math.floor(d.uptime || 0);
+                    const hours = Math.floor(uptimeSec / 3600);
+                    const mins = Math.floor((uptimeSec % 3600) / 60);
+                    if (uptimeEl) uptimeEl.textContent = `${hours}j ${mins}m`;
+
+                    if (statusBadge && statusText) {
+                        if (d.status === 'connected') {
+                            statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
+                            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span>Online</span>';
+                        } else {
+                            statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20";
+                            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span>Offline</span>';
+                        }
+                    }
+
+                    // Resource Monitor
+                    if (d.memory) {
+                        const heapMb = d.memory.heapUsedMB || 0;
+                        const rssMb = d.memory.rssMB || 0;
+                        const heapEl = document.getElementById('deviceHeapMB');
+                        const rssEl = document.getElementById('deviceRssMB');
+                        const heapBar = document.getElementById('deviceHeapBar');
+                        const rssBar = document.getElementById('deviceRssBar');
+
+                        if (heapEl) heapEl.textContent = `${heapMb} MB`;
+                        if (rssEl) rssEl.textContent = `${rssMb} MB`;
+                        if (heapBar) heapBar.style.width = `${Math.min(100, Math.round((heapMb / 256) * 100))}%`;
+                        if (rssBar) rssBar.style.width = `${Math.min(100, Math.round((rssMb / 512) * 100))}%`;
+                    }
+
+                    if (d.os) {
+                        const osEl = document.getElementById('deviceOsMem');
+                        const osBar = document.getElementById('deviceOsMemBar');
+                        const cpusEl = document.getElementById('deviceCpus');
+                        const hostEl = document.getElementById('deviceHostname');
+
+                        const usedMem = Math.max(0, (d.os.totalMemMB || 0) - (d.os.freeMemMB || 0));
+                        const totalMem = d.os.totalMemMB || 1;
+                        const pct = Math.round((usedMem / totalMem) * 100);
+
+                        if (osEl) osEl.textContent = `${usedMem} / ${totalMem} MB`;
+                        if (osBar) osBar.style.width = `${pct}%`;
+                        if (cpusEl) cpusEl.textContent = `${d.os.cpus || 1} Cores (${d.os.arch || 'arm'})`;
+                        if (hostEl) hostEl.textContent = d.os.hostname || 'STB-Linux';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loadDeviceInfo:', err);
+            }
         }
 
         function switchAutoSubTab(sub) {
@@ -1751,19 +2204,24 @@
         function updateDevModeUI() {
             const toggle = document.getElementById('devModeToggle');
             const knob = document.getElementById('devModeKnob');
-            if (toggle && knob) {
-                if (isDevMode) {
-                    toggle.classList.remove('bg-slate-300', 'dark:bg-slate-700');
-                    toggle.classList.add('bg-indigo-600');
-                    knob.classList.remove('translate-x-0');
-                    knob.classList.add('translate-x-4');
-                } else {
-                    toggle.classList.remove('bg-indigo-600');
-                    toggle.classList.add('bg-slate-300', 'dark:bg-slate-700');
-                    knob.classList.remove('translate-x-4');
-                    knob.classList.add('translate-x-0');
+            const setToggle = document.getElementById('settingsDevModeToggle');
+            const setKnob = document.getElementById('settingsDevModeKnob');
+
+            [ [toggle, knob], [setToggle, setKnob] ].forEach(([t, k]) => {
+                if (t && k) {
+                    if (isDevMode) {
+                        t.classList.remove('bg-slate-300', 'dark:bg-slate-700');
+                        t.classList.add('bg-indigo-600');
+                        k.classList.remove('translate-x-0');
+                        k.classList.add('translate-x-5');
+                    } else {
+                        t.classList.remove('bg-indigo-600');
+                        t.classList.add('bg-slate-300', 'dark:bg-slate-700');
+                        k.classList.remove('translate-x-5');
+                        k.classList.add('translate-x-0');
+                    }
                 }
-            }
+            });
             renderGroupsList();
         }
 
@@ -1776,6 +2234,8 @@
             const pinText = document.getElementById('sidebarPinStatusText');
             const pinBadge = document.getElementById('sidebarPinBadge');
             const metricStatus = document.getElementById('metricSuperuserStatus');
+            const setPinStatus = document.getElementById('settingsPinStatus');
+            const setPinBtnText = document.getElementById('settingsPinBtnText');
 
             if (currentPin) {
                 if (pinBtn) {
@@ -1790,6 +2250,8 @@
                     metricStatus.textContent = 'Terbuka';
                     metricStatus.className = "text-sm font-extrabold text-emerald-600 dark:text-emerald-400";
                 }
+                if (setPinStatus) setPinStatus.textContent = 'Status: Terbuka (Unlocked)';
+                if (setPinBtnText) setPinBtnText.textContent = 'Kunci Kembali';
             } else {
                 if (pinBtn) {
                     pinBtn.className = "w-full py-2.5 px-3.5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition flex items-center justify-between group text-xs font-semibold shadow-xs";
@@ -1803,6 +2265,8 @@
                     metricStatus.textContent = 'Terkunci';
                     metricStatus.className = "text-sm font-extrabold text-amber-600 dark:text-amber-400";
                 }
+                if (setPinStatus) setPinStatus.textContent = 'Status: Terkunci (Perlu PIN)';
+                if (setPinBtnText) setPinBtnText.textContent = 'Unlock';
             }
             if (window.lucide) lucide.createIcons();
         }
@@ -3597,7 +4061,7 @@
         }
 
         // -----------------------------------------------------------------
-        // 13. INSPEKTUR FITUR & LOGS
+        // 13. INSPEKTUR FITUR & PERINTAH (SETTINGS & WORKSPACE)
         // -----------------------------------------------------------------
         async function loadFeatures() {
             try {
@@ -3607,15 +4071,21 @@
                 if (Array.isArray(list)) {
                     rawFeaturesData = list;
                     renderFeaturesList();
+                    renderSettingsFeaturesList();
                 }
             } catch (err) {
-                showToast(`Gagal memuat fitur: ${err.message}`, 'error');
+                console.error('Gagal memuat fitur:', err);
             }
         }
 
         function filterFeatures() {
             const q = (document.getElementById('featureSearchInput')?.value || '').toLowerCase().trim();
             renderFeaturesList(q);
+        }
+
+        function filterFeaturesSettings() {
+            const q = (document.getElementById('settingsFeatureSearch')?.value || '').toLowerCase().trim();
+            renderSettingsFeaturesList(q);
         }
 
         function renderFeaturesList(filterQ = '') {
@@ -3646,7 +4116,7 @@
                             ${f.usage ? `<code class="text-[10px] text-slate-400 font-mono">${escapeHtml(f.usage)}</code>` : ''}
                         </td>
                         <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${f.permission === 'owner' ? 'bg-purple-100 text-purple-700' : (f.permission === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700')}">${(f.permission || 'PUBLIK').toUpperCase()}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${f.permission === 'owner' ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300' : (f.permission === 'admin' ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300')}">${(f.permission || 'PUBLIK').toUpperCase()}</span>
                         </td>
                     </tr>
                 `).join('');
@@ -3684,37 +4154,99 @@
             if (window.lucide) lucide.createIcons();
         }
 
+        function renderSettingsFeaturesList(filterQ = '') {
+            const container = document.getElementById('settingsFeaturesContainer');
+            if (!container) return;
+
+            const filtered = rawFeaturesData.filter(f => {
+                if (!filterQ) return true;
+                return (f.name || '').toLowerCase().includes(filterQ) ||
+                       (f.description || '').toLowerCase().includes(filterQ) ||
+                       (f.category || '').toLowerCase().includes(filterQ);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="py-6 text-center text-xs text-slate-400">Tidak ada fitur yang cocok.</div>`;
+                return;
+            }
+
+            let rowsHtml = filtered.map(f => `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <td class="py-2.5 px-3 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">!${escapeHtml(f.name)}</td>
+                    <td class="py-2.5 px-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase">${escapeHtml(f.category || 'UMUM')}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div>${escapeHtml(f.description || '-')}</div>
+                        ${f.usage ? `<code class="text-[10px] text-slate-400 font-mono">${escapeHtml(f.usage)}</code>` : ''}
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${f.permission === 'owner' ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300' : (f.permission === 'admin' ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300')}">${(f.permission || 'PUBLIK').toUpperCase()}</span>
+                    </td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="sticky top-0 bg-white dark:bg-[#111827] z-10">
+                            <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                                <th class="py-2.5 px-3">COMMAND</th>
+                                <th class="py-2.5 px-3">KATEGORI</th>
+                                <th class="py-2.5 px-3">FUNGSI</th>
+                                <th class="py-2.5 px-3">AKSES</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // -----------------------------------------------------------------
+        // 14. LOGS & AUDIT TRAIL
+        // -----------------------------------------------------------------
+        let rawLogsData = [];
+
         async function loadCommandLogs() {
             try {
                 const res = await fetch('/api/logs');
                 const data = await res.json();
                 const list = data.logs || data.data || [];
                 if (Array.isArray(list)) {
+                    rawLogsData = list;
                     renderLogsTable(list);
                     renderOverviewLogList(list);
+                    loadSendHistory();
                 }
             } catch (err) {
-                showToast(`Gagal memuat log: ${err.message}`, 'error');
+                console.error('Gagal memuat log:', err);
             }
         }
 
         function renderLogsTable(logs) {
-            const body = document.getElementById('logsTableBody');
-            if (!body) return;
+            const targets = ['logsTableBody', 'statsLogsTableBody'];
+            targets.forEach(targetId => {
+                const body = document.getElementById(targetId);
+                if (!body) return;
 
-            if (logs.length === 0) {
-                body.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-sans">Belum ada riwayat perintah masuk.</td></tr>`;
-                return;
-            }
+                if (!logs || logs.length === 0) {
+                    body.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-sans">Belum ada riwayat perintah masuk.</td></tr>`;
+                    return;
+                }
 
-            body.innerHTML = logs.slice(0, 50).map(l => `
-                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-                    <td class="py-2.5 px-4 text-slate-400">${escapeHtml(l.timestamp || '-')}</td>
-                    <td class="py-2.5 px-4 font-bold text-indigo-600 dark:text-indigo-400">!${escapeHtml(l.command)}</td>
-                    <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300">${escapeHtml(l.sender || '-')}</td>
-                    <td class="py-2.5 px-4 text-slate-400 truncate max-w-xs">${escapeHtml(l.from || '-')}</td>
-                </tr>
-            `).join('');
+                body.innerHTML = logs.slice(0, 50).map(l => `
+                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                        <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">${escapeHtml(l.timestamp || '-')}</td>
+                        <td class="py-2.5 px-3 font-bold text-indigo-600 dark:text-indigo-400">!${escapeHtml(l.command)}</td>
+                        <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300 font-mono text-[11px]">${escapeHtml(l.sender || '-')}</td>
+                        <td class="py-2.5 px-3 text-slate-400 truncate max-w-xs font-mono text-[11px]">${escapeHtml(l.from || '-')}</td>
+                    </tr>
+                `).join('');
+            });
         }
 
         function renderOverviewLogList(logs) {
@@ -3738,14 +4270,103 @@
                             <p class="font-mono text-[10px] text-slate-400 truncate">${escapeHtml(l.sender || 'Member')}</p>
                         </div>
                     </div>
-                    <span class="text-[10px] font-mono text-slate-400">${escapeHtml(l.timestamp ? l.timestamp.split(' ')[1] || l.timestamp : '')}</span>
+                    <span class="text-[10px] font-mono text-slate-400">${escapeHtml(l.timestamp ? (l.timestamp.split(' ')[1] || l.timestamp) : '')}</span>
                 </div>
             `).join('');
         }
 
         // -----------------------------------------------------------------
-        // 14. SIARAN PESAN (BROADCAST)
+        // 15. SEND HUB (BROADCAST & DIRECT MESSAGE)
         // -----------------------------------------------------------------
+        async function submitSendBroadcast() {
+            if (!checkSuperuserOrWarn()) return;
+            const target = document.getElementById('sendBcTarget')?.value || 'all';
+            const message = (document.getElementById('sendBcMessage')?.value || '').trim();
+
+            if (!message) {
+                showToast('Isi pesan siaran wajib diisi.', 'warning');
+                return;
+            }
+
+            if (!confirm(`Kirim siaran pesan ke grup (${target})?`)) return;
+
+            try {
+                showToast('Mengirimkan siaran ke WhatsApp...', 'info');
+                const res = await fetch('/api/bot/broadcast', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ target, message })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast(`Siaran sukses dikirim ke ${result.sentCount || 0} grup!`, 'success');
+                    document.getElementById('sendBcMessage').value = '';
+                    loadCommandLogs();
+                    loadSendHistory();
+                } else {
+                    showToast(result.message || 'Gagal mengirim siaran.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error siaran: ${err.message}`, 'error');
+            }
+        }
+
+        async function submitSendDirect() {
+            if (!checkSuperuserOrWarn()) return;
+            const number = (document.getElementById('sendDirectNumber')?.value || '').trim();
+            const message = (document.getElementById('sendDirectMessage')?.value || '').trim();
+
+            if (!number || !message) {
+                showToast('Nomor WhatsApp dan isi pesan wajib diisi.', 'warning');
+                return;
+            }
+
+            try {
+                showToast(`Mengirim pesan ke ${number}...`, 'info');
+                const res = await fetch('/api/bot/send', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ number, message })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast(`Pesan berhasil dikirim ke ${number}!`, 'success');
+                    document.getElementById('sendDirectMessage').value = '';
+                    loadCommandLogs();
+                    loadSendHistory();
+                } else {
+                    showToast(result.message || 'Gagal mengirim pesan.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        function loadSendHistory() {
+            const body = document.getElementById('sendHistoryBody');
+            if (!body) return;
+
+            const sendLogs = rawLogsData.filter(l => 
+                (l.command && (l.command.includes('broadcast') || l.command.includes('send') || l.command.includes('siaran')))
+            );
+
+            if (sendLogs.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada riwayat pengiriman pesan/siaran.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = sendLogs.slice(0, 20).map(l => `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <td class="py-2 px-3 text-slate-400 font-mono text-[11px]">${escapeHtml(l.timestamp || '-')}</td>
+                    <td class="py-2 px-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.command.includes('direct') ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'}">${l.command.includes('direct') ? 'DIRECT' : 'BROADCAST'}</span>
+                    </td>
+                    <td class="py-2 px-3 font-mono text-slate-600 dark:text-slate-300 text-[11px]">${escapeHtml(l.from || l.sender || '-')}</td>
+                    <td class="py-2 px-3 text-slate-700 dark:text-slate-300 font-mono text-[11px]">!${escapeHtml(l.command)}</td>
+                </tr>
+            `).join('');
+        }
+
         function openBroadcastModal() {
             document.getElementById('bcMessage').value = '';
             const modal = document.getElementById('broadcastModal');
@@ -3796,40 +4417,148 @@
             }
         }
 
-        async function submitBroadcastInline() {
-            if (!checkSuperuserOrWarn()) return;
-            const target = document.getElementById('bcTargetInline')?.value || 'all';
-            const message = (document.getElementById('bcMessageInline')?.value || '').trim();
-
-            if (!message) {
-                showToast('Isi pesan siaran wajib diisi.', 'warning');
-                return;
-            }
-
-            if (!confirm(`Kirim pesan siaran ini ke target: ${target}?`)) return;
-
+        // -----------------------------------------------------------------
+        // 16. STATISTIK TAB & COMMAND USAGE
+        // -----------------------------------------------------------------
+        async function loadCommandStats() {
             try {
-                showToast('Mengirimkan pesan siaran...', 'info');
-                const res = await fetch('/api/bot/broadcast', {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ target, message })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast(`Siaran sukses terkirim ke ${result.sentCount || 0} grup!`, 'success');
-                    document.getElementById('bcMessageInline').value = '';
-                    loadCommandLogs();
-                } else {
-                    showToast(result.message || 'Gagal mengirim siaran.', 'error');
+                const res = await fetch('/api/stats/commands');
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const d = data.data;
+                    const msgEl = document.getElementById('statTotalMessages');
+                    const cmdEl = document.getElementById('statTotalCommands');
+                    const stkEl = document.getElementById('statTotalStickers');
+                    const brtEl = document.getElementById('statTotalBrats');
+
+                    if (msgEl) msgEl.textContent = d.totalMessages || 0;
+                    if (cmdEl) cmdEl.textContent = d.totalCommands || 0;
+                    if (stkEl) stkEl.textContent = d.totalStickers || 0;
+                    if (brtEl) brtEl.textContent = d.totalBrats || 0;
+
+                    const container = document.getElementById('topCommandsContainer');
+                    if (container) {
+                        const top = d.topCommands || [];
+                        if (top.length === 0) {
+                            container.innerHTML = `<div class="py-6 text-center text-xs text-slate-400">Belum ada statistik pemakaian perintah.</div>`;
+                        } else {
+                            const maxCount = Math.max(...top.map(t => t.count), 1);
+                            container.innerHTML = top.map((t, idx) => {
+                                const pct = Math.round((t.count / maxCount) * 100);
+                                return `
+                                    <div class="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                                            <span class="w-6 h-6 rounded-lg ${idx < 3 ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'} flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                #${idx + 1}
+                                            </span>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">!${escapeHtml(t.command)}</span>
+                                                    <span class="font-semibold text-xs text-slate-700 dark:text-slate-300">${t.count}x</span>
+                                                </div>
+                                                <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                                    <div class="bg-indigo-600 h-1.5 rounded-full transition-all" style="width: ${pct}%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+                    }
                 }
             } catch (err) {
-                showToast(`Error: ${err.message}`, 'error');
+                console.error('Gagal memuat stats:', err);
             }
         }
 
         // -----------------------------------------------------------------
-        // 15. UTILITIES
+        // 17. API & WEBHOOK DOCUMENTATION
+        // -----------------------------------------------------------------
+        const API_CATALOG = [
+            { method: 'GET', path: '/api/system/status', auth: false, desc: 'Metrik kesehatan bot, RAM STB, uptime, dan jumlah counter' },
+            { method: 'GET', path: '/api/device/info', auth: false, desc: 'Info detail nomor device bot WA, Baileys platform, CPU, dan OS STB' },
+            { method: 'POST', path: '/api/bot/send', auth: true, desc: 'Kirim pesan WhatsApp langsung ke nomor individual' },
+            { method: 'POST', path: '/api/bot/broadcast', auth: true, desc: 'Kirim siaran pesan ke seluruh grup terdaftar (all/indukan/cabang)' },
+            { method: 'POST', path: '/api/bot/sync', auth: true, desc: 'Sinkronkan cache memori ke file database JSON' },
+            { method: 'GET', path: '/api/stats/commands', auth: false, desc: 'Statistik frekuensi eksekusi seluruh perintah bot' },
+            { method: 'GET', path: '/api/groups', auth: false, desc: 'Daftar grup WhatsApp terdaftar dan auto-discovered dari metadata' },
+            { method: 'POST', path: '/api/groups', auth: true, desc: 'Daftarkan grup baru / inisialisasi grup terdeteksi' },
+            { method: 'PUT', path: '/api/groups/:id', auth: true, desc: 'Update nama, tipe modul, peran, dan grup induk' },
+            { method: 'POST', path: '/api/groups/link', auth: true, desc: 'Hubungkan grup cabang ke grup indukan (1-klik relasi)' },
+            { method: 'DELETE', path: '/api/groups/:id', auth: true, desc: 'Hapus pendaftaran grup dari sistem' },
+            { method: 'GET', path: '/api/kost', auth: false, desc: 'Ambil daftar listing data kos (dukung filter status & search)' },
+            { method: 'GET', path: '/api/kost/:id', auth: false, desc: 'Ambil detail spesifik data kos berdasarkan ID' },
+            { method: 'POST', path: '/api/kost', auth: true, desc: 'Tambah listing kos baru' },
+            { method: 'PUT', path: '/api/kost/:id', auth: true, desc: 'Perbarui nama, kontak sosmed, dan deskripsi kos' },
+            { method: 'POST', path: '/api/kost/:id/status', auth: true, desc: 'Ubah status kos langsung (pending / sent / published)' },
+            { method: 'POST', path: '/api/kost/:id/publish', auth: true, desc: 'Toggle publikasi (tayang di pencarian publik)' },
+            { method: 'POST', path: '/api/kost/:id/sent', auth: true, desc: 'Toggle status penawaran DM ke pemilik kos' },
+            { method: 'DELETE', path: '/api/kost/:id', auth: true, desc: 'Hapus listing data kos permanen' },
+            { method: 'GET', path: '/api/submissions', auth: false, desc: 'Ambil daftar usulan warga yang masuk' },
+            { method: 'POST', path: '/api/submissions/:id/review', auth: true, desc: 'Setujui usulan (auto-masuk ke listing) atau tolak usulan' },
+            { method: 'PUT', path: '/api/submissions/:id', auth: true, desc: 'Edit data usulan yang masuk' },
+            { method: 'DELETE', path: '/api/submissions/:id', auth: true, desc: 'Hapus data usulan' },
+            { method: 'GET', path: '/api/autoreplies', auth: false, desc: 'Ambil daftar seluruh aturan kata kunci autoreply' },
+            { method: 'POST', path: '/api/autoreplies', auth: true, desc: 'Tambah trigger dan respon autoreply baru' },
+            { method: 'PUT', path: '/api/autoreplies/:id', auth: true, desc: 'Update respon dan konfigurasi autoreply' },
+            { method: 'DELETE', path: '/api/autoreplies/:trigger', auth: true, desc: 'Hapus aturan autoreply' },
+            { method: 'GET', path: '/api/welcome', auth: false, desc: 'Ambil template pesan sambutan member baru' },
+            { method: 'POST', path: '/api/welcome', auth: true, desc: 'Simpan konfigurasi pesan sambutan grup' },
+            { method: 'GET', path: '/api/owners', auth: false, desc: 'Ambil daftar seluruh nomor WhatsApp pengelola bot' },
+            { method: 'POST', path: '/api/owners', auth: true, desc: 'Tambah nomor WhatsApp pengelola baru' },
+            { method: 'PUT', path: '/api/owners/:number', auth: true, desc: 'Update nama pengelola bot' },
+            { method: 'DELETE', path: '/api/owners/:number', auth: true, desc: 'Hapus akses pengelola (Super Owner dilindungi)' },
+            { method: 'GET', path: '/api/features', auth: false, desc: 'Audit dinamis seluruh perintah yang ada di folder commands/' },
+            { method: 'GET', path: '/api/logs', auth: false, desc: 'Ambil log aktivitas perintah terbaru' }
+        ];
+
+        function loadApiDocs() {
+            const container = document.getElementById('apiDocsContainer');
+            if (!container) return;
+
+            let rowsHtml = API_CATALOG.map(api => {
+                const methodBadge = api.method === 'GET' 
+                    ? `<span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300">GET</span>`
+                    : (api.method === 'POST'
+                        ? `<span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">POST</span>`
+                        : (api.method === 'PUT'
+                            ? `<span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300">PUT</span>`
+                            : `<span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300">DELETE</span>`));
+
+                const authBadge = api.auth
+                    ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">PIN ADMIN</span>`
+                    : `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500">PUBLIK</span>`;
+
+                return `
+                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                        <td class="py-2.5 px-3 whitespace-nowrap">${methodBadge}</td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-xs text-slate-800 dark:text-slate-200">${escapeHtml(api.path)}</td>
+                        <td class="py-2.5 px-3">${authBadge}</td>
+                        <td class="py-2.5 px-3 text-xs text-slate-500 dark:text-slate-400">${escapeHtml(api.desc)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                            <th class="py-2.5 px-3">METHOD</th>
+                            <th class="py-2.5 px-3">PATH ENDPOINT</th>
+                            <th class="py-2.5 px-3">AUTENTIKASI</th>
+                            <th class="py-2.5 px-3">KETERANGAN</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // -----------------------------------------------------------------
+        // 18. UTILITIES
         // -----------------------------------------------------------------
         function escapeHtml(str) {
             if (!str) return '';

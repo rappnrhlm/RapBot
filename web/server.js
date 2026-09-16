@@ -112,6 +112,47 @@ function formatUptime(seconds) {
     return parts.join(' ');
 }
 
+// Device Info
+app.get('/api/device/info', async (req, res) => {
+    try {
+        const sock = getBotSocket();
+        const status = sock ? 'connected' : 'offline';
+        
+        let deviceInfo = {
+            status,
+            phone: null,
+            name: null,
+            platform: 'Baileys (WhatsApp Web)',
+            version: require('@whiskeysockets/baileys/package.json').version || 'unknown',
+            uptime: process.uptime(),
+            memory: {
+                heapUsedMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100,
+                rssMB: Math.round(process.memoryUsage().rss / 1024 / 1024 * 100) / 100,
+                heapTotalMB: Math.round(process.memoryUsage().heapTotal / 1024 / 1024 * 100) / 100,
+            },
+            os: {
+                platform: require('os').platform(),
+                arch: require('os').arch(),
+                totalMemMB: Math.round(require('os').totalmem() / 1024 / 1024),
+                freeMemMB: Math.round(require('os').freemem() / 1024 / 1024),
+                cpus: require('os').cpus().length,
+                hostname: require('os').hostname(),
+            }
+        };
+        
+        if (sock && sock.user) {
+            const rawId = sock.user.id || '';
+            deviceInfo.phone = rawId.replace(/:.*/, '').replace('@s.whatsapp.net', '');
+            deviceInfo.name = sock.user.name || null;
+        }
+        
+        res.json({ success: true, data: deviceInfo });
+    } catch (err) {
+        console.error('[API] Device info error:', err);
+        res.status(500).json({ success: false, message: 'Gagal memuat info device: ' + err.message });
+    }
+});
+
 // ----------------------------------------------------
 // 2. OWNERS API
 // ----------------------------------------------------
@@ -1127,6 +1168,35 @@ app.get('/api/logs', (req, res) => {
     }
 });
 
+// Command Usage Statistics
+app.get('/api/stats/commands', async (req, res) => {
+    try {
+        const stats = database.getStats();
+        const commandUsage = stats.commandUsage || {};
+        
+        // Sort by usage count descending
+        const sorted = Object.entries(commandUsage)
+            .map(([command, count]) => ({ command, count }))
+            .sort((a, b) => b.count - a.count);
+        
+        res.json({
+            success: true,
+            data: {
+                totalCommands: stats.commands || 0,
+                totalMessages: stats.messages || 0,
+                totalStickers: stats.stickers || 0,
+                totalBrats: stats.brats || 0,
+                startedAt: stats.startedAt || null,
+                topCommands: sorted.slice(0, 20),
+                allCommands: sorted
+            }
+        });
+    } catch (err) {
+        console.error('[API] Stats commands error:', err);
+        res.status(500).json({ success: false, message: 'Gagal memuat statistik: ' + err.message });
+    }
+});
+
 // ----------------------------------------------------
 // 8. BOT ACTIONS & BROADCAST API
 // ----------------------------------------------------
@@ -1203,6 +1273,37 @@ app.post('/api/bot/broadcast', async (req, res) => {
     } catch (err) {
         console.error('[web/server] Error broadcast:', err);
         res.status(500).json({ success: false, message: `Gagal mengirim siaran: ${err.message}` });
+    }
+});
+
+// Send to Individual Number
+app.post('/api/bot/send', async (req, res) => {
+    try {
+        const pin = extractPin(req);
+        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        
+        const sock = getBotSocket();
+        if (!sock) return res.status(503).json({ success: false, message: 'Bot tidak terhubung.' });
+        
+        const { number, message } = req.body;
+        if (!number || !message) return res.status(400).json({ success: false, message: 'Nomor dan pesan wajib diisi.' });
+        
+        // Normalize number to JID format
+        let jid = number.replace(/[^0-9]/g, '');
+        if (jid.startsWith('0')) jid = '62' + jid.substring(1);
+        jid = jid + '@s.whatsapp.net';
+        
+        await sock.sendMessage(jid, { text: message });
+        
+        // Log the action
+        if (database.logCommand) {
+            database.logCommand(`web-send-direct`, jid, 'web-admin', false);
+        }
+        
+        res.json({ success: true, message: `Pesan berhasil dikirim ke ${number}`, jid });
+    } catch (err) {
+        console.error('[API] Send direct error:', err);
+        res.status(500).json({ success: false, message: 'Gagal mengirim pesan: ' + err.message });
     }
 });
 
