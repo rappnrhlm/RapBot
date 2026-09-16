@@ -117,9 +117,11 @@ function formatUptime(seconds) {
 // ----------------------------------------------------
 
 app.get('/api/owners', (req, res) => {
+    const owners = database.getOwners();
     res.json({
         success: true,
-        owners: database.getOwners(),
+        data: owners,
+        owners,
         superOwner: database.SUPER_OWNER
     });
 });
@@ -485,12 +487,15 @@ app.get('/api/features', (req, res) => {
 // Register new group
 app.post('/api/groups', async (req, res) => {
     try {
-        const { id, name, groupName, type, role, parentGroupId, settings, pin } = req.body;
+        const { id, name, groupName, type, role, parentGroupId, parentId, settings, pin } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
+
+        const rawParent = parentGroupId !== undefined ? parentGroupId : parentId;
+        const cleanParent = (rawParent && rawParent !== 'none' && rawParent !== 'unlink' && rawParent !== 'null') ? rawParent : null;
 
         const result = await database.addGroup({
             id,
@@ -498,7 +503,7 @@ app.post('/api/groups', async (req, res) => {
             groupName: groupName || '',
             type: type || 'kos',
             role: role || 'admin',
-            parentGroupId: parentGroupId || null,
+            parentGroupId: cleanParent,
             settings: settings || {},
             initializedBy: 'web-admin'
         });
@@ -516,8 +521,10 @@ app.post('/api/groups', async (req, res) => {
 // Link Child Group to Parent Group (1-Click Linking)
 app.post('/api/groups/link', async (req, res) => {
     try {
-        const { childGroupId, parentGroupId, pin } = req.body;
-        const currentPin = pin || extractPin(req);
+        const childGroupId = req.body.childGroupId || req.body.groupId || req.body.id || req.body.sourceId;
+        const rawParent = req.body.parentGroupId || req.body.parentId || req.body.targetParent || req.body.parent;
+        const parentGroupId = (rawParent && rawParent !== 'none' && rawParent !== 'unlink' && rawParent !== 'null') ? rawParent : null;
+        const currentPin = req.body.pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
@@ -560,19 +567,22 @@ app.post('/api/groups/link', async (req, res) => {
 app.put('/api/groups/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, groupName, type, role, parentGroupId, settings, pin } = req.body;
+        const { name, groupName, type, role, parentGroupId, parentId, settings, pin } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
+        const rawParent = parentGroupId !== undefined ? parentGroupId : parentId;
+        const cleanParent = (rawParent && rawParent !== 'none' && rawParent !== 'unlink' && rawParent !== 'null') ? rawParent : (rawParent === '' || rawParent === null ? null : undefined);
+
         const result = await database.updateGroup(id, {
             name,
             groupName,
             type,
             role,
-            parentGroupId,
+            parentGroupId: cleanParent,
             settings
         });
 
@@ -719,7 +729,8 @@ app.put('/api/kost/:id', async (req, res) => {
             tiktok: tt,
             whatsapp: wa,
             status,
-            groupId
+            groupId,
+            updatedBy: 'web-admin'
         });
 
         if (!result.success) {
@@ -730,6 +741,37 @@ app.put('/api/kost/:id', async (req, res) => {
     } catch (err) {
         console.error('[web/server] Error PUT /api/kost/:id:', err);
         res.status(500).json({ success: false, message: 'Gagal memperbarui kost.' });
+    }
+});
+
+// Dynamic universal status changer: pending | sent | published
+app.post('/api/kost/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, updatedBy, groupId, pin } = req.body;
+        const currentPin = pin || extractPin(req);
+
+        if (!validatePin(currentPin)) {
+            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        if (!status) {
+            return res.status(400).json({ success: false, message: 'Parameter status wajib diisi (pending, sent, atau published).' });
+        }
+
+        const result = await database.setKostStatus(id, status, updatedBy || 'web-admin', groupId);
+        if (!result.success) {
+            return res.status(result.notFound ? 404 : 400).json(result);
+        }
+
+        res.json({
+            success: true,
+            message: result.message || `Status kost berhasil diubah menjadi ${String(status).toUpperCase()}.`,
+            data: result.data
+        });
+    } catch (err) {
+        console.error('[web/server] Error POST /api/kost/:id/status:', err);
+        res.status(500).json({ success: false, message: 'Gagal mengubah status kost.' });
     }
 });
 
@@ -744,26 +786,17 @@ app.post('/api/kost/:id/sent', async (req, res) => {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
-        if (sent === false || status === 'pending') {
-            const result = await database.updateKost(id, { status: 'pending', groupId });
-            if (!result.success) {
-                return res.status(result.notFound ? 404 : 400).json(result);
-            }
-            return res.json({
-                success: true,
-                message: 'Status kost berhasil diubah menjadi pending (belum ditawarkan).',
-                data: result.data
-            });
-        }
-
-        const result = await database.markKostSent(id, groupId, sentBy || 'web-admin');
+        const targetStatus = (sent === false || status === 'pending') ? 'pending' : 'sent';
+        const result = await database.setKostStatus(id, targetStatus, sentBy || 'web-admin', groupId);
         if (!result.success) {
             return res.status(result.notFound ? 404 : 400).json(result);
         }
 
         res.json({
             success: true,
-            message: 'Status kost berhasil diubah menjadi terkirim penawaran (sent).',
+            message: targetStatus === 'sent' 
+                ? 'Status kost berhasil diubah menjadi terkirim penawaran (sent).' 
+                : 'Status kost berhasil diubah menjadi pending (belum ditawarkan).',
             data: result.data
         });
     } catch (err) {
@@ -772,7 +805,7 @@ app.post('/api/kost/:id/sent', async (req, res) => {
     }
 });
 
-// Mark kost published (tayang ke publik)
+// Mark kost published (tayang ke publik) / unpublish
 app.post('/api/kost/:id/publish', async (req, res) => {
     try {
         const { id } = req.params;
@@ -783,26 +816,17 @@ app.post('/api/kost/:id/publish', async (req, res) => {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
-        if (unpublish) {
-            const result = await database.updateKost(id, { status: 'sent', groupId });
-            if (!result.success) {
-                return res.status(result.notFound ? 404 : 400).json(result);
-            }
-            return res.json({
-                success: true,
-                message: 'Status kost berhasil ditarik dari publik (kembali ke sent).',
-                data: result.data
-            });
-        }
-
-        const result = await database.markKostPublished(id, groupId, publishedBy || 'web-admin');
+        const targetStatus = unpublish ? 'sent' : 'published';
+        const result = await database.setKostStatus(id, targetStatus, publishedBy || 'web-admin', groupId);
         if (!result.success) {
             return res.status(result.notFound ? 404 : 400).json(result);
         }
 
         res.json({
             success: true,
-            message: 'Status kost berhasil dipublikasikan (tayang ke publik).',
+            message: unpublish 
+                ? 'Status kost berhasil ditarik dari publik (kembali ke sent).' 
+                : 'Status kost berhasil dipublikasikan (tayang ke publik).',
             data: result.data
         });
     } catch (err) {
@@ -903,6 +927,37 @@ app.post('/api/submissions/:id/review', async (req, res) => {
     }
 });
 
+// Update Submission (Edit Name, Contacts, Status)
+app.put('/api/submissions/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, contactsRaw, contact, whatsapp, status, groupId, pin } = req.body;
+        const currentPin = pin || extractPin(req);
+
+        if (!validatePin(currentPin)) {
+            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        const rawContacts = contactsRaw !== undefined ? contactsRaw : (whatsapp || contact);
+        const result = await database.updateKostSubmission(id, {
+            name,
+            contactsRaw: rawContacts,
+            groupId,
+            status,
+            reviewedBy: 'web-admin'
+        });
+
+        if (!result.success) {
+            return res.status(result.notFound ? 404 : 400).json(result);
+        }
+
+        res.json(result);
+    } catch (err) {
+        console.error('[web/server] Error PUT /api/submissions/:id:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // Delete Submission
 app.delete('/api/submissions/:id', async (req, res) => {
     try {
@@ -938,20 +993,60 @@ app.get('/api/autoreplies', (req, res) => {
 
 app.post('/api/autoreplies', async (req, res) => {
     try {
-        const { keyword, response, matchType, pin } = req.body;
+        const { keyword, trigger, response, matchType, ownerOnly, groupId, pin } = req.body;
         const currentPin = pin || extractPin(req);
 
         if (!validatePin(currentPin)) {
             return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         }
 
-        const result = await database.addAutoreply(keyword, response, matchType || 'exact');
+        const targetTrigger = trigger || keyword;
+        const result = await database.addAutoreply(
+            targetTrigger,
+            response,
+            'web-admin',
+            groupId || null,
+            null,
+            Boolean(ownerOnly)
+        );
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        res.status(201).json(result);
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.put('/api/autoreplies/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { keyword, trigger, response, ownerOnly, groupId, pin } = req.body;
+        const currentPin = pin || extractPin(req);
+
+        if (!validatePin(currentPin)) {
+            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        const result = await database.editAutoreply(
+            id,
+            {
+                trigger: trigger || keyword,
+                response,
+                ownerOnly,
+                groupId
+            },
+            'web-admin'
+        );
+
         if (!result.success) {
             return res.status(400).json(result);
         }
 
         res.json(result);
     } catch (err) {
+        console.error('[web/server] Error PUT /api/autoreplies/:id:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });

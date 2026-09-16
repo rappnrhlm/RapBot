@@ -970,19 +970,21 @@
         </div>
     </div>
 
-    <!-- 2. Daftarkan Grup Modal -->
+    <!-- 2. Daftarkan / Edit Grup Modal -->
     <div id="registerGroupModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-md w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Daftarkan Grup WhatsApp Baru</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="groupModalTitle">Daftarkan Grup WhatsApp Baru</h4>
                 <button onclick="closeRegisterGroupModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
+
+            <input type="hidden" id="groupEditMode" value="create">
 
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">JID Grup WhatsApp <span class="text-rose-500">*</span></label>
                     <input type="text" id="regGroupJid" placeholder="120363012345678901@g.us" class="w-full px-3 py-2 font-mono rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-                    <p class="text-[10px] text-slate-400 mt-1">Tips: Di grup ketik <code class="text-indigo-600 font-bold">!id</code> atau <code class="text-indigo-600 font-bold">!jid</code> untuk salin JID grup.</p>
+                    <p class="text-[10px] text-slate-400 mt-1" id="regGroupJidHelp">Tips: Di grup ketik <code class="text-indigo-600 font-bold">!id</code> atau <code class="text-indigo-600 font-bold">!jid</code> untuk salin JID grup.</p>
                 </div>
 
                 <div>
@@ -992,19 +994,29 @@
 
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipe / Peran</label>
-                        <select id="regGroupRole" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
-                            <option value="indukan">Grup Indukan (Master Hub)</option>
-                            <option value="cabang">Grup Cabang (Public)</option>
-                            <option value="khusus">Grup Khusus / Lainnya</option>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipe / Kategori Data</label>
+                        <select id="regGroupType" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                            <option value="marketplace">Marketplace / Store (marketplace)</option>
+                            <option value="kos">Kos & Kontrakan (kos)</option>
+                            <option value="store">Online Store (store)</option>
+                            <option value="komunitas">Komunitas / Diskusi (komunitas)</option>
+                            <option value="umum">Umum (umum)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Hubungkan ke Indukan</label>
-                        <select id="regGroupParent" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
-                            <option value="">-- Tidak Terhubung --</option>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Peran / Hak Akses</label>
+                        <select id="regGroupRole" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                            <option value="admin">Grup Indukan (Master / Admin)</option>
+                            <option value="public">Grup Cabang (Public)</option>
                         </select>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Hubungkan ke Indukan (Jika Cabang/Publik)</label>
+                    <select id="regGroupParent" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                        <option value="">-- Tidak Terhubung / Mandiri (Indukan) --</option>
+                    </select>
                 </div>
             </div>
 
@@ -1012,7 +1024,7 @@
                 <button onclick="closeRegisterGroupModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
                     Batal
                 </button>
-                <button onclick="submitRegisterGroup()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
+                <button onclick="submitRegisterGroup()" id="groupModalSubmitBtn" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
                     Simpan Grup
                 </button>
             </div>
@@ -1107,13 +1119,15 @@
         </div>
     </div>
 
-    <!-- 5. Tambah Autoreply Modal -->
+    <!-- 5. Tambah / Edit Autoreply Modal -->
     <div id="autoreplyModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-md w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Tambah Autoreply Baru</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="autoreplyModalTitle">Tambah Autoreply Baru</h4>
                 <button onclick="closeAutoreplyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
+
+            <input type="hidden" id="arEditId" value="">
 
             <div class="space-y-3 text-xs">
                 <div>
@@ -1144,13 +1158,15 @@
         </div>
     </div>
 
-    <!-- 6. Tambah Owner Modal -->
+    <!-- 6. Tambah / Edit Owner Modal -->
     <div id="ownerModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-sm w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Tambah Pengelola (Owner)</h4>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="ownerModalTitle">Tambah Pengelola (Owner)</h4>
                 <button onclick="closeOwnerModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
+
+            <input type="hidden" id="ownerEditOldNumber" value="">
 
             <div class="space-y-3 text-xs">
                 <div>
@@ -1168,8 +1184,50 @@
                 <button onclick="closeOwnerModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
                     Batal
                 </button>
-                <button onclick="submitAddOwner()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
-                    Tambah Owner
+                <button onclick="submitOwnerForm()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
+                    Simpan Owner
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6b. Edit Submission (Usulan Warga) Modal -->
+    <div id="submissionModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-md w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="submissionModalTitle">Edit Data Usulan Warga</h4>
+                <button onclick="closeSubmissionModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+
+            <input type="hidden" id="subEditId" value="">
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Kos / Usulan <span class="text-rose-500">*</span></label>
+                    <input type="text" id="subName" placeholder="Contoh: Kost Melati Indah" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kontak Diusulkan <span class="text-rose-500">*</span></label>
+                    <input type="text" id="subContacts" placeholder="wa: 08123456789 | ig: @username" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Usulan</label>
+                    <select id="subStatus" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                        <option value="pending">⏳ Menunggu Review</option>
+                        <option value="approved">✅ Disetujui (Approved)</option>
+                        <option value="rejected">❌ Ditolak (Rejected)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <button onclick="closeSubmissionModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                    Batal
+                </button>
+                <button onclick="submitSubmissionForm()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
+                    Simpan Perubahan
                 </button>
             </div>
         </div>
@@ -2023,6 +2081,9 @@
                                             Inisialisasi
                                         </button>
                                     ` : `
+                                        <button onclick="openEditGroupModal('${escapeHtml(g.id)}')" title="Edit Data Grup" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                        </button>
                                         <button onclick="openLinkGroupModal('${escapeHtml(g.id)}')" title="Hubungkan ke Indukan" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
                                             <i data-lucide="link" class="w-3.5 h-3.5"></i>
                                         </button>
@@ -2072,8 +2133,9 @@
                                     ${isUndef ? `
                                         <button onclick="initGroupPrompt('${escapeHtml(g.id)}', '${escapeHtml(g.name || '')}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold">Inisialisasi</button>
                                     ` : `
-                                        <button onclick="openLinkGroupModal('${escapeHtml(g.id)}')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600"><i data-lucide="link" class="w-3.5 h-3.5"></i></button>
-                                        <button onclick="deleteGroupPrompt('${escapeHtml(g.id)}')" class="p-1.5 rounded-lg border border-rose-200 text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                        <button onclick="openEditGroupModal('${escapeHtml(g.id)}')" title="Edit Grup" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                        <button onclick="openLinkGroupModal('${escapeHtml(g.id)}')" title="Hubungkan ke Indukan" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"><i data-lucide="link" class="w-3.5 h-3.5"></i></button>
+                                        <button onclick="deleteGroupPrompt('${escapeHtml(g.id)}')" title="Hapus Grup" class="p-1.5 rounded-lg border border-rose-200 text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                                     `}
                                 </div>
                             </div>
@@ -2087,17 +2149,19 @@
         }
 
         function renderOverviewGroupList() {
-            const listEl = document.getElementById('overviewGroupList');
-            if (!listEl) return;
-            const preview = rawGroupsData.slice(0, 4);
-            if (preview.length === 0) {
-                listEl.innerHTML = `<div class="text-xs text-slate-400 py-4 text-center">Belum ada grup terdaftar.</div>`;
+            const container = document.getElementById('overviewGroupList');
+            if (!container) return;
+
+            const top5 = rawGroupsData.slice(0, 5);
+            if (top5.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">Belum ada grup yang terhubung.</p>`;
                 return;
             }
-            listEl.innerHTML = preview.map(g => `
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800">
+
+            container.innerHTML = top5.map(g => `
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center flex-shrink-0">
                             ${(g.name || 'G')[0].toUpperCase()}
                         </div>
                         <div class="min-w-0">
@@ -2129,6 +2193,51 @@
         }
 
         function openRegisterGroupModal() {
+            populateParentSelects();
+            document.getElementById('groupModalTitle').textContent = 'Daftarkan Grup WhatsApp Baru';
+            document.getElementById('groupModalSubmitBtn').textContent = 'Simpan Grup';
+            document.getElementById('groupEditMode').value = 'create';
+            
+            const jidInput = document.getElementById('regGroupJid');
+            jidInput.value = '';
+            jidInput.disabled = false;
+            jidInput.classList.remove('opacity-60', 'cursor-not-allowed');
+            
+            document.getElementById('regGroupName').value = '';
+            document.getElementById('regGroupRole').value = 'admin';
+            document.getElementById('regGroupType').value = 'marketplace';
+            document.getElementById('regGroupParent').value = '';
+
+            const modal = document.getElementById('registerGroupModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openEditGroupModal(groupId) {
+            populateParentSelects();
+            const group = rawGroupsData.find(g => g.id === groupId);
+            if (!group) {
+                showToast('Data grup tidak ditemukan.', 'error');
+                return;
+            }
+
+            document.getElementById('groupModalTitle').textContent = 'Edit Konfigurasi Grup WhatsApp';
+            document.getElementById('groupModalSubmitBtn').textContent = 'Simpan Perubahan';
+            document.getElementById('groupEditMode').value = 'edit';
+
+            const jidInput = document.getElementById('regGroupJid');
+            jidInput.value = group.id;
+            jidInput.disabled = true;
+            jidInput.classList.add('opacity-60', 'cursor-not-allowed');
+
+            document.getElementById('regGroupName').value = group.name || '';
+            document.getElementById('regGroupRole').value = (group.role === 'public' || group.role === 'cabang') ? 'public' : 'admin';
+            document.getElementById('regGroupType').value = group.type || 'kos';
+            document.getElementById('regGroupParent').value = group.parentId || group.parentGroupId || '';
+
             const modal = document.getElementById('registerGroupModal');
             if (modal) {
                 modal.classList.remove('hidden');
@@ -2148,9 +2257,11 @@
         async function submitRegisterGroup() {
             if (!checkSuperuserOrWarn()) return;
 
+            const mode = document.getElementById('groupEditMode')?.value || 'create';
             const jid = (document.getElementById('regGroupJid')?.value || '').trim();
             const name = (document.getElementById('regGroupName')?.value || '').trim();
-            const role = document.getElementById('regGroupRole')?.value || 'cabang';
+            const role = document.getElementById('regGroupRole')?.value || 'admin';
+            const type = document.getElementById('regGroupType')?.value || 'kos';
             const parentId = document.getElementById('regGroupParent')?.value || null;
 
             if (!jid) {
@@ -2167,19 +2278,36 @@
             }
 
             try {
-                showToast('Mendaftarkan grup...', 'info');
-                const res = await fetch('/api/groups', {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ id: jid, name, role, parentId })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('Grup WhatsApp berhasil didaftarkan!', 'success');
-                    closeRegisterGroupModal();
-                    loadGroups();
+                if (mode === 'edit') {
+                    showToast('Memperbarui data grup...', 'info');
+                    const res = await fetch(`/api/groups/${encodeURIComponent(jid)}`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ name, role, type, parentGroupId: parentId })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Konfigurasi grup berhasil diperbarui!', 'success');
+                        closeRegisterGroupModal();
+                        loadGroups();
+                    } else {
+                        showToast(result.message || 'Gagal memperbarui grup.', 'error');
+                    }
                 } else {
-                    showToast(result.message || 'Gagal mendaftarkan grup.', 'error');
+                    showToast('Mendaftarkan grup...', 'info');
+                    const res = await fetch('/api/groups', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ id: jid, name, role, type, parentGroupId: parentId })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Grup WhatsApp berhasil didaftarkan!', 'success');
+                        closeRegisterGroupModal();
+                        loadGroups();
+                    } else {
+                        showToast(result.message || 'Gagal mendaftarkan grup.', 'error');
+                    }
                 }
             } catch (err) {
                 showToast(`Error: ${err.message}`, 'error');
@@ -2187,9 +2315,17 @@
         }
 
         function openLinkGroupModal(groupId) {
+            populateParentSelects();
             const modal = document.getElementById('linkGroupModal');
             const hiddenInput = document.getElementById('linkSourceGroupId');
             if (hiddenInput) hiddenInput.value = groupId;
+
+            const group = rawGroupsData.find(g => g.id === groupId);
+            const parentSelect = document.getElementById('linkTargetParentSelect');
+            if (parentSelect && group) {
+                parentSelect.value = group.parentId || group.parentGroupId || '';
+            }
+
             if (modal) {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -2220,7 +2356,12 @@
                 const res = await fetch('/api/groups/link', {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ groupId: sourceId, parentId: targetParent })
+                    body: JSON.stringify({ 
+                        childGroupId: sourceId, 
+                        groupId: sourceId, 
+                        parentGroupId: targetParent, 
+                        parentId: targetParent 
+                    })
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -2372,41 +2513,67 @@
                     const st = (k.status || 'pending').toLowerCase();
                     const isPublished = st === 'published' || st === 'posted';
                     const isSent = st === 'sent';
+                    const isPending = !isPublished && !isSent;
                     const numId = '#' + String(idx + 1).padStart(2, '0');
                     const contacts = [];
                     const wa = k.contact?.whatsapp || k.whatsapp;
                     const ig = k.contact?.instagram || k.instagram;
                     const tt = k.contact?.tiktok || k.tiktok;
 
-                    if (wa) contacts.push(`<span class="inline-flex items-center gap-1 text-emerald-600 font-mono font-medium">📱 ${escapeHtml(wa)}</span>`);
-                    if (ig) contacts.push(`<span class="inline-flex items-center gap-1 text-pink-600">📸 @${escapeHtml(ig.replace('@',''))}</span>`);
-                    if (tt) contacts.push(`<span class="inline-flex items-center gap-1 text-indigo-600">🎵 @${escapeHtml(tt.replace('@',''))}</span>`);
-
-                    let statusBadge = '';
-                    if (isPublished) {
-                        statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">🟢 SUDAH DIPOSTING (PUBLIK)</span>`;
-                    } else if (isSent) {
-                        statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">📩 TERKIRIM PENAWARAN (DM)</span>`;
-                    } else {
-                        statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">🟡 BELUM DITAWARKAN</span>`;
+                    if (wa) {
+                        const cleanWa = String(wa).replace(/\D/g, '');
+                        contacts.push(`<a href="https://wa.me/${cleanWa}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono font-medium hover:underline">📱 ${escapeHtml(wa)}</a>`);
                     }
+                    if (ig) {
+                        const cleanIg = escapeHtml(ig.replace('@',''));
+                        contacts.push(`<a href="https://instagram.com/${cleanIg}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 hover:underline">📸 @${cleanIg}</a>`);
+                    }
+                    if (tt) {
+                        const cleanTt = escapeHtml(tt.replace('@',''));
+                        contacts.push(`<a href="https://www.tiktok.com/@${cleanTt}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline">🎵 @${cleanTt}</a>`);
+                    }
+
+                    // Dynamic Status Selector Dropdown
+                    const statusDropdownHtml = `
+                        <div class="inline-block relative">
+                            <select onchange="changeKostStatus('${escapeHtml(k.id)}', this.value)" class="text-[11px] font-bold py-1 px-2.5 rounded-full border cursor-pointer appearance-none pr-6 focus:outline-none transition ${
+                                isPublished 
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700' 
+                                    : isSent 
+                                    ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-700' 
+                                    : 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700'
+                            }">
+                                <option value="pending" ${isPending ? 'selected' : ''}>🟡 BELUM DITAWARKAN</option>
+                                <option value="sent" ${isSent ? 'selected' : ''}>📩 SUDAH DI-DM PENAWARAN</option>
+                                <option value="published" ${isPublished ? 'selected' : ''}>🟢 SUDAH DIPOSTING (PUBLIK)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-500">
+                                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                            </div>
+                        </div>
+                    `;
 
                     return `
                         <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                            <td class="py-3 px-4 font-mono font-bold text-xs text-slate-400">${numId}</td>
-                            <td class="py-3 px-4">
-                                <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(k.name)}</h6>
-                                <p class="text-[11px] text-slate-400 line-clamp-1">${escapeHtml(k.description || 'Tidak ada deskripsi')}</p>
+                            <td class="py-3 px-4 font-mono font-bold text-xs text-slate-400">
+                                <span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono text-[10px]">${escapeHtml(k.id)}</span>
                             </td>
-                            <td class="py-3 px-4 text-xs space-x-2">${contacts.join(' ') || '—'}</td>
-                            <td class="py-3 px-4">${statusBadge}</td>
+                            <td class="py-3 px-4">
+                                <h6 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    ${escapeHtml(k.name)}
+                                    ${isPublished ? '<span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Aktif di Pencarian Publik"></span>' : ''}
+                                </h6>
+                                <p class="text-[11px] text-slate-400 line-clamp-1">${escapeHtml(k.description || 'Data terdaftar di sistem')}</p>
+                            </td>
+                            <td class="py-3 px-4 text-xs space-x-2">${contacts.join(' ') || '<span class="text-slate-400">—</span>'}</td>
+                            <td class="py-3 px-4">${statusDropdownHtml}</td>
                             <td class="py-3 px-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <button onclick="toggleKostPublish('${escapeHtml(k.id)}', ${isPublished})" title="${isPublished ? 'Tarik dari publik (Kembalikan ke status penawaran)' : 'Tayangkan Resmi ke Publik (!cari publik)'}" class="p-1.5 rounded-lg border ${isPublished ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:border-emerald-700' : 'border-slate-200 text-slate-500 hover:text-emerald-600'} hover:bg-emerald-100/50 transition">
-                                        <i data-lucide="${isPublished ? 'globe-2' : 'send'}" class="w-3.5 h-3.5"></i>
+                                    <button onclick="copyKostDmText('${escapeHtml(k.name).replace(/'/g, "\\'")}')" title="Salin template balon pesan DM promosi" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 transition">
+                                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                     </button>
-                                    <button onclick="toggleKostSent('${escapeHtml(k.id)}', ${!isSent})" title="${isSent ? 'Tandai Belum Di-DM (Pending)' : 'Tandai Sudah Di-DM Penawaran'}" class="p-1.5 rounded-lg border ${isSent ? 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-950/50' : 'border-amber-200 text-amber-600'} hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                                        <i data-lucide="${isSent ? 'check-check' : 'mail'}" class="w-3.5 h-3.5"></i>
+                                    <button onclick="toggleKostPublish('${escapeHtml(k.id)}', ${isPublished})" title="${isPublished ? 'Tarik dari publik (Kembalikan ke status DM)' : 'Tayangkan Resmi ke Publik (!cari publik)'}" class="p-1.5 rounded-lg border ${isPublished ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:border-emerald-700' : 'border-slate-200 text-slate-500 hover:text-emerald-600'} hover:bg-emerald-100/50 transition">
+                                        <i data-lucide="${isPublished ? 'globe' : 'send'}" class="w-3.5 h-3.5"></i>
                                     </button>
                                     <button onclick="editKostModal('${escapeHtml(k.id)}')" title="Edit Data" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
                                         <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
@@ -2426,7 +2593,7 @@
                             <thead>
                                 <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                                     <th class="py-3 px-4">#ID</th>
-                                    <th class="py-3 px-4">NAMA ITEM & DETAIL</th>
+                                    <th class="py-3 px-4">NAMA KOS & DETAIL</th>
                                     <th class="py-3 px-4">KONTAK / SOSIAL MEDIA</th>
                                     <th class="py-3 px-4">STATUS VISIBILITAS</th>
                                     <th class="py-3 px-4 text-right">AKSI</th>
@@ -2443,30 +2610,39 @@
                     const st = (k.status || 'pending').toLowerCase();
                     const isPublished = st === 'published' || st === 'posted';
                     const isSent = st === 'sent';
-
-                    let badgeClass = 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400';
-                    let badgeLabel = '🟡 BELUM DITAWARKAN';
-                    if (isPublished) {
-                        badgeClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400';
-                        badgeLabel = '🟢 SUDAH DIPOST';
-                    } else if (isSent) {
-                        badgeClass = 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400';
-                        badgeLabel = '📩 SUDAH DI-DM';
-                    }
+                    const isPending = !isPublished && !isSent;
 
                     return `
-                        <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between gap-3">
-                            <div class="space-y-1.5">
+                        <div class="p-4 rounded-2xl border ${isPublished ? 'border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/20 dark:bg-emerald-950/10' : 'border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30'} flex flex-col justify-between gap-3">
+                            <div class="space-y-2">
                                 <div class="flex items-start justify-between gap-2">
-                                    <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(k.name)}</h6>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">${badgeLabel}</span>
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono text-[10px]">${escapeHtml(k.id)}</span>
+                                            <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(k.name)}</h6>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">${escapeHtml(k.description || 'Data terdaftar di sistem')}</p>
+                                    </div>
                                 </div>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(k.description || 'Tidak ada deskripsi')}</p>
+                                <div class="pt-1">
+                                    <select onchange="changeKostStatus('${escapeHtml(k.id)}', this.value)" class="w-full text-[11px] font-bold py-1.5 px-2.5 rounded-xl border cursor-pointer focus:outline-none transition ${
+                                        isPublished 
+                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700' 
+                                            : isSent 
+                                            ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-700' 
+                                            : 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700'
+                                    }">
+                                        <option value="pending" ${isPending ? 'selected' : ''}>🟡 BELUM DITAWARKAN</option>
+                                        <option value="sent" ${isSent ? 'selected' : ''}>📩 SUDAH DI-DM PENAWARAN</option>
+                                        <option value="published" ${isPublished ? 'selected' : ''}>🟢 SUDAH DIPOSTING (PUBLIK)</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
-                                <span class="font-mono text-[11px] text-slate-400">${escapeHtml(k.contact?.whatsapp || k.whatsapp || '-')}</span>
+                                <span class="font-mono text-[11px] text-slate-400">${escapeHtml(k.contact?.whatsapp || k.whatsapp || k.instagram || '-')}</span>
                                 <div class="flex items-center gap-1.5">
-                                    <button onclick="toggleKostPublish('${escapeHtml(k.id)}', ${isPublished})" title="${isPublished ? 'Tarik dari Publik' : 'Tayangkan ke Publik'}" class="p-1.5 rounded-lg border ${isPublished ? 'border-emerald-300 text-emerald-600' : 'border-slate-200 text-slate-500'}"><i data-lucide="${isPublished ? 'globe-2' : 'send'}" class="w-3.5 h-3.5"></i></button>
+                                    <button onclick="copyKostDmText('${escapeHtml(k.name).replace(/'/g, "\\'")}')" title="Salin Template DM" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-indigo-600"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                    <button onclick="toggleKostPublish('${escapeHtml(k.id)}', ${isPublished})" title="${isPublished ? 'Tarik dari Publik' : 'Tayangkan ke Publik'}" class="p-1.5 rounded-lg border ${isPublished ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-slate-200 text-slate-500'}"><i data-lucide="${isPublished ? 'globe' : 'send'}" class="w-3.5 h-3.5"></i></button>
                                     <button onclick="editKostModal('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
                                     <button onclick="deleteKostPrompt('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg border border-rose-200 text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                                 </div>
@@ -2478,6 +2654,42 @@
                 container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">${cardsHtml}</div>`;
             }
             if (window.lucide) lucide.createIcons();
+        }
+
+        function copyKostDmText(name) {
+            const text = `Halo Kak, salam kenal dari tim @bukittinggikos 👋\n\nKami lihat ${name} lokasinya strategis dan tempatnya nyaman banget. Kebetulan kami baru buat platform informasi kos & kontrakan khusus wilayah Bukittinggi.\n\nKarena baru launching, kami mau menawarkan promosi gratis untuk ${name} supaya bisa makin dikenal pencari kos di Bukittinggi.\n\nKalau Kakak berminat, cukup kirimkan foto unit dan detail harganya ya, nanti bantu kami buatkan postingannya.\n\nTerima kasih banyak Kak, semoga sehat selalu!`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(`📋 Teks DM promosi untuk "${name}" berhasil disalin!`, 'success');
+                }).catch(() => {
+                    showToast('Gagal menyalin otomatis.', 'warning');
+                });
+            } else {
+                showToast(`📋 Teks promosi siap untuk "${name}"!`, 'info');
+            }
+        }
+
+        async function changeKostStatus(id, newStatus) {
+            if (!checkSuperuserOrWarn()) return;
+            try {
+                showToast('Memperbarui status...', 'info');
+                const res = await fetch(`/api/kost/${encodeURIComponent(id)}/status`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ status: newStatus, updatedBy: 'Web Admin' })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const label = newStatus === 'published' ? '🟢 SUDAH DIPOSTING (PUBLIK)' : (newStatus === 'sent' ? '📩 TERKIRIM PENAWARAN (DM)' : '🟡 BELUM DITAWARKAN');
+                    showToast(`Status berhasil diubah: ${label}`, 'success');
+                    loadKostList();
+                    fetchStatus();
+                } else {
+                    showToast(result.message || 'Gagal mengubah status.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
         }
 
         function openAddKostModal() {
@@ -2509,7 +2721,10 @@
             document.getElementById('kostWhatsapp').value = item.contact?.whatsapp || item.whatsapp || '';
             document.getElementById('kostInstagram').value = item.contact?.instagram || item.instagram || '';
             document.getElementById('kostTiktok').value = item.contact?.tiktok || item.tiktok || '';
-            document.getElementById('kostStatus').value = item.status || 'pending';
+            
+            const rawStatus = (item.status || 'pending').toLowerCase();
+            const normalizedStatus = (rawStatus === 'posted') ? 'published' : rawStatus;
+            document.getElementById('kostStatus').value = normalizedStatus;
 
             const modal = document.getElementById('kostModal');
             if (modal) {
@@ -2580,6 +2795,7 @@
         async function toggleKostPublish(id, currentlyPublished) {
             if (!checkSuperuserOrWarn()) return;
             try {
+                showToast(currentlyPublished ? 'Menarik dari publik...' : 'Mempublikasikan kos...', 'info');
                 const res = await fetch(`/api/kost/${encodeURIComponent(id)}/publish`, {
                     method: 'POST',
                     headers: getAuthHeaders(),
@@ -2754,6 +2970,9 @@
                             <td class="py-3 px-4">${statusBadge}</td>
                             <td class="py-3 px-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
+                                    <button onclick="openEditSubmissionModal('${escapeHtml(s.id)}')" title="Edit Data Usulan" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                    </button>
                                     ${st === 'pending' ? `
                                         <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" title="Setujui & Buat Data Kos Baru" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition active:scale-95 shadow-xs">
                                             Setujui
@@ -2822,6 +3041,7 @@
                             <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
                                 <span class="font-mono text-[10px] text-slate-400">#${escapeHtml(String(s.id))}</span>
                                 <div class="flex items-center gap-1.5">
+                                    <button onclick="openEditSubmissionModal('${escapeHtml(s.id)}')" title="Edit Usulan" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
                                     ${st === 'pending' ? `
                                         <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold">Setujui</button>
                                         <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" class="px-2.5 py-1 rounded-lg border border-rose-200 text-rose-600 text-[11px] font-semibold">Tolak</button>
@@ -2837,6 +3057,66 @@
             }
 
             if (window.lucide) lucide.createIcons();
+        }
+
+        function openEditSubmissionModal(id) {
+            const sub = rawSubmissionsData.find(s => String(s.id) === String(id));
+            if (!sub) {
+                showToast('Data usulan tidak ditemukan.', 'error');
+                return;
+            }
+
+            document.getElementById('subEditId').value = sub.id;
+            document.getElementById('subName').value = sub.name || '';
+            document.getElementById('subContacts').value = sub.contactsRaw || sub.contact?.whatsapp || sub.contact || '';
+            document.getElementById('subStatus').value = sub.status || 'pending';
+
+            const modal = document.getElementById('submissionModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeSubmissionModal() {
+            const modal = document.getElementById('submissionModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        async function submitSubmissionForm() {
+            if (!checkSuperuserOrWarn()) return;
+            const id = document.getElementById('subEditId')?.value;
+            const name = (document.getElementById('subName')?.value || '').trim();
+            const contactsRaw = (document.getElementById('subContacts')?.value || '').trim();
+            const status = document.getElementById('subStatus')?.value || 'pending';
+
+            if (!name) {
+                showToast('Nama usulan tidak boleh kosong.', 'warning');
+                return;
+            }
+
+            try {
+                showToast('Menyimpan perubahan usulan...', 'info');
+                const res = await fetch(`/api/submissions/${encodeURIComponent(id)}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ name, contactsRaw, status })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Data usulan berhasil diperbarui!', 'success');
+                    closeSubmissionModal();
+                    loadSubmissionsList();
+                } else {
+                    showToast(result.message || 'Gagal memperbarui usulan.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
         }
 
         async function reviewSubmission(id, action) {
@@ -2935,9 +3215,14 @@
                         ${ar.ownerOnly ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700">OWNER ONLY</span>` : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">SEMUA MEMBER</span>`}
                     </td>
                     <td class="py-3 px-4 text-right">
-                        <button onclick="deleteAutoreplyPrompt('${escapeHtml(ar.trigger || ar.keyword)}')" title="Hapus Autoreply" class="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="openEditAutoreplyModal('${escapeHtml(ar.id || ar.trigger || ar.keyword)}')" title="Edit Autoreply" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="deleteAutoreplyPrompt('${escapeHtml(ar.trigger || ar.keyword)}')" title="Hapus Autoreply" class="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -2963,9 +3248,38 @@
         }
 
         function openAddAutoreplyModal() {
+            document.getElementById('autoreplyModalTitle').textContent = 'Tambah Autoreply Baru';
+            document.getElementById('arEditId').value = '';
             document.getElementById('arTrigger').value = '';
             document.getElementById('arResponse').value = '';
             document.getElementById('arOwnerOnly').checked = false;
+
+            const modal = document.getElementById('autoreplyModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openEditAutoreplyModal(idOrTrigger) {
+            const item = rawAutorepliesData.find(ar => 
+                (ar.id && String(ar.id) === String(idOrTrigger)) || 
+                ar.trigger === idOrTrigger || 
+                ar.keyword === idOrTrigger ||
+                (Array.isArray(ar.triggers) && ar.triggers.includes(idOrTrigger))
+            );
+
+            if (!item) {
+                showToast('Data autoreply tidak ditemukan.', 'error');
+                return;
+            }
+
+            document.getElementById('autoreplyModalTitle').textContent = 'Edit Autoreply';
+            document.getElementById('arEditId').value = item.id || item.trigger || item.keyword;
+            document.getElementById('arTrigger').value = item.trigger || (Array.isArray(item.triggers) ? item.triggers.join(' / ') : '') || item.keyword || '';
+            document.getElementById('arResponse').value = item.response || '';
+            document.getElementById('arOwnerOnly').checked = Boolean(item.ownerOnly);
 
             const modal = document.getElementById('autoreplyModal');
             if (modal) {
@@ -2985,6 +3299,7 @@
 
         async function submitAutoreply() {
             if (!checkSuperuserOrWarn()) return;
+            const editId = document.getElementById('arEditId')?.value;
             const trigger = (document.getElementById('arTrigger')?.value || '').trim();
             const response = (document.getElementById('arResponse')?.value || '').trim();
             const ownerOnly = document.getElementById('arOwnerOnly')?.checked || false;
@@ -2999,19 +3314,36 @@
             }
 
             try {
-                showToast('Menyimpan autoreply...', 'info');
-                const res = await fetch('/api/autoreplies', {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ trigger, keyword: trigger, response, ownerOnly })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('Autoreply berhasil disimpan!', 'success');
-                    closeAutoreplyModal();
-                    loadAutoreplies();
+                if (editId) {
+                    showToast('Memperbarui autoreply...', 'info');
+                    const res = await fetch(`/api/autoreplies/${encodeURIComponent(editId)}`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ trigger, keyword: trigger, response, ownerOnly })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Autoreply berhasil diperbarui!', 'success');
+                        closeAutoreplyModal();
+                        loadAutoreplies();
+                    } else {
+                        showToast(result.message || 'Gagal memperbarui autoreply.', 'error');
+                    }
                 } else {
-                    showToast(result.message || 'Gagal menyimpan autoreply.', 'error');
+                    showToast('Menyimpan autoreply...', 'info');
+                    const res = await fetch('/api/autoreplies', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ trigger, keyword: trigger, response, ownerOnly })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Autoreply berhasil disimpan!', 'success');
+                        closeAutoreplyModal();
+                        loadAutoreplies();
+                    } else {
+                        showToast(result.message || 'Gagal menyimpan autoreply.', 'error');
+                    }
                 }
             } catch (err) {
                 showToast(`Error: ${err.message}`, 'error');
@@ -3114,11 +3446,16 @@
                             ${isSuper ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">SUPER OWNER</span>` : `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">ADMIN BOT</span>`}
                         </td>
                         <td class="py-3 px-4 text-right">
-                            ${isSuper ? `<span class="text-[10px] text-slate-400 font-semibold">Permanen</span>` : `
-                                <button onclick="deleteOwnerPrompt('${escapeHtml(o.number)}')" title="Hapus Owner" class="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="openEditOwnerModal('${escapeHtml(o.number)}')" title="Edit Owner" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                 </button>
-                            `}
+                                ${isSuper ? `<span class="text-[10px] text-slate-400 font-semibold px-1">Permanen</span>` : `
+                                    <button onclick="deleteOwnerPrompt('${escapeHtml(o.number)}')" title="Hapus Owner" class="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                `}
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -3145,8 +3482,30 @@
         }
 
         function openAddOwnerModal() {
+            document.getElementById('ownerModalTitle').textContent = 'Tambah Pengelola (Owner)';
+            document.getElementById('ownerEditOldNumber').value = '';
             document.getElementById('ownerName').value = '';
             document.getElementById('ownerNumber').value = '';
+
+            const modal = document.getElementById('ownerModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openEditOwnerModal(number) {
+            const owner = rawOwnersData.find(o => o.number === number);
+            if (!owner) {
+                showToast('Data owner tidak ditemukan.', 'error');
+                return;
+            }
+
+            document.getElementById('ownerModalTitle').textContent = 'Edit Data Pengelola (Owner)';
+            document.getElementById('ownerEditOldNumber').value = owner.number;
+            document.getElementById('ownerName').value = owner.name || '';
+            document.getElementById('ownerNumber').value = owner.number || '';
 
             const modal = document.getElementById('ownerModal');
             if (modal) {
@@ -3164,8 +3523,9 @@
             }
         }
 
-        async function submitAddOwner() {
+        async function submitOwnerForm() {
             if (!checkSuperuserOrWarn()) return;
+            const oldNumber = document.getElementById('ownerEditOldNumber')?.value;
             const name = (document.getElementById('ownerName')?.value || '').trim();
             const number = (document.getElementById('ownerNumber')?.value || '').trim();
 
@@ -3175,20 +3535,38 @@
             }
 
             try {
-                showToast('Menambahkan owner...', 'info');
-                const res = await fetch('/api/owners', {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ name, number })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('Owner baru berhasil ditambahkan!', 'success');
-                    closeOwnerModal();
-                    loadOwners();
-                    fetchStatus();
+                if (oldNumber) {
+                    showToast('Memperbarui data owner...', 'info');
+                    const res = await fetch(`/api/owners/${encodeURIComponent(oldNumber)}`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ name, number })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Data owner berhasil diperbarui!', 'success');
+                        closeOwnerModal();
+                        loadOwners();
+                        fetchStatus();
+                    } else {
+                        showToast(result.message || 'Gagal memperbarui owner.', 'error');
+                    }
                 } else {
-                    showToast(result.message || 'Gagal menambahkan owner.', 'error');
+                    showToast('Menambahkan owner...', 'info');
+                    const res = await fetch('/api/owners', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ name, number })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Owner baru berhasil ditambahkan!', 'success');
+                        closeOwnerModal();
+                        loadOwners();
+                        fetchStatus();
+                    } else {
+                        showToast(result.message || 'Gagal menambahkan owner.', 'error');
+                    }
                 }
             } catch (err) {
                 showToast(`Error: ${err.message}`, 'error');

@@ -133,7 +133,53 @@ module.exports = {
             return;
         }
 
-        const unknownMsg = `Perintah !owner ${subCommand} tidak dikenali.\n\nGunakan:\n!owner list\n!owner add <nomor>\n!owner delete <nomor>`;
+        if (subCommand === 'edit' || subCommand === 'update') {
+            const rawOldNumber = args[0];
+            const cleanOldNumber = phoneUtils.normalizePhoneNumber(rawOldNumber);
+            if (!cleanOldNumber) {
+                const helpMsg = '❌ Format: `!owner edit <nomor_lama> [nama_baru]`\nAtau: `!owner edit <nomor_lama> <nomor_baru> [nama_baru]`';
+                if (typeof reply === 'function') await reply(helpMsg);
+                else await sock.sendMessage(from, { text: helpMsg }, { quoted: msg });
+                return;
+            }
+
+            let newNumber = cleanOldNumber;
+            let newName = '';
+
+            // Check if second argument is a phone number
+            const possibleSecondNumber = phoneUtils.normalizePhoneNumber(args[1]);
+            if (possibleSecondNumber && (args[1].startsWith('62') || args[1].startsWith('08') || args[1].startsWith('+'))) {
+                newNumber = possibleSecondNumber;
+                newName = args.slice(2).join(' ').trim();
+            } else {
+                newName = args.slice(1).join(' ').trim();
+            }
+
+            if (!newName) {
+                // Keep existing name if not provided
+                const currentOwner = database.getOwners().find(o => phoneUtils.normalizePhoneNumber(o.number) === cleanOldNumber);
+                if (currentOwner) {
+                    newName = typeof currentOwner === 'object' ? currentOwner.name : 'Owner';
+                } else {
+                    newName = 'Owner';
+                }
+            }
+
+            const result = await database.updateOwner(cleanOldNumber, { name: newName, number: newNumber });
+            if (!result.success) {
+                const warnMsg = `⚠️ ${result.message}`;
+                if (typeof reply === 'function') await reply(warnMsg);
+                else await sock.sendMessage(from, { text: warnMsg }, { quoted: msg });
+                return;
+            }
+
+            const succMsg = `✅ Owner berhasil diperbarui!\n\n👤 Nama: *${newName}*\n📱 Nomor: *${phoneUtils.maskNumber(newNumber)}*`;
+            if (typeof reply === 'function') await reply(succMsg);
+            else await sock.sendMessage(from, { text: succMsg }, { quoted: msg });
+            return;
+        }
+
+        const unknownMsg = `Perintah !owner ${subCommand} tidak dikenali.\n\nGunakan:\n• \`!owner list\`\n• \`!owner add <nomor> [nama]\`\n• \`!owner edit <nomor_lama> [nama_baru]\`\n• \`!owner delete <nomor>\``;
         if (typeof reply === 'function') {
             await reply(unknownMsg);
         } else {

@@ -26,9 +26,6 @@ const DEFAULT_WELCOME = {
         'Ketik !menu untuk melihat fitur bot.'
 };
 
-// ====================================================
-// IN-MEMORY CACHE (ULTRA LOW-LATENCY 0MS READS)
-// ====================================================
 const cache = {
     owners: [],
     groups: [],
@@ -1046,41 +1043,91 @@ async function addAutoreply(triggerInput, response, createdBy = 'owner', groupId
     return { success: true, message: `Autoreply untuk "${primaryTrigger}" berhasil ditambahkan.`, item: newItem };
 }
 
-async function editAutoreply(triggerInput, newResponse, updatedBy = 'owner') {
-    if (!triggerInput || !newResponse) {
-        return { success: false, message: 'Trigger dan respons baru wajib diisi.' };
+async function editAutoreply(triggerOrId, updatesOrResponse, updatedBy = 'owner') {
+    if (!triggerOrId || !updatesOrResponse) {
+        return { success: false, message: 'Identitas trigger/ID dan data baru wajib diisi.' };
     }
 
-    const targets = normalizeTriggerList(triggerInput);
+    let isObjectUpdate = typeof updatesOrResponse === 'object' && updatesOrResponse !== null;
+    let newResponse = isObjectUpdate ? updatesOrResponse.response : String(updatesOrResponse);
+    let newTriggerInput = isObjectUpdate ? updatesOrResponse.trigger : null;
+    let newOwnerOnly = isObjectUpdate && updatesOrResponse.ownerOnly !== undefined ? Boolean(updatesOrResponse.ownerOnly) : undefined;
+    let newGroupId = isObjectUpdate && updatesOrResponse.groupId !== undefined ? (updatesOrResponse.groupId ? normalizeJid(updatesOrResponse.groupId) : null) : undefined;
+
     let foundIndex = -1;
 
-    for (const t of targets) {
-        const normalized = t.toLowerCase();
-        foundIndex = cache.autoreplies.findIndex(item => {
-            if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
-            if (item.trigger?.toLowerCase() === normalized) return true;
-            if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
-                const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
-                if (parts.includes(normalized)) return true;
-            }
-            return false;
-        });
-        if (foundIndex !== -1) break;
+    // 1. Try finding by numeric/string ID if triggerOrId matches an item ID
+    if (typeof triggerOrId === 'number' || (!isNaN(Number(triggerOrId)) && !String(triggerOrId).startsWith('!'))) {
+        const numericId = Number(triggerOrId);
+        foundIndex = cache.autoreplies.findIndex(item => item.id === numericId);
+    }
+
+    // 2. Try finding by trigger keywords if not found by ID
+    if (foundIndex === -1) {
+        const targets = normalizeTriggerList(String(triggerOrId));
+        for (const t of targets) {
+            const normalized = t.toLowerCase();
+            foundIndex = cache.autoreplies.findIndex(item => {
+                if (Array.isArray(item.triggers) && item.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
+                if (item.trigger?.toLowerCase() === normalized) return true;
+                if (item.trigger && (item.trigger.includes('/') || item.trigger.includes(','))) {
+                    const parts = item.trigger.split(/[/,]+/).map(p => p.trim().toLowerCase());
+                    if (parts.includes(normalized)) return true;
+                }
+                return false;
+            });
+            if (foundIndex !== -1) break;
+        }
     }
 
     if (foundIndex === -1) {
-        return { success: false, message: `Trigger "${triggerInput}" tidak ditemukan.` };
+        return { success: false, message: `Autoreply "${triggerOrId}" tidak ditemukan.` };
     }
 
     const item = cache.autoreplies[foundIndex];
-    if (targets.length > 1) {
-        item.triggers = targets;
-        item.trigger = targets.join(' / ');
-    } else if (targets.length === 1 && !item.triggers?.some(tr => tr.toLowerCase() === targets[0].toLowerCase())) {
-        item.triggers = targets;
-        item.trigger = targets[0];
+    const targetGroupId = newGroupId !== undefined ? newGroupId : item.groupId;
+
+    // If new trigger(s) are supplied, validate for collision against other autoreplies
+    if (newTriggerInput) {
+        const newTriggers = normalizeTriggerList(newTriggerInput);
+        if (newTriggers.length === 0) {
+            return { success: false, message: 'Format trigger baru tidak valid.' };
+        }
+
+        for (const t of newTriggers) {
+            const collision = cache.autoreplies.find((other, idx) => {
+                if (idx === foundIndex) return false;
+                const matchGroup = (!targetGroupId && !other.groupId) || (targetGroupId && other.groupId === targetGroupId);
+                if (!matchGroup) return false;
+                const normalized = t.toLowerCase();
+                if (Array.isArray(other.triggers) && other.triggers.some(tr => tr.toLowerCase() === normalized)) return true;
+                if (other.trigger?.toLowerCase() === normalized) return true;
+                return false;
+            });
+
+            if (collision) {
+                const label = Array.isArray(collision.triggers) ? collision.triggers.join(' / ') : collision.trigger;
+                return {
+                    success: false,
+                    message: `Trigger "${t}" sudah digunakan oleh autoreply lain (${label}). Tidak dapat menduplikasi.`
+                };
+            }
+        }
+
+        item.triggers = newTriggers;
+        item.trigger = newTriggers.join(' / ');
     }
-    item.response = newResponse.trim();
+
+    if (newResponse !== undefined) {
+        item.response = String(newResponse).trim();
+    }
+    if (newOwnerOnly !== undefined) {
+        item.ownerOnly = newOwnerOnly;
+    }
+    if (newGroupId !== undefined) {
+        item.groupId = newGroupId;
+    }
+
     item.updatedBy = updatedBy;
     item.updatedAt = new Date().toISOString();
 
@@ -1091,16 +1138,16 @@ async function editAutoreply(triggerInput, newResponse, updatedBy = 'owner') {
         if (item.id) {
             await db.query(
                 `UPDATE autoreplies
-                 SET trigger_name = ?, triggers_json = ?, response = ?, updated_by = ?, updated_at = NOW()
+                 SET trigger_name = ?, triggers_json = ?, response = ?, group_id = ?, owner_only = ?, updated_by = ?, updated_at = NOW()
                  WHERE id = ?`,
-                [item.trigger, JSON.stringify(item.triggers), item.response, updatedBy, item.id]
+                [item.trigger, JSON.stringify(item.triggers || [item.trigger]), item.response, item.groupId || null, item.ownerOnly ? 1 : 0, updatedBy, item.id]
             );
         } else {
             await db.query(
                 `UPDATE autoreplies
-                 SET response = ?, updated_by = ?, updated_at = NOW()
+                 SET response = ?, group_id = ?, owner_only = ?, updated_by = ?, updated_at = NOW()
                  WHERE trigger_name = ?`,
-                [item.response, updatedBy, item.trigger]
+                [item.response, item.groupId || null, item.ownerOnly ? 1 : 0, updatedBy, item.trigger]
             );
         }
     } catch (err) {
@@ -1108,7 +1155,7 @@ async function editAutoreply(triggerInput, newResponse, updatedBy = 'owner') {
     }
 
     const label = Array.isArray(item.triggers) ? item.triggers.join(' / ') : item.trigger;
-    return { success: true, message: `Autoreply untuk "${label}" berhasil diubah.`, item };
+    return { success: true, message: `Autoreply untuk "${label}" berhasil diperbarui.`, item, data: item };
 }
 
 async function deleteAutoreply(triggerInput) {
@@ -1510,27 +1557,45 @@ async function generateNextKostIdFromDb() {
     return `KST-${String(maxNum + 1).padStart(6, '0')}`;
 }
 
+async function syncKostBackup() {
+    try {
+        const db = getPool();
+        const [rows] = await db.query('SELECT * FROM kost ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC');
+        const list = rows.map(mapKostRow);
+        syncDataFile(KOST_FILE, list);
+        return list;
+    } catch (err) {
+        console.warn('[database] Warning syncing kost backup JSON:', err.message);
+        return [];
+    }
+}
+
 async function getKostList(groupId = null) {
     try {
         await ensureAllTables();
         const db = getPool();
         const effectiveGroupId = resolveDataGroupId(groupId);
-        const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
-        let query = 'SELECT * FROM kost';
-        const params = [];
+        const cleanGroupId = (effectiveGroupId && String(effectiveGroupId).endsWith('@g.us')) ? normalizeJid(effectiveGroupId) : null;
+        
         if (cleanGroupId) {
-            query += ' WHERE group_id = ?';
-            params.push(cleanGroupId);
+            const [groupRows] = await db.query(
+                'SELECT * FROM kost WHERE group_id = ? ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC',
+                [cleanGroupId]
+            );
+            if (groupRows.length > 0) {
+                return groupRows.map(mapKostRow);
+            }
         }
-        query += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
-        const [rows] = await db.query(query, params);
+
+        const [rows] = await db.query('SELECT * FROM kost ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC');
         return rows.map(mapKostRow);
     } catch (err) {
         const list = readJSON(KOST_FILE, []);
         const effectiveGroupId = resolveDataGroupId(groupId);
-        const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
+        const cleanGroupId = (effectiveGroupId && String(effectiveGroupId).endsWith('@g.us')) ? normalizeJid(effectiveGroupId) : null;
         if (cleanGroupId) {
-            return list.filter(k => normalizeJid(k.groupId || k.group_id) === cleanGroupId);
+            const groupFiltered = list.filter(k => normalizeJid(k.groupId || k.group_id) === cleanGroupId);
+            if (groupFiltered.length > 0) return groupFiltered;
         }
         return list;
     }
@@ -1554,18 +1619,28 @@ async function getKostByStatus(statusOrGroup, groupIdOrStatus = null) {
         return getKostList(targetGroup);
     }
 
+    // Normalize status alias
+    const normalizedStatus = (s === 'posted') ? 'published' : s;
+
     await ensureAllTables();
     const db = getPool();
     const effectiveGroupId = resolveDataGroupId(targetGroup);
-    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
-    let query = 'SELECT * FROM kost WHERE status = ?';
-    const params = [s];
+    const cleanGroupId = (effectiveGroupId && String(effectiveGroupId).endsWith('@g.us')) ? normalizeJid(effectiveGroupId) : null;
+
     if (cleanGroupId) {
-        query += ' AND group_id = ?';
-        params.push(cleanGroupId);
+        const [groupRows] = await db.query(
+            'SELECT * FROM kost WHERE (status = ? OR (status = "posted" AND ? = "published")) AND group_id = ? ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC',
+            [normalizedStatus, normalizedStatus, cleanGroupId]
+        );
+        if (groupRows.length > 0) {
+            return groupRows.map(mapKostRow);
+        }
     }
-    query += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
-    const [rows] = await db.query(query, params);
+
+    const [rows] = await db.query(
+        'SELECT * FROM kost WHERE (status = ? OR (status = "posted" AND ? = "published")) ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC',
+        [normalizedStatus, normalizedStatus]
+    );
     return rows.map(mapKostRow);
 }
 
@@ -1581,17 +1656,19 @@ async function getKostById(idOrGroup, groupIdOrId = null) {
     if (!targetId) return null;
     const cleanId = normalizeKostId(targetId) || String(targetId).trim().toUpperCase();
     const effectiveGroupId = resolveDataGroupId(targetGroup);
-    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
+    const cleanGroupId = (effectiveGroupId && String(effectiveGroupId).endsWith('@g.us')) ? normalizeJid(effectiveGroupId) : null;
 
     await ensureAllTables();
     const db = getPool();
-    let query = 'SELECT * FROM kost WHERE id = ?';
-    const params = [cleanId];
+
     if (cleanGroupId) {
-        query += ' AND group_id = ?';
-        params.push(cleanGroupId);
+        const [groupRows] = await db.query('SELECT * FROM kost WHERE id = ? AND group_id = ?', [cleanId, cleanGroupId]);
+        if (groupRows.length > 0) {
+            return mapKostRow(groupRows[0]);
+        }
     }
-    const [rows] = await db.query(query, params);
+
+    const [rows] = await db.query('SELECT * FROM kost WHERE id = ?', [cleanId]);
     return rows.length > 0 ? mapKostRow(rows[0]) : null;
 }
 
@@ -1614,10 +1691,35 @@ async function searchKost(queryOrGroup, groupIdOrQuery = null, options = {}) {
     if (!targetQuery) return [];
     const q = String(targetQuery).trim().toLowerCase();
     const effectiveGroupId = resolveDataGroupId(targetGroup);
-    const cleanGroupId = effectiveGroupId ? normalizeJid(effectiveGroupId) : null;
+    const cleanGroupId = (effectiveGroupId && String(effectiveGroupId).endsWith('@g.us')) ? normalizeJid(effectiveGroupId) : null;
 
     await ensureAllTables();
     const db = getPool();
+    const likePattern = `%${q}%`;
+    const normSt = targetStatus && targetStatus !== 'all' 
+        ? (String(targetStatus).toLowerCase() === 'posted' ? 'published' : String(targetStatus).toLowerCase())
+        : null;
+
+    if (cleanGroupId) {
+        let groupSql = `SELECT * FROM kost WHERE (
+            LOWER(name) LIKE ? OR 
+            LOWER(COALESCE(instagram, '')) LIKE ? OR 
+            LOWER(COALESCE(tiktok, '')) LIKE ? OR 
+            LOWER(COALESCE(whatsapp, '')) LIKE ? OR 
+            LOWER(id) LIKE ?
+        ) AND group_id = ?`;
+        const groupParams = [likePattern, likePattern, likePattern, likePattern, likePattern, cleanGroupId];
+        if (normSt) {
+            groupSql += ' AND (status = ? OR (status = "posted" AND ? = "published"))';
+            groupParams.push(normSt, normSt);
+        }
+        groupSql += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
+        const [groupRows] = await db.query(groupSql, groupParams);
+        if (groupRows.length > 0) {
+            return groupRows.map(mapKostRow);
+        }
+    }
+
     let sql = `SELECT * FROM kost WHERE (
         LOWER(name) LIKE ? OR 
         LOWER(COALESCE(instagram, '')) LIKE ? OR 
@@ -1625,19 +1727,11 @@ async function searchKost(queryOrGroup, groupIdOrQuery = null, options = {}) {
         LOWER(COALESCE(whatsapp, '')) LIKE ? OR 
         LOWER(id) LIKE ?
     )`;
-    const likePattern = `%${q}%`;
     const params = [likePattern, likePattern, likePattern, likePattern, likePattern];
-
-    if (cleanGroupId) {
-        sql += ' AND group_id = ?';
-        params.push(cleanGroupId);
+    if (normSt) {
+        sql += ' AND (status = ? OR (status = "posted" AND ? = "published"))';
+        params.push(normSt, normSt);
     }
-
-    if (targetStatus && targetStatus !== 'all') {
-        sql += ' AND status = ?';
-        params.push(targetStatus.toLowerCase());
-    }
-
     sql += ' ORDER BY CAST(SUBSTRING(id, 5) AS UNSIGNED) ASC';
     const [rows] = await db.query(sql, params);
     return rows.map(mapKostRow);
@@ -1649,8 +1743,10 @@ async function addKost({ name, instagram = null, tiktok = null, whatsapp = null,
     const cleanIg = cleanInstagramUsername(instagram);
     const cleanTt = cleanTiktokUsername(tiktok);
     const cleanWa = cleanWhatsappNumber(whatsapp);
-    const cleanGroupId = groupId ? normalizeJid(groupId) : '';
-    const cleanStatus = (status && String(status).toLowerCase() === 'sent') ? 'sent' : 'pending';
+    const cleanGroupId = (groupId && String(groupId).endsWith('@g.us')) ? normalizeJid(groupId) : '';
+    let cleanStatus = String(status || 'pending').toLowerCase();
+    if (cleanStatus === 'posted') cleanStatus = 'published';
+    if (!['pending', 'sent', 'published'].includes(cleanStatus)) cleanStatus = 'pending';
 
     if (!cleanName) {
         return { success: false, message: 'Nama kost/item wajib diisi.' };
@@ -1696,12 +1792,12 @@ async function addKost({ name, instagram = null, tiktok = null, whatsapp = null,
 
     const nextId = await generateNextKostIdFromDb();
     const now = new Date();
-    const isSent = cleanStatus === 'sent';
+    const isSentOrPub = cleanStatus === 'sent' || cleanStatus === 'published';
 
     await db.query(
         `INSERT INTO kost (id, group_id, name, instagram, tiktok, whatsapp, status, added_by, created_at, sent_by, sent_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [nextId, cleanGroupId, cleanName, cleanIg, cleanTt, cleanWa, cleanStatus, addedBy || null, now, isSent ? (addedBy || 'admin') : null, isSent ? now : null]
+        [nextId, cleanGroupId, cleanName, cleanIg, cleanTt, cleanWa, cleanStatus, addedBy || null, now, isSentOrPub ? (addedBy || 'admin') : null, isSentOrPub ? now : null]
     );
 
     const newRecord = {
@@ -1718,16 +1814,66 @@ async function addKost({ name, instagram = null, tiktok = null, whatsapp = null,
         added_by: addedBy || null,
         createdAt: now.toISOString(),
         created_at: now.toISOString(),
-        sentBy: isSent ? (addedBy || 'admin') : null,
-        sent_by: isSent ? (addedBy || 'admin') : null,
-        sentAt: isSent ? now.toISOString() : null,
-        sent_at: isSent ? now.toISOString() : null
+        sentBy: isSentOrPub ? (addedBy || 'admin') : null,
+        sent_by: isSentOrPub ? (addedBy || 'admin') : null,
+        sentAt: isSentOrPub ? now.toISOString() : null,
+        sent_at: isSentOrPub ? now.toISOString() : null
     };
+
+    syncKostBackup();
 
     return {
         success: true,
         message: `Kost "${cleanName}" berhasil ditambahkan.`,
         data: newRecord
+    };
+}
+
+/**
+ * Universal dynamic status setter for Kost (pending | sent | published)
+ */
+async function setKostStatus(targetId, targetStatus, updatedBy = '', targetGroup = null) {
+    if (!targetId) return { success: false, message: 'ID kost wajib diisi.' };
+    const cleanId = normalizeKostId(targetId) || String(targetId || '').trim().toUpperCase();
+    const cleanGroupId = (targetGroup && String(targetGroup).endsWith('@g.us')) ? normalizeJid(targetGroup) : null;
+
+    let s = String(targetStatus || 'pending').toLowerCase().trim();
+    if (s === 'posted') s = 'published';
+    if (!['pending', 'sent', 'published'].includes(s)) {
+        return { success: false, message: `Status "${targetStatus}" tidak valid (gunakan pending, sent, atau published).` };
+    }
+
+    await ensureAllTables();
+    const db = getPool();
+
+    const current = await getKostById(cleanId, cleanGroupId);
+    if (!current) {
+        return { success: false, notFound: true, message: `Kost dengan ID ${cleanId} tidak ditemukan.` };
+    }
+
+    const now = new Date();
+    let sentAt = current.sentAt;
+    let sentBy = current.sentBy;
+
+    if (s === 'pending') {
+        sentAt = null;
+        sentBy = null;
+    } else if (s === 'sent' || s === 'published') {
+        if (!sentAt) sentAt = now;
+        if (updatedBy) sentBy = updatedBy;
+    }
+
+    let updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = ? WHERE id = ?';
+    const updateParams = [s, sentBy || null, sentAt, cleanId];
+    await db.query(updateSql, updateParams);
+
+    const updated = await getKostById(cleanId, cleanGroupId);
+    syncKostBackup();
+
+    return {
+        success: true,
+        message: `Status kost ${cleanId} berhasil diubah menjadi ${s.toUpperCase()}.`,
+        data: updated
     };
 }
 
@@ -1749,21 +1895,19 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
             targetGroup = arg3;
             targetSentBy = arg2 || '';
         } else {
-            targetSentBy = arg2 || '';
-            targetGroup = arg3 || null;
+            targetSentBy = arg2 || arg3 || '';
+            targetGroup = null;
         }
     }
 
     const cleanId = normalizeKostId(targetId) || String(targetId || '').trim().toUpperCase();
-    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+    const cleanGroupId = (targetGroup && String(targetGroup).endsWith('@g.us')) ? normalizeJid(targetGroup) : null;
 
     if (!cleanId) {
         return { success: false, message: 'ID kost wajib diisi.' };
     }
 
     await ensureAllTables();
-    const db = getPool();
-
     const current = await getKostById(cleanId, cleanGroupId);
     if (!current) {
         return {
@@ -1777,25 +1921,12 @@ async function markKostSent(arg1, arg2 = '', arg3 = null) {
         return {
             success: false,
             alreadySent: true,
-            message: `Kost dengan ID ${cleanId} sudah berstatus sent sebelumnya.`,
+            message: `Kost dengan ID ${cleanId} sudah berstatus SENT sebelumnya.`,
             data: current
         };
     }
 
-    const now = new Date();
-    let updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = ? WHERE id = ?';
-    const updateParams = ['sent', targetSentBy || null, now, cleanId];
-    if (cleanGroupId) {
-        updateSql += ' AND group_id = ?';
-        updateParams.push(cleanGroupId);
-    }
-    await db.query(updateSql, updateParams);
-
-    const updated = await getKostById(cleanId, cleanGroupId);
-    return {
-        success: true,
-        data: updated
-    };
+    return setKostStatus(cleanId, 'sent', targetSentBy || 'admin', cleanGroupId);
 }
 
 async function markKostPublished(arg1, arg2 = '', arg3 = null) {
@@ -1816,21 +1947,19 @@ async function markKostPublished(arg1, arg2 = '', arg3 = null) {
             targetGroup = arg3;
             targetPublishedBy = arg2 || '';
         } else {
-            targetPublishedBy = arg2 || '';
-            targetGroup = arg3 || null;
+            targetPublishedBy = arg2 || arg3 || '';
+            targetGroup = null;
         }
     }
 
     const cleanId = normalizeKostId(targetId) || String(targetId || '').trim().toUpperCase();
-    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+    const cleanGroupId = (targetGroup && String(targetGroup).endsWith('@g.us')) ? normalizeJid(targetGroup) : null;
 
     if (!cleanId) {
         return { success: false, message: 'ID kost wajib diisi.' };
     }
 
     await ensureAllTables();
-    const db = getPool();
-
     const current = await getKostById(cleanId, cleanGroupId);
     if (!current) {
         return {
@@ -1844,25 +1973,12 @@ async function markKostPublished(arg1, arg2 = '', arg3 = null) {
         return {
             success: false,
             alreadyPublished: true,
-            message: `Kost dengan ID ${cleanId} sudah berstatus diposting (tayang) sebelumnya.`,
+            message: `Kost dengan ID ${cleanId} sudah berstatus PUBLISHED (tayang) sebelumnya.`,
             data: current
         };
     }
 
-    const now = new Date();
-    let updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = ? WHERE id = ?';
-    const updateParams = ['published', targetPublishedBy || null, now, cleanId];
-    if (cleanGroupId) {
-        updateSql += ' AND group_id = ?';
-        updateParams.push(cleanGroupId);
-    }
-    await db.query(updateSql, updateParams);
-
-    const updated = await getKostById(cleanId, cleanGroupId);
-    return {
-        success: true,
-        data: updated
-    };
+    return setKostStatus(cleanId, 'published', targetPublishedBy || 'admin', cleanGroupId);
 }
 
 function normalizeKostId(input) {
@@ -1945,7 +2061,7 @@ function parseKostIdTargets(rawInput) {
 async function markKostBatchSent(ids, groupId, senderNumber = '') {
     await ensureAllTables();
     const db = getPool();
-    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
+    const cleanGroupId = (groupId && String(groupId).endsWith('@g.us')) ? normalizeJid(groupId) : null;
     const cleanIds = Array.isArray(ids) ? [...new Set(ids.map(normalizeKostId).filter(Boolean))] : [];
 
     if (cleanIds.length === 0) {
@@ -1981,17 +2097,78 @@ async function markKostBatchSent(ids, groupId, senderNumber = '') {
         const updateIds = toUpdate.map(r => r.id);
         let updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = NOW() WHERE id IN (?)';
         const updateParams = ['sent', senderNumber || null, updateIds];
-        if (cleanGroupId) {
-            updateSql += ' AND group_id = ?';
-            updateParams.push(cleanGroupId);
-        }
         await db.query(updateSql, updateParams);
+        syncKostBackup();
     }
 
     return {
         success: true,
         updated: toUpdate,
         alreadySent,
+        notFound,
+        total: cleanIds.length
+    };
+}
+
+async function setKostBatchStatus(ids, targetStatus, updatedBy = '', groupId = null) {
+    await ensureAllTables();
+    const db = getPool();
+    const cleanGroupId = (groupId && String(groupId).endsWith('@g.us')) ? normalizeJid(groupId) : null;
+    const cleanIds = Array.isArray(ids) ? [...new Set(ids.map(normalizeKostId).filter(Boolean))] : [];
+
+    let s = String(targetStatus || 'pending').toLowerCase().trim();
+    if (s === 'posted') s = 'published';
+    if (!['pending', 'sent', 'published'].includes(s)) {
+        return { success: false, message: `Status "${targetStatus}" tidak valid.` };
+    }
+
+    if (cleanIds.length === 0) {
+        return { success: false, message: 'Tidak ada ID yang valid.' };
+    }
+
+    let query = 'SELECT id, name, status, sent_by, sent_at FROM kost WHERE id IN (?)';
+    const params = [cleanIds];
+
+    const [rows] = await db.query(query, params);
+    const rowMap = new Map(rows.map(r => [r.id, r]));
+
+    const toUpdate = [];
+    const alreadySame = [];
+    const notFound = [];
+
+    for (const id of cleanIds) {
+        const row = rowMap.get(id);
+        if (!row) {
+            notFound.push(id);
+        } else if (row.status === s || (s === 'published' && row.status === 'posted')) {
+            alreadySame.push(row);
+        } else {
+            toUpdate.push(row);
+        }
+    }
+
+    if (toUpdate.length > 0) {
+        const updateIds = toUpdate.map(r => r.id);
+        let updateSql = '';
+        let updateParams = [];
+
+        if (s === 'pending') {
+            updateSql = 'UPDATE kost SET status = ?, sent_by = NULL, sent_at = NULL WHERE id IN (?)';
+            updateParams = ['pending', updateIds];
+        } else {
+            updateSql = 'UPDATE kost SET status = ?, sent_by = ?, sent_at = NOW() WHERE id IN (?)';
+            updateParams = [s, updatedBy || null, updateIds];
+        }
+
+        await db.query(updateSql, updateParams);
+        syncKostBackup();
+    }
+
+    return {
+        success: true,
+        status: s,
+        updated: toUpdate,
+        alreadyInStatus: alreadySame,
         notFound,
         total: cleanIds.length
     };
@@ -2011,7 +2188,7 @@ async function deleteKost(idOrGroup, groupIdOrId = null) {
     }
 
     const cleanId = normalizeKostId(targetId) || String(targetId).trim().toUpperCase();
-    const cleanGroupId = targetGroup ? normalizeJid(targetGroup) : null;
+    const cleanGroupId = (targetGroup && String(targetGroup).endsWith('@g.us')) ? normalizeJid(targetGroup) : null;
 
     await ensureAllTables();
     const db = getPool();
@@ -2027,11 +2204,8 @@ async function deleteKost(idOrGroup, groupIdOrId = null) {
 
     let delSql = 'DELETE FROM kost WHERE id = ?';
     const delParams = [cleanId];
-    if (cleanGroupId) {
-        delSql += ' AND group_id = ?';
-        delParams.push(cleanGroupId);
-    }
     await db.query(delSql, delParams);
+    syncKostBackup();
 
     return {
         success: true,
@@ -2039,10 +2213,10 @@ async function deleteKost(idOrGroup, groupIdOrId = null) {
     };
 }
 
-async function updateKost(id, { name, instagram = undefined, tiktok = undefined, whatsapp = undefined, status, groupId = null }) {
+async function updateKost(id, { name, instagram = undefined, tiktok = undefined, whatsapp = undefined, status, groupId = null, updatedBy = '' }) {
     if (!id) return { success: false, message: 'ID kost wajib diisi.' };
     const cleanId = normalizeKostId(id) || String(id).trim().toUpperCase();
-    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
+    const cleanGroupId = (groupId && String(groupId).endsWith('@g.us')) ? normalizeJid(groupId) : null;
 
     await ensureAllTables();
     const db = getPool();
@@ -2056,31 +2230,36 @@ async function updateKost(id, { name, instagram = undefined, tiktok = undefined,
     const cleanIg = instagram !== undefined ? cleanInstagramUsername(instagram) : current.instagram;
     const cleanTt = tiktok !== undefined ? cleanTiktokUsername(tiktok) : current.tiktok;
     const cleanWa = whatsapp !== undefined ? cleanWhatsappNumber(whatsapp) : current.whatsapp;
-    const cleanStatus = status ? String(status).toLowerCase() : current.status;
+    
+    let cleanStatus = status !== undefined ? String(status).toLowerCase() : current.status;
+    if (cleanStatus === 'posted') cleanStatus = 'published';
+    if (!['pending', 'sent', 'published'].includes(cleanStatus)) cleanStatus = current.status || 'pending';
 
     let sentAt = current.sentAt;
-    if ((cleanStatus === 'sent' || cleanStatus === 'published' || cleanStatus === 'posted') && !current.sentAt) {
-        sentAt = new Date();
-    } else if (cleanStatus === 'pending') {
+    let sentBy = current.sentBy;
+
+    if (cleanStatus === 'pending') {
         sentAt = null;
+        sentBy = null;
+    } else if ((cleanStatus === 'sent' || cleanStatus === 'published') && !current.sentAt) {
+        sentAt = new Date();
+        if (updatedBy) sentBy = updatedBy;
     }
 
-    let sql = 'UPDATE kost SET name = ?, instagram = ?, tiktok = ?, whatsapp = ?, status = ?, sent_at = ? WHERE id = ?';
-    const params = [cleanName, cleanIg, cleanTt, cleanWa, cleanStatus, sentAt, cleanId];
-    if (cleanGroupId) {
-        sql += ' AND group_id = ?';
-        params.push(cleanGroupId);
-    }
+    let sql = 'UPDATE kost SET name = ?, instagram = ?, tiktok = ?, whatsapp = ?, status = ?, sent_by = ?, sent_at = ? WHERE id = ?';
+    const params = [cleanName, cleanIg, cleanTt, cleanWa, cleanStatus, sentBy || null, sentAt, cleanId];
     await db.query(sql, params);
 
     const updated = await getKostById(cleanId, cleanGroupId);
+    syncKostBackup();
+
     return { success: true, message: 'Data kost berhasil diperbarui.', data: updated };
 }
 
 async function getKostStats(groupId = null) {
     await ensureAllTables();
     const db = getPool();
-    const cleanGroupId = groupId ? normalizeJid(groupId) : null;
+    const cleanGroupId = (groupId && String(groupId).endsWith('@g.us')) ? normalizeJid(groupId) : null;
 
     let sql = `
         SELECT 
@@ -2144,7 +2323,9 @@ async function addKostSubmission({ groupId, name, contactsRaw, submittedBy = '' 
 
     return {
         success: true,
-        submission
+        message: 'Usulan kos berhasil dikirim.',
+        submission,
+        data: submission
     };
 }
 
@@ -2253,6 +2434,65 @@ async function reviewKostSubmission(id, newStatus, reviewerNumber = '') {
     };
 }
 
+async function updateKostSubmission(id, { name, contactsRaw, groupId, status, reviewedBy } = {}) {
+    const cleanId = Number(id);
+    if (!cleanId || isNaN(cleanId)) return { success: false, message: 'ID usulan tidak valid.' };
+    await ensureAllTables();
+    const db = getPool();
+
+    const [rows] = await db.query('SELECT * FROM kost_submissions WHERE id = ?', [cleanId]);
+    if (rows.length === 0) {
+        return { success: false, notFound: true, message: `Usulan #${cleanId} tidak ditemukan.` };
+    }
+
+    const current = rows[0];
+    const newName = name !== undefined ? String(name).trim() : current.name;
+    const newContacts = contactsRaw !== undefined ? String(contactsRaw).trim() : current.contacts_raw;
+    const newGroupId = groupId !== undefined ? (groupId ? normalizeJid(groupId) : current.group_id) : current.group_id;
+    const newStatus = status !== undefined && ['pending', 'approved', 'rejected'].includes(status) ? status : current.status;
+    const newReviewer = reviewedBy !== undefined ? String(reviewedBy).trim() : current.reviewed_by;
+    const reviewDate = (newStatus !== 'pending' && !current.reviewed_at) ? new Date() : (newStatus === 'pending' ? null : current.reviewed_at);
+
+    if (!newName) {
+        return { success: false, message: 'Nama usulan tidak boleh kosong.' };
+    }
+
+    await db.query(
+        `UPDATE kost_submissions
+         SET name = ?, contacts_raw = ?, group_id = ?, status = ?, reviewed_by = ?, reviewed_at = ?
+         WHERE id = ?`,
+        [newName, newContacts, newGroupId, newStatus, newReviewer || null, reviewDate, cleanId]
+    );
+
+    const updated = {
+        id: cleanId,
+        groupId: newGroupId,
+        name: newName,
+        contactsRaw: newContacts,
+        submittedBy: current.submitted_by,
+        submittedAt: current.submitted_at,
+        status: newStatus,
+        reviewedBy: newReviewer || null,
+        reviewedAt: reviewDate ? (reviewDate instanceof Date ? reviewDate.toISOString() : String(reviewDate)) : null
+    };
+
+    // Update in-memory cache
+    const cacheIdx = cache.submissions.findIndex(s => Number(s.id) === cleanId);
+    if (cacheIdx !== -1) {
+        cache.submissions[cacheIdx] = updated;
+    } else {
+        cache.submissions.push(updated);
+    }
+    syncDataFile(SUBMISSIONS_FILE, cache.submissions);
+
+    return {
+        success: true,
+        message: `Usulan #${cleanId} berhasil diperbarui.`,
+        data: updated,
+        submission: updated
+    };
+}
+
 async function deleteKostSubmission(id) {
     const cleanId = Number(id);
     if (!cleanId || isNaN(cleanId)) return { success: false, message: 'ID usulan tidak valid.' };
@@ -2323,11 +2563,14 @@ module.exports = {
     getKostById,
     searchKost,
     addKost,
+    setKostStatus,
     markKostSent,
     markSent: markKostSent,
     markKostBatchSent,
+    setKostBatchStatus,
     markKostPublished,
     markPublished: markKostPublished,
+    syncKostBackup,
     normalizeKostId,
     parseKostIdTargets,
     deleteKost,
@@ -2353,6 +2596,7 @@ module.exports = {
     addKostSubmission,
     getKostSubmissions,
     getKostSubmissionById,
+    updateKostSubmission,
     reviewKostSubmission,
     deleteKostSubmission
 };

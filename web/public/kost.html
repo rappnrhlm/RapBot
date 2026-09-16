@@ -203,7 +203,7 @@
         /* Metrics Bar (Apple Style Stats) */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 12px;
             margin-bottom: 22px;
         }
@@ -258,6 +258,11 @@
         }
 
         .metric-pill.sent {
+            background: rgba(0, 113, 227, 0.12);
+            color: #0071e3;
+        }
+
+        .metric-pill.published {
             background: var(--success-bg);
             color: #248a3d;
         }
@@ -422,9 +427,14 @@
             font-size: 20px;
         }
 
+        .kost-avatar.published {
+            background: linear-gradient(145deg, #bbf7d0, #86efac);
+            color: #166534;
+        }
+
         .kost-avatar.sent {
-            background: linear-gradient(145deg, #dcfce7, #bbf7d0);
-            color: #15803d;
+            background: linear-gradient(145deg, #dbeafe, #bfdbfe);
+            color: #1d4ed8;
         }
 
         .kost-avatar.pending {
@@ -497,6 +507,11 @@
         }
 
         .status-badge.sent {
+            background: rgba(0, 113, 227, 0.12);
+            color: #0071e3;
+        }
+
+        .status-badge.published {
             background: var(--success-bg);
             color: #248a3d;
         }
@@ -530,13 +545,22 @@
             transform: scale(0.96);
         }
 
+        .action-button.publish-action {
+            color: #15803d;
+            background: rgba(52, 199, 89, 0.15);
+        }
+
+        .action-button.publish-action:hover {
+            background: rgba(52, 199, 89, 0.25);
+        }
+
         .action-button.sent-action {
-            color: #248a3d;
-            background: rgba(52, 199, 89, 0.12);
+            color: #0071e3;
+            background: rgba(0, 113, 227, 0.12);
         }
 
         .action-button.sent-action:hover {
-            background: rgba(52, 199, 89, 0.20);
+            background: rgba(0, 113, 227, 0.20);
         }
 
         .delete-button {
@@ -798,8 +822,6 @@
 
         .detail-val {
             font-weight: 600;
-            color: var(--text);
-            text-align: right;
         }
 
         /* Responsive Breakpoints */
@@ -909,17 +931,24 @@
             </div>
             <div class="metric-card">
                 <div class="metric-header">
-                    <span class="metric-label">Pending</span>
-                    <span class="metric-pill pending">Perlu DM</span>
+                    <span class="metric-label">Published</span>
+                    <span class="metric-pill published">Tayang Publik</span>
                 </div>
-                <div class="metric-number" id="statPending" style="color: #b45309;">0</div>
+                <div class="metric-number" id="statPublished" style="color: #248a3d;">0</div>
             </div>
             <div class="metric-card">
                 <div class="metric-header">
                     <span class="metric-label">Sent</span>
                     <span class="metric-pill sent">Selesai DM</span>
                 </div>
-                <div class="metric-number" id="statSent" style="color: #248a3d;">0</div>
+                <div class="metric-number" id="statSent" style="color: #0071e3;">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">Pending</span>
+                    <span class="metric-pill pending">Perlu DM</span>
+                </div>
+                <div class="metric-number" id="statPending" style="color: #b45309;">0</div>
             </div>
         </section>
 
@@ -940,8 +969,9 @@
                 </div>
                 <div class="segmented-filter" id="segmentedFilter">
                     <button class="segment-btn active" data-status="all">Semua</button>
-                    <button class="segment-btn" data-status="pending">Pending</button>
-                    <button class="segment-btn" data-status="sent">Sent</button>
+                    <button class="segment-btn" data-status="published">🟢 Published</button>
+                    <button class="segment-btn" data-status="sent">📩 Sent</button>
+                    <button class="segment-btn" data-status="pending">🟡 Pending</button>
                 </div>
             </div>
 
@@ -988,6 +1018,14 @@
                 <input type="text" id="addTt" placeholder="Contoh: kostmelati atau @kostmelati">
             </div>
             <div class="field">
+                <label>Status Visibilitas</label>
+                <select id="addStatus">
+                    <option value="pending">🟡 Pending (Belum Di-DM)</option>
+                    <option value="sent">📩 Sent (Sudah Di-DM Penawaran)</option>
+                    <option value="published">🟢 Published (Tayang Resmi Publik)</option>
+                </select>
+            </div>
+            <div class="field">
                 <label>Grup WhatsApp</label>
                 <select id="addGroupSelect" required>
                     <!-- Loaded dynamically -->
@@ -1030,10 +1068,11 @@
                 <input type="text" id="editTt" placeholder="Contoh: kostmelati">
             </div>
             <div class="field">
-                <label>Status</label>
+                <label>Status Visibilitas</label>
                 <select id="editStatus">
-                    <option value="pending">Pending</option>
-                    <option value="sent">Sent</option>
+                    <option value="pending">🟡 Pending (Belum Ditawarkan)</option>
+                    <option value="sent">📩 Sent (Terkirim Penawaran DM)</option>
+                    <option value="published">🟢 Published (Tayang Publik Resmi)</option>
                 </select>
             </div>
             <div class="modal-actions">
@@ -1255,8 +1294,9 @@
 
             if (json.stats) {
                 document.getElementById('statTotal').textContent = json.stats.total || 0;
-                document.getElementById('statPending').textContent = json.stats.pending || 0;
+                document.getElementById('statPublished').textContent = json.stats.published || 0;
                 document.getElementById('statSent').textContent = json.stats.sent || 0;
+                document.getElementById('statPending').textContent = json.stats.pending || 0;
             }
 
             renderKostList();
@@ -1276,9 +1316,24 @@
         }
 
         state.items.forEach(k => {
-            const isSent = (k.status || 'pending').toLowerCase() === 'sent';
-            const statusClass = isSent ? 'sent' : 'pending';
-            const statusLabel = isSent ? 'Sent' : 'Pending';
+            const st = (k.status || 'pending').toLowerCase();
+            const isPublished = st === 'published' || st === 'posted';
+            const isSent = st === 'sent';
+            const isPending = !isPublished && !isSent;
+
+            let statusClass = 'pending';
+            let statusLabel = 'Pending';
+            let avatarIcon = '🟡';
+
+            if (isPublished) {
+                statusClass = 'published';
+                statusLabel = 'Published (Publik)';
+                avatarIcon = '🟢';
+            } else if (isSent) {
+                statusClass = 'sent';
+                statusLabel = 'Sent (DM)';
+                avatarIcon = '📩';
+            }
 
             const contactPills = [];
             if (k.instagram) {
@@ -1311,7 +1366,7 @@
             item.innerHTML = `
                 <div class="kost-main">
                     <div class="kost-avatar ${statusClass}">
-                        ${isSent ? '✓' : '🏠'}
+                        ${avatarIcon}
                     </div>
                     <div class="kost-meta">
                         <div class="kost-title-row">
@@ -1328,9 +1383,12 @@
                 </div>
                 <div class="actions">
                     <button class="action-button dm-copy-btn" onclick="copyDmTemplate('${escapeHtml(k.name).replace(/'/g, "\\'")}')" title="Salin template DM promosi untuk Instagram">📋 Salin DM</button>
+                    <button class="action-button publish-action" onclick="togglePublish('${k.id}', ${isPublished})" title="${isPublished ? 'Tarik dari publik (Kembalikan ke Sent)' : 'Tayangkan resmi ke pencarian publik (!cari)'}">
+                        ${isPublished ? '↩️ Unpost' : '🟢 Publish'}
+                    </button>
+                    ${isPending ? `<button class="action-button sent-action" onclick="markSent('${k.id}')">Tandai Sent</button>` : ''}
                     <button class="action-button" onclick="openDetail('${k.id}')">Detail</button>
                     <button class="action-button" onclick="openEdit('${k.id}')">Edit</button>
-                    ${!isSent ? `<button class="action-button sent-action" onclick="markSent('${k.id}')">Tandai Sent</button>` : ''}
                     <button class="action-button delete-button" onclick="promptDelete('${k.id}')">Hapus</button>
                 </div>
             `;
@@ -1343,7 +1401,12 @@
         const k = state.items.find(item => item.id === id);
         if (!k) return;
 
-        const isSent = (k.status || 'pending').toLowerCase() === 'sent';
+        const st = (k.status || 'pending').toLowerCase();
+        const isPublished = st === 'published' || st === 'posted';
+        const isSent = st === 'sent';
+        const statusClass = isPublished ? 'published' : (isSent ? 'sent' : 'pending');
+        const statusLabel = isPublished ? 'Published (Tayang Publik)' : (isSent ? 'Sent (Terkirim DM)' : 'Pending (Belum Ditawarkan)');
+
         const groupObj = state.groups.find(g => g.id === (k.groupId || k.group_id));
         const groupText = groupObj ? `${groupObj.name} (${groupObj.groupName || groupObj.id})` : (k.groupId || k.group_id || '-');
 
@@ -1382,7 +1445,7 @@
             <div class="detail-row">
                 <span class="detail-key">Status Saat Ini</span>
                 <span class="detail-val">
-                    <span class="status-badge ${isSent ? 'sent' : 'pending'}">${isSent ? 'Sent' : 'Pending'}</span>
+                    <span class="status-badge ${statusClass}">${statusLabel}</span>
                 </span>
             </div>
             <div class="detail-row">
@@ -1394,11 +1457,11 @@
                 <span class="detail-val">${formatDate(k.createdAt || k.created_at)}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-key">Di-DM Oleh</span>
+                <span class="detail-key">Di-Update / DM Oleh</span>
                 <span class="detail-val">${escapeHtml(k.sentBy || k.sent_by || '-')}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-key">Waktu Sent</span>
+                <span class="detail-key">Waktu Update</span>
                 <span class="detail-val">${formatDate(k.sentAt || k.sent_at)}</span>
             </div>
         `;
@@ -1412,6 +1475,7 @@
         document.getElementById('addIg').value = '';
         document.getElementById('addWa').value = '';
         document.getElementById('addTt').value = '';
+        document.getElementById('addStatus').value = 'pending';
         openModal('modalAdd');
     });
 
@@ -1421,6 +1485,7 @@
         const instagram = document.getElementById('addIg').value.trim();
         const whatsapp = document.getElementById('addWa').value.trim();
         const tiktok = document.getElementById('addTt').value.trim();
+        const status = document.getElementById('addStatus').value;
         const groupId = document.getElementById('addGroupSelect').value;
 
         if (!name) return;
@@ -1434,7 +1499,7 @@
                 const res = await fetch('/api/kost', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, instagram, whatsapp, tiktok, groupId, pin })
+                    body: JSON.stringify({ name, instagram, whatsapp, tiktok, status, groupId, pin })
                 });
                 const json = await res.json();
                 if (!res.ok || !json.success) {
@@ -1462,7 +1527,10 @@
         document.getElementById('editIg').value = k.instagram || '';
         document.getElementById('editWa').value = k.whatsapp || '';
         document.getElementById('editTt').value = k.tiktok || '';
-        document.getElementById('editStatus').value = (k.status || 'pending').toLowerCase();
+        
+        const rawStatus = (k.status || 'pending').toLowerCase();
+        const normStatus = (rawStatus === 'posted') ? 'published' : rawStatus;
+        document.getElementById('editStatus').value = normStatus;
 
         openModal('modalEdit');
     }
@@ -1484,7 +1552,7 @@
 
         requirePin(async (pin) => {
             try {
-                const res = await fetch(`/api/kost/${id}`, {
+                const res = await fetch(`/api/kost/${encodeURIComponent(id)}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, instagram, whatsapp, tiktok, status, pin })
@@ -1504,11 +1572,34 @@
         });
     });
 
+    // Toggle Publish
+    function togglePublish(id, currentlyPublished) {
+        requirePin(async (pin) => {
+            try {
+                const res = await fetch(`/api/kost/${encodeURIComponent(id)}/publish`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin, unpublish: currentlyPublished, publishedBy: 'Web Admin' })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) {
+                    if (res.status === 401) setSessionPin(null);
+                    showBanner(json.message || 'Gagal mengubah status publikasi.', true);
+                    return;
+                }
+                showBanner(currentlyPublished ? `Kost ${id} ditarik dari publik (kembali ke Sent).` : `Kost ${id} resmi dipublikasikan ke publik!`);
+                fetchKostData();
+            } catch (err) {
+                showBanner('Gagal menghubungi server.', true);
+            }
+        });
+    }
+
     // Mark Sent
     function markSent(id) {
         requirePin(async (pin) => {
             try {
-                const res = await fetch(`/api/kost/${id}/sent`, {
+                const res = await fetch(`/api/kost/${encodeURIComponent(id)}/sent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin, sentBy: 'Web Admin' })

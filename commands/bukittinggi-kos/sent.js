@@ -1,11 +1,11 @@
 module.exports = {
     name: 'sent',
-    aliases: ['kirim'],
+    aliases: ['kirim', 'unsent', 'pending'],
     category: 'bukittinggi-kos',
-    description: 'Menandai status data kost menjadi SENT (mendukung single ID, daftar ID, dan range).',
-    usage: '!sent <ID> | !sent <ID_awal> sampai <ID_akhir> | !sent 2 - 20 | !sent 1, 3, 5',
+    description: 'Menandai status data kost menjadi SENT (terkirim DM) atau mengembalikannya ke PENDING (belum ditawarkan). Mendukung single ID, daftar ID, dan range.',
+    usage: '!sent <ID> | !unsent <ID> | !sent <ID_awal> sampai <ID_akhir> | !sent 2 - 20 | !sent 1, 3, 5',
 
-    async execute({ sock, msg, from, senderNumber, args, isGroup: isGroupChat, reply, services, utils }) {
+    async execute({ sock, msg, from, senderNumber, command, args, isGroup: isGroupChat, reply, services, utils }) {
         const database = services?.database || require('../../services/database');
         const jidUtils = utils?.jid || require('../../utils/jid');
 
@@ -39,10 +39,18 @@ Gunakan:
             return sendReply('❌ Perintah ini khusus untuk grup internal admin.');
         }
 
+        const isUnsent = command === 'unsent' || command === 'pending';
+
         try {
             const rawInput = args.join(' ').trim();
             if (!rawInput) {
-                const formatGuide =
+                const formatGuide = isUnsent ?
+`❌ Format salah.
+
+💡 *Contoh Penggunaan Unsent / Pending:*
+• Kembalikan status: \`!unsent KST-000001\` atau \`!pending 1\`
+• Beberapa ID: \`!unsent 1, 3, 5\``
+                :
 `❌ Format salah.
 
 💡 *Contoh Penggunaan:*
@@ -63,6 +71,25 @@ Gunakan:
             // Case A: Single ID
             if (parsed.ids.length === 1) {
                 const targetId = parsed.ids[0];
+
+                if (isUnsent) {
+                    const result = await database.setKostStatus(targetId, 'pending', senderNumber || 'admin', from);
+                    if (result.notFound) {
+                        return sendReply(`❌ Kost dengan ID ${targetId} tidak ditemukan.`);
+                    }
+                    if (!result.success) {
+                        return sendReply(`❌ ${result.message}`);
+                    }
+                    const succMsg =
+`↩️ *KOST DIKEMBALIKAN KE STATUS PENDING*
+
+🆔 ${result.data.id}
+🏠 ${result.data.name}
+📌 Status: 🟡 BELUM DITAWARKAN (PENDING)
+👤 Diubah oleh: ${senderNumber || 'admin'}`;
+                    return sendReply(succMsg);
+                }
+
                 const result = await database.markKostSent(targetId, from, senderNumber || 'unknown');
 
                 if (result.notFound) {
@@ -86,7 +113,7 @@ Gunakan:
 
 🆔 ${kost.id}
 🏠 ${kost.name}
-📌 Status: ✅ SENT
+📌 Status: 📩 SENT (TERKIRIM DM)
 👤 Sent By: ${kost.sentBy || senderNumber || '-'}
 🕒 Sent At: ${sentAtFormatted}`;
 
@@ -94,6 +121,51 @@ Gunakan:
             }
 
             // Case B: Batch / Range (multiple IDs)
+            if (isUnsent) {
+                const result = await database.setKostBatchStatus(parsed.ids, 'pending', senderNumber || 'unknown', from);
+                if (!result.success) {
+                    return sendReply(`❌ ${result.message}`);
+                }
+
+                const totalUpdated = result.updated.length;
+                const totalAlready = result.alreadyInStatus.length;
+                const totalNotFound = result.notFound.length;
+
+                let responseText = `↩️ *SELESAI MENGEMBALIKAN KOST KE PENDING (BATCH)*\n\n`;
+                responseText += `📊 *Ringkasan:* (${result.total} ID diproses)\n`;
+                responseText += `• ✅ Berhasil dikembalikan ke PENDING: *${totalUpdated} kost*\n`;
+                responseText += `• ℹ️ Sudah PENDING sebelumnya: *${totalAlready} kost*\n`;
+                if (totalNotFound > 0) {
+                    responseText += `• ⚠️ Tidak ditemukan: *${totalNotFound} ID*\n`;
+                }
+                responseText += `\n`;
+
+                if (totalUpdated > 0) {
+                    responseText += `📝 *Daftar Yang Berhasil Diubah ke PENDING:*\n`;
+                    const displayLimit = 20;
+                    result.updated.slice(0, displayLimit).forEach((k, idx) => {
+                        responseText += `${idx + 1}. [${k.id}] *${k.name}*\n`;
+                    });
+                    if (result.updated.length > displayLimit) {
+                        responseText += `...dan ${result.updated.length - displayLimit} kost lainnya.\n`;
+                    }
+                    responseText += `\n`;
+                }
+
+                if (totalAlready > 0) {
+                    const sampleAlready = result.alreadyInStatus.slice(0, 10).map(k => k.id).join(', ');
+                    responseText += `ℹ️ *Sudah PENDING:* ${sampleAlready}${result.alreadyInStatus.length > 10 ? '...' : ''}\n`;
+                }
+
+                if (totalNotFound > 0) {
+                    const sampleNotFound = result.notFound.slice(0, 10).join(', ');
+                    responseText += `⚠️ *Tidak ditemukan:* ${sampleNotFound}${result.notFound.length > 10 ? '...' : ''}\n`;
+                }
+
+                responseText += `\n👤 Diubah oleh: ${senderNumber || 'admin'}`;
+                return sendReply(responseText.trim());
+            }
+
             const result = await database.markKostBatchSent(parsed.ids, from, senderNumber || 'unknown');
 
             if (!result.success) {

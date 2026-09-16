@@ -42,19 +42,35 @@ module.exports = {
 
         // 3. Parse options (role, type, link, name)
         let role = 'admin';
-        let type = 'kos';
+        let type = null;
         let parentGroupId = null;
         let remainingArgs = [...args];
 
-        if (['admin', 'public'].includes(remainingArgs[0]?.toLowerCase())) {
-            role = remainingArgs.shift().toLowerCase();
+        // Parse --role or --peran
+        const roleFlagIdx = remainingArgs.findIndex(a => a.toLowerCase() === '--role' || a.toLowerCase() === '--peran');
+        if (roleFlagIdx !== -1) {
+            const roleVal = remainingArgs[roleFlagIdx + 1]?.toLowerCase();
+            remainingArgs.splice(roleFlagIdx, 2);
+            if (roleVal) {
+                role = (roleVal === 'cabang' || roleVal === 'public') ? 'public' : 'admin';
+            }
         }
 
-        // Parse --link <target>
-        const linkIndex = remainingArgs.findIndex(a => a.toLowerCase() === '--link');
-        if (linkIndex !== -1) {
-            const linkTarget = remainingArgs.slice(linkIndex + 1).join(' ').trim();
-            remainingArgs = remainingArgs.slice(0, linkIndex);
+        // Parse --type or --tipe or --kategori
+        const typeFlagIdx = remainingArgs.findIndex(a => a.toLowerCase() === '--type' || a.toLowerCase() === '--tipe' || a.toLowerCase() === '--kategori');
+        if (typeFlagIdx !== -1) {
+            const typeVal = remainingArgs[typeFlagIdx + 1]?.toLowerCase();
+            remainingArgs.splice(typeFlagIdx, 2);
+            if (typeVal) {
+                type = typeVal;
+            }
+        }
+
+        // Parse --link or --parent or --induk <target>
+        const linkFlagIdx = remainingArgs.findIndex(a => ['--link', '--parent', '--induk'].includes(a.toLowerCase()));
+        if (linkFlagIdx !== -1) {
+            const linkTarget = remainingArgs.slice(linkFlagIdx + 1).join(' ').trim();
+            remainingArgs = remainingArgs.slice(0, linkFlagIdx);
             if (linkTarget) {
                 const allGroups = database.getGroups();
                 const found = allGroups.find(g =>
@@ -65,19 +81,29 @@ module.exports = {
                 );
                 if (found) {
                     parentGroupId = found.id;
+                    role = 'public';
                 } else {
                     return sendReply(`❌ Grup induk untuk link "${linkTarget}" tidak ditemukan.\n💡 Ketik \`!initgroup list\` untuk melihat daftar grup yang tersedia.`);
                 }
             }
         }
 
-        // Parse --type <tipe>
-        const typeIndex = remainingArgs.findIndex(a => a.toLowerCase() === '--type');
-        if (typeIndex !== -1) {
-            const typeTarget = remainingArgs[typeIndex + 1]?.toLowerCase();
-            remainingArgs.splice(typeIndex, 2);
-            if (typeTarget) {
-                type = typeTarget;
+        // Check first positional argument for role or type
+        if (remainingArgs.length > 0) {
+            const first = remainingArgs[0].toLowerCase();
+            if (['admin', 'public', 'indukan', 'cabang'].includes(first)) {
+                role = (first === 'cabang' || first === 'public') ? 'public' : 'admin';
+                remainingArgs.shift();
+            }
+        }
+
+        if (remainingArgs.length > 0) {
+            const first = remainingArgs[0].toLowerCase();
+            if (['marketplace', 'store', 'toko', 'kos', 'kost', 'umum', 'komunitas'].includes(first)) {
+                if (!type) {
+                    type = (first === 'kost') ? 'kos' : first;
+                }
+                remainingArgs.shift();
             }
         }
 
@@ -87,17 +113,36 @@ module.exports = {
 `❌ *Panduan Format !initgroup*
 
 1. *Grup Admin (Akses Penuh)*:
-   \`!initgroup <nama grup>\`
-   atau
-   \`!initgroup admin <nama grup>\`
-   _Contoh:_ \`!initgroup admin Bukittinggi Kos\`
+   \`!initgroup [admin] <nama grup> [--type <tipe>]\`
+   _Contoh:_
+   • \`!initgroup admin Bukittinggi Kos --type kos\`
+   • \`!initgroup admin MiceyStore (admin) --type marketplace\`
 
-2. *Grup Publik (Terhubung ke Data Admin)*:
-   \`!initgroup public <nama grup> --link <nama grup admin>\`
-   _Contoh:_ \`!initgroup public Komunitas Kos --link Bukittinggi Kos\`
+2. *Grup Publik (Terhubung ke Indukan)*:
+   \`!initgroup public <nama grup> --link <grup induk> [--type <tipe>]\`
+   _Contoh:_
+   • \`!initgroup public Komunitas Kos --link Bukittinggi Kos\`
+   • \`!initgroup public MiceyStore (publik) --link Micey --type marketplace\`
 
-3. *Lihat Daftar Grup*:
+3. *Pilihan Tipe*:
+   \`kos\`, \`marketplace\`, \`store\`, \`komunitas\`, \`umum\`
+
+4. *Lihat Daftar Grup*:
    \`!initgroup list\``;
+            return sendReply(formatMsg);
+        }
+
+        // Smart type detection if not explicitly set
+        if (!type) {
+            const lowerCheck = `${aliasName} ${from}`.toLowerCase();
+            if (/store|marketplace|toko|shop|jual|beli|micey/i.test(lowerCheck)) {
+                type = 'marketplace';
+            } else if (/kos|kost|kontrakan|losmen|homestay/i.test(lowerCheck)) {
+                type = 'kos';
+            } else {
+                type = 'umum';
+            }
+        }
             return sendReply(formatMsg);
         }
 
