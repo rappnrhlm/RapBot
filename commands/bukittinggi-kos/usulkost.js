@@ -75,6 +75,7 @@ Terima kasih atas kontribusinya! Usulan ini akan diverifikasi oleh tim admin *@b
 
         // Opsional: Notifikasi otomatis ke grup admin jika grup ini terhubung ke parent
         if (registeredGroup?.parentGroupId && sock) {
+            const pengirimUrl = senderNumber ? (database.formatWhatsappUrl(senderNumber) || senderNumber) : 'unknown';
             const adminNotify =
 `📥 *USULAN KOS BARU MASUK DARI WARGA!*
 
@@ -82,7 +83,7 @@ Terima kasih atas kontribusinya! Usulan ini akan diverifikasi oleh tim admin *@b
 🏠 Nama Kos: *${sub.name}*
 📞 Kontak: ${sub.contactsRaw}
 👥 Dari Grup: *${registeredGroup.name}*
-👤 Pengirim: wa.me/${senderNumber || 'unknown'}
+👤 Pengirim: ${pengirimUrl}
 
 Ketik \`!acc ${sub.id}\` untuk menyetujui & masukkan ke database.
 Ketik \`!tolak ${sub.id}\` untuk menolak.`;

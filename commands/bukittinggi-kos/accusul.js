@@ -121,6 +121,8 @@ Kontribusi Kakak sangat berarti bagi para pencari hunian di Bukittinggi. Semoga 
         if (addResult.data.whatsapp) contactLines.push(`   💬 WA: ${database.formatWhatsappUrl(addResult.data.whatsapp)}`);
         if (addResult.data.tiktok) contactLines.push(`   🎵 TT: ${database.formatTiktokUrl(addResult.data.tiktok)}`);
 
+        const pengusulDisplay = sub.submittedBy ? database.formatWhatsappUrl(sub.submittedBy) || sub.submittedBy : 'unknown';
+
         const succMsg =
 `✅ *Usulan #${targetId} Berhasil Disetujui!*
 
@@ -129,7 +131,7 @@ Data otomatis masuk ke database:
 🏠 Nama: *${addResult.data.name}*
 ${contactLines.join('\n')}
 📌 Status: ⏳ PENDING
-👤 Pengusul: wa.me/${sub.submittedBy || 'unknown'}${japriSent ? '\n📩 *Notifikasi persetujuan telah otomatis dijapri ke pengusul!*' : ''}`;
+👤 Pengusul: ${pengusulDisplay}${japriSent ? '\n📩 *Notifikasi persetujuan telah otomatis dijapri ke pengusul!*' : ''}`;
 
         return sendReply(succMsg);
     }
