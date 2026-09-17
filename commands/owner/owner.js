@@ -8,31 +8,43 @@ module.exports = {
     async execute({ sock, msg, from, senderNumber, args, reply, services, utils }) {
         const database = services?.database || require('../../services/database');
         const phoneUtils = utils?.phone || require('../../utils/phone');
-
-        if (!database.isSuperOwner(senderNumber)) {
-            const forbidden = '❌ Cuma Rapa utama yang boleh ngatur daftar owner.';
-            if (typeof reply === 'function') {
-                await reply(forbidden);
-            } else {
-                await sock.sendMessage(from, { text: forbidden }, { quoted: msg });
-            }
-            return;
-        }
+        const botNumber = sock?.user?.id ? phoneUtils.normalizePhoneNumber(sock.user.id) : null;
+        const isUserOwner = database.isOwner(senderNumber, botNumber) || database.isSuperOwner(senderNumber);
 
         const subCommand = args.shift()?.toLowerCase();
+        
+        // If no subcommand or subcommand is contact / info
         if (!subCommand) {
-            const usageGuide = '`!owner list`\n`!owner add <nomor> [nama]`\n`!owner delete <nomor>`';
-            if (typeof reply === 'function') {
-                await reply(usageGuide);
-            } else {
-                await sock.sendMessage(from, { text: usageGuide }, { quoted: msg });
-            }
+            const owners = database.getOwners();
+            const superOwner = owners.find(o => database.isSuperOwner(typeof o === 'object' ? o.number : o)) || owners[0] || { name: 'Raffa', number: '6285195532009' };
+            const ownerNum = typeof superOwner === 'object' ? superOwner.number : superOwner;
+            const cleanNum = String(ownerNum).replace(/\D/g, '');
+
+            const contactMsg =
+`👑 *KONTAK OWNER / PENGELOLA BOT*
+
+👤 Nama: *${(typeof superOwner === 'object' ? superOwner.name : 'Raffa') || 'Raffa'}*
+📱 WhatsApp: wa.me/${cleanNum}
+🌐 Website: *https://bukittinggikos.com*
+📸 Instagram: *@bukittinggikos*
+
+${isUserOwner ? '💡 *Menu Owner:* `!owner list` | `!owner add <nomor>` | `!owner delete <nomor>`' : 'Silakan hubungi jika ada kendala atau permohonan kerjasama.'}`;
+
+            if (typeof reply === 'function') await reply(contactMsg);
+            else await sock.sendMessage(from, { text: contactMsg }, { quoted: msg });
             return;
         }
 
         if (subCommand === 'list') {
+            if (!isUserOwner) {
+                const forbidden = '❌ Informasi daftar owner hanya dapat dilihat oleh owner bot.';
+                if (typeof reply === 'function') await reply(forbidden);
+                else await sock.sendMessage(from, { text: forbidden }, { quoted: msg });
+                return;
+            }
+
             const owners = database.getOwners();
-            let text = '👑 DAFTAR OWNER\n\n';
+            let text = '👑 *DAFTAR OWNER BOT*\n\n';
             let index = 1;
 
             owners.forEach(owner => {
@@ -41,8 +53,8 @@ module.exports = {
 
                 if (name === 'Mama' || name === 'Papa' || owner.hidden) return;
 
-                text += `${index}. ${name} — ${phoneUtils.maskNumber(number)}`;
-                if (database.isSuperOwner(number)) text += ' 👑';
+                text += `${index}. *${name}* — ${phoneUtils.maskNumber(number)}`;
+                if (database.isSuperOwner(number)) text += ' 👑 (Super Owner)';
                 text += '\n';
                 index++;
             });
@@ -50,7 +62,18 @@ module.exports = {
             if (typeof reply === 'function') {
                 await reply(text);
             } else {
-                await sock.sendMessage(from, { text }, { quoted: msg });
+                await sock.sendMessage(from, { text: text }, { quoted: msg });
+            }
+            return;
+        }
+
+        // Subcommand add / edit / delete strictly requires Super Owner
+        if (!database.isSuperOwner(senderNumber)) {
+            const forbidden = '❌ Cuma Rapa utama yang boleh ngatur/mengubah daftar owner.';
+            if (typeof reply === 'function') {
+                await reply(forbidden);
+            } else {
+                await sock.sendMessage(from, { text: forbidden }, { quoted: msg });
             }
             return;
         }

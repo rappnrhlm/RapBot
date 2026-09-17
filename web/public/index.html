@@ -3326,15 +3326,19 @@
                 smeme: { label: 'Format: Teks Atas | Teks Bawah', val: 'KETIKA KOS PENUH | TAPI TETAP DICARI', role: 'public' },
                 toimg: { label: 'Kualitas / Parameter (Opsional)', val: '', role: 'public' },
                 culik: { label: 'Nomor Target (Contoh: 6281234567890)', val: '628123456789', role: 'admin' },
-                owner_list: { label: 'Aksi: list / add <nomor> / delete <nomor>', val: 'list', role: 'admin' },
-                tariksiaran: { label: 'ID Broadcast (Contoh: bc_123456)', val: 'bc_123456', role: 'admin' },
-                custom: { label: 'Ketik Bebas (Perintah !xyz atau Kata Kunci Autoreply)', val: '!addkost Kost Indah > wa: 08123456789', role: 'public' }
+                owner_list: { label: 'Aksi: list / add <nomor> / delete <nomor>', val: 'list', role: 'admin', sender: '6285195532009' },
+                tariksiaran: { label: 'ID Broadcast (Contoh: bc_123456)', val: 'bc_123456', role: 'admin', sender: '6285195532009' },
+                custom: { label: 'Ketik Bebas (Perintah !xyz atau Kata Kunci Autoreply)', val: '!owner list', role: 'admin', sender: '6285195532009' }
             };
 
             const cfg = presets[cmd] || presets.custom;
             if (paramLabel) paramLabel.textContent = cfg.label;
             if (paramInput) paramInput.value = cfg.val;
             if (roleSelect && cfg.role) roleSelect.value = cfg.role;
+            const senderInput = document.getElementById('simSenderInput');
+            if (senderInput && cfg.sender) senderInput.value = cfg.sender;
+            else if (senderInput && (cfg.role === 'admin')) senderInput.value = '6285195532009';
+            else if (senderInput && (!senderInput.value || senderInput.value === '628123456789')) senderInput.value = '6285195532009';
         }
 
         async function runCommandSimulator() {
