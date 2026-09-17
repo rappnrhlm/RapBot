@@ -95,6 +95,34 @@ Gunakan:
             }
 
             const kost = result.data;
+
+            // Otomatis kirim japri konfirmasi tayang ke pemilik kos (jika kontak WA tersedia)
+            let japriSent = false;
+            if (kost.whatsapp && sock) {
+                try {
+                    let cleanNum = String(kost.whatsapp).replace(/[^0-9]/g, '');
+                    if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.substring(1);
+                    if (cleanNum.length >= 9) {
+                        const targetJid = cleanNum + '@s.whatsapp.net';
+                        const confirmMsg =
+`Halo Kak dari tim @bukittinggikos! 🎉
+
+Kabar baik, informasi seputar *${kost.name}* sudah resmi dipublikasikan di database & media sosial kami:
+🆔 ID Listing: *${kost.id}*
+📱 Akun Instagram dan Tiktok Resmi: *@bukittinggikos*
+
+Kini pencari kos dapat menemukan info *${kost.name}* secara otomatis via pencarian bot WhatsApp "!cari ${kost.name}".
+
+Semoga lekas penuh kamarnya ya Kak! Terima kasih banyak atas kerjasamanya. 🙏`;
+
+                        await sock.sendMessage(targetJid, { text: confirmMsg });
+                        japriSent = true;
+                    }
+                } catch (dmErr) {
+                    console.warn(`[post] Gagal kirim japri konfirmasi tayang ke ${kost.whatsapp}:`, dmErr.message);
+                }
+            }
+
             const succMsg =
 `🟢 *KOST BERHASIL DIPOSTING / DITAYANGKAN!*
 
@@ -104,7 +132,7 @@ Gunakan:
 👤 Diposting oleh: ${senderNumber || 'admin'}
 🕒 Waktu: ${database.formatIndonesianDateTime(new Date())}
 
-✨ Kos ini sekarang *resmi aktif* dan dapat dicari oleh seluruh warga grup melalui \`!cari ${kost.name}\`.`;
+✨ Kos ini sekarang *resmi aktif* dan dapat dicari oleh seluruh warga grup melalui \`!cari ${kost.name}\`.${japriSent ? '\n\n📩 *Notifikasi Konfirmasi Tayang telah otomatis dijapri ke pemilik kos!*' : ''}`;
 
             return sendReply(succMsg);
         } catch (err) {

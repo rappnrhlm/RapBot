@@ -805,10 +805,40 @@ app.post('/api/kost/:id/status', async (req, res) => {
             return res.status(result.notFound ? 404 : 400).json(result);
         }
 
+        let japriSent = false;
+        if (status === 'published' && result.data?.whatsapp) {
+            const sock = getBotSocket();
+            if (sock) {
+                try {
+                    let cleanNum = String(result.data.whatsapp).replace(/[^0-9]/g, '');
+                    if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.substring(1);
+                    if (cleanNum.length >= 9) {
+                        const targetJid = cleanNum + '@s.whatsapp.net';
+                        const confirmMsg =
+`Halo Kak dari tim @bukittinggikos! 🎉
+
+Kabar baik, informasi seputar *${result.data.name}* sudah resmi dipublikasikan di database & media sosial kami:
+🆔 ID Listing: *${result.data.id}*
+📱 Akun Instagram dan Tiktok Resmi: *@bukittinggikos*
+
+Kini pencari kos dapat menemukan info *${result.data.name}* secara otomatis via pencarian bot WhatsApp "!cari ${result.data.name}".
+
+Semoga lekas penuh kamarnya ya Kak! Terima kasih banyak atas kerjasamanya. 🙏`;
+
+                        await sock.sendMessage(targetJid, { text: confirmMsg });
+                        japriSent = true;
+                    }
+                } catch (dmErr) {
+                    console.warn(`[WebServer] Gagal auto-japri status published ke ${result.data.whatsapp}:`, dmErr.message);
+                }
+            }
+        }
+
         res.json({
             success: true,
-            message: result.message || `Status kost berhasil diubah menjadi ${String(status).toUpperCase()}.`,
-            data: result.data
+            message: (result.message || `Status kost berhasil diubah menjadi ${String(status).toUpperCase()}.`) + (japriSent ? ' Pesan Konfirmasi Tayang telah dijapri ke pemilik.' : ''),
+            data: result.data,
+            japriSent
         });
     } catch (err) {
         console.error('[web/server] Error POST /api/kost/:id/status:', err);
@@ -863,12 +893,42 @@ app.post('/api/kost/:id/publish', async (req, res) => {
             return res.status(result.notFound ? 404 : 400).json(result);
         }
 
+        let japriSent = false;
+        if (!unpublish && result.data?.whatsapp) {
+            const sock = getBotSocket();
+            if (sock) {
+                try {
+                    let cleanNum = String(result.data.whatsapp).replace(/[^0-9]/g, '');
+                    if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.substring(1);
+                    if (cleanNum.length >= 9) {
+                        const targetJid = cleanNum + '@s.whatsapp.net';
+                        const confirmMsg =
+`Halo Kak dari tim @bukittinggikos! 🎉
+
+Kabar baik, informasi seputar *${result.data.name}* sudah resmi dipublikasikan di database & media sosial kami:
+🆔 ID Listing: *${result.data.id}*
+📱 Akun Instagram dan Tiktok Resmi: *@bukittinggikos*
+
+Kini pencari kos dapat menemukan info *${result.data.name}* secara otomatis via pencarian bot WhatsApp "!cari ${result.data.name}".
+
+Semoga lekas penuh kamarnya ya Kak! Terima kasih banyak atas kerjasamanya. 🙏`;
+
+                        await sock.sendMessage(targetJid, { text: confirmMsg });
+                        japriSent = true;
+                    }
+                } catch (dmErr) {
+                    console.warn(`[WebServer] Gagal auto-japri konfirmasi tayang ke ${result.data.whatsapp}:`, dmErr.message);
+                }
+            }
+        }
+
         res.json({
             success: true,
-            message: unpublish 
+            message: (unpublish 
                 ? 'Status kost berhasil ditarik dari publik (kembali ke sent).' 
-                : 'Status kost berhasil dipublikasikan (tayang ke publik).',
-            data: result.data
+                : 'Status kost berhasil dipublikasikan (tayang ke publik).') + (japriSent ? ' Pesan Konfirmasi Tayang telah dijapri ke WhatsApp pemilik.' : ''),
+            data: result.data,
+            japriSent
         });
     } catch (err) {
         console.error('[web/server] Error POST /api/kost/:id/publish:', err);
