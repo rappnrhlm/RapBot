@@ -1691,8 +1691,37 @@ app.post('/api/bot/simulate', async (req, res) => {
                         }
                     });
                 }
-                if (prop === 'updateKostStatus' || prop === 'updateKost' || prop === 'deleteKost') {
-                    return async () => ({ success: true, message: 'Simulasi berhasil (Sandbox)' });
+                if (prop === 'deleteKost') {
+                    return async (targetId) => ({
+                        success: true,
+                        data: {
+                            id: targetId.startsWith('KST-') ? targetId : `KST-${String(targetId).padStart(6, '0')}`,
+                            name: 'Kost Contoh (Simulasi Sandbox)'
+                        }
+                    });
+                }
+                if (prop === 'updateKost') {
+                    return async (targetId, updateData) => ({
+                        success: true,
+                        data: {
+                            id: targetId.startsWith('KST-') ? targetId : `KST-${String(targetId).padStart(6, '0')}`,
+                            name: updateData.name || 'Kost Contoh (Simulasi)',
+                            instagram: updateData.instagram || 'kostcontoh',
+                            whatsapp: updateData.whatsapp || '628123456789',
+                            tiktok: updateData.tiktok || null,
+                            status: 'pending'
+                        }
+                    });
+                }
+                if (prop === 'updateKostStatus') {
+                    return async (targetId, newStatus) => ({
+                        success: true,
+                        data: {
+                            id: targetId.startsWith('KST-') ? targetId : `KST-${String(targetId).padStart(6, '0')}`,
+                            name: 'Kost Contoh (Simulasi)',
+                            status: newStatus
+                        }
+                    });
                 }
                 if (prop === 'submitKostProposal') {
                     return async (propData) => ({
@@ -1701,8 +1730,32 @@ app.post('/api/bot/simulate', async (req, res) => {
                         id: `SUB-${Date.now()}`
                     });
                 }
-                if (prop === 'reviewKostSubmission' || prop === 'deleteKostSubmission') {
-                    return async () => ({ success: true, message: 'Simulasi status usulan diubah (Sandbox)' });
+                if (prop === 'updateKostSubmission') {
+                    return async (targetId, subData) => ({
+                        success: true,
+                        data: {
+                            id: targetId,
+                            name: subData.name || 'Kost Contoh (Simulasi)',
+                            contactsRaw: subData.contactsRaw || 'wa: 08123456789',
+                            status: 'pending'
+                        }
+                    });
+                }
+                if (prop === 'reviewKostSubmission') {
+                    return async (targetId, newStatus) => ({
+                        success: true,
+                        submission: {
+                            id: targetId,
+                            name: 'Kost Contoh (Simulasi)',
+                            status: newStatus
+                        }
+                    });
+                }
+                if (prop === 'deleteKostSubmission') {
+                    return async (targetId) => ({
+                        success: true,
+                        message: `Usulan #${targetId} berhasil dihapus (Simulasi Sandbox).`
+                    });
                 }
                 if (prop === 'saveBroadcast' || prop === 'markBroadcastDeleted') {
                     return () => ({ id: `sim_bc_${Date.now()}` });
