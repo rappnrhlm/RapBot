@@ -1,9 +1,9 @@
 module.exports = {
     name: 'tolak',
-    aliases: ['rejectkost', 'tolakkost'],
+    aliases: ['tolakusul', 'rejectkost', 'tolakkost'],
     category: 'bukittinggi-kos',
     description: 'Menolak usulan kos dari warga (Khusus Admin).',
-    usage: '!tolak <ID Usulan>',
+    usage: '!tolak <ID Usulan> atau !tolakusul <ID Usulan>',
 
     async execute({ sock, msg, from, senderNumber, args, isGroup: isGroupChat, reply, services, utils }) {
         const database = services?.database || require('../../services/database');

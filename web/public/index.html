@@ -1052,13 +1052,12 @@
                                                 <option value="kost_published">!kost published (Kos Tayang Publik)</option>
                                                 <option value="kost_all">!kost all (Statistik Database Kos)</option>
                                                 <option value="post">!post &lt;ID&gt; (Tayangkan ke Publik)</option>
-                                                <option value="sent">!sent &lt;ID&gt; (Tandai Terkirim DM)</option>
-                                                <option value="usulkost">!usulkost &lt;Nama&gt; &gt; &lt;Kontak&gt; (Usulan Warga)</option>
-                                                <option value="editusul">!editusul &lt;No&gt; | nama: &lt;baru&gt; (Edit Usulan)</option>
-                                                <option value="acc">!acc &lt;No Usulan&gt; (Setujui Usulan)</option>
-                                                <option value="tolakusul">!tolakusul &lt;No Usulan&gt; (Tolak Usulan)</option>
-                                                <option value="delusul">!delusul &lt;No Usulan&gt; (Hapus Antrean Usulan)</option>
-                                                <option value="listusul">!listusul (Daftar Antrean Usulan)</option>
+                                                <option value="usulkost">!usulkost &lt;Nama&gt; &gt; &lt;Kontak&gt; (Kirim Usulan Kos Warga)</option>
+                                                <option value="editusul">!editusul &lt;No&gt; | nama: &lt;baru&gt; (Edit Data Usulan Masuk)</option>
+                                                <option value="acc">!acc &lt;No Usulan&gt; (Setujui Usulan Warga Masuk ke Database)</option>
+                                                <option value="tolak">!tolak &lt;No Usulan&gt; (Tolak Usulan Kos Warga)</option>
+                                                <option value="delusul">!delusul &lt;No Usulan&gt; (Hapus Usulan dari Antrean)</option>
+                                                <option value="listusul">!listusul (Lihat Daftar Antrean Usulan Warga)</option>
                                             </optgroup>
                                             <optgroup label="⚡ Menu & Informasi Umum">
                                                 <option value="menu">!menu (Menu Utama Bot)</option>
@@ -3299,7 +3298,8 @@
                 usulkost: { label: 'Format: <Nama Kos> > <Kontak>', val: 'Kost Bougenville > wa: 082198765432 | ig: bougenville', role: 'public' },
                 editusul: { label: 'Format: <No Usulan> | nama: <baru> | kontak: <baru>', val: '1 | nama: Kost Melati Asri > wa: 08123456789', role: 'admin' },
                 acc: { label: 'No ID Usulan Masuk (Contoh: 1)', val: '1', role: 'admin' },
-                tolakusul: { label: 'No ID Usulan Masuk (Contoh: 1)', val: '1', role: 'admin' },
+                tolak: { label: 'No ID Usulan yang Ditolak (Contoh: 1)', val: '1', role: 'admin' },
+                tolakusul: { label: 'No ID Usulan yang Ditolak (Contoh: 1)', val: '1', role: 'admin' },
                 delusul: { label: 'No ID Usulan yang Dihapus (Contoh: 1)', val: '1', role: 'admin' },
                 listusul: { label: 'Filter Status Usulan (Opsional)', val: '', role: 'admin' },
                 menu: { label: 'Kategori Menu (Opsional)', val: '', role: 'public' },
