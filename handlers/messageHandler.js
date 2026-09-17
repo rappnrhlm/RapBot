@@ -83,21 +83,39 @@ function getBody(msg) {
 }
 
 function createContext({ sock, msg, from, senderNumber, args, commandName, body, isGroupChat, registry }) {
+    const clearCmd = registry?.get('clear');
+
     const reply = async (text, options = {}) => {
         try {
-            return await sock.sendMessage(from, { text, ...options }, { quoted: msg });
+            const sentResult = await sock.sendMessage(from, { text, ...options }, { quoted: msg });
+            if (sentResult?.key && clearCmd?.trackSentMessage) {
+                clearCmd.trackSentMessage(from, sentResult.key);
+            }
+            return sentResult;
         } catch (err) {
             console.warn(`[MessageHandler] Gagal mengirim quoted reply (${err.message}), mencoba kirim langsung...`);
-            return await sock.sendMessage(from, { text, ...options });
+            const sentResult = await sock.sendMessage(from, { text, ...options });
+            if (sentResult?.key && clearCmd?.trackSentMessage) {
+                clearCmd.trackSentMessage(from, sentResult.key);
+            }
+            return sentResult;
         }
     };
 
     const send = async (content, options = {}) => {
         try {
-            return await sock.sendMessage(from, content, { quoted: msg, ...options });
+            const sentResult = await sock.sendMessage(from, content, { quoted: msg, ...options });
+            if (sentResult?.key && clearCmd?.trackSentMessage) {
+                clearCmd.trackSentMessage(from, sentResult.key);
+            }
+            return sentResult;
         } catch (err) {
             console.warn(`[MessageHandler] Gagal mengirim quoted send (${err.message}), mencoba kirim langsung...`);
-            return await sock.sendMessage(from, content, options);
+            const sentResult = await sock.sendMessage(from, content, options);
+            if (sentResult?.key && clearCmd?.trackSentMessage) {
+                clearCmd.trackSentMessage(from, sentResult.key);
+            }
+            return sentResult;
         }
     };
 
@@ -184,6 +202,14 @@ async function handleSingleMessage(sock, msg, registry) {
         if (ageSeconds > MAX_MESSAGE_AGE_SECONDS || msgTimestamp < (BOT_START_TIME - 5)) {
             console.log(`[MessageHandler] ⏳ Mengabaikan pesan lama (${ageSeconds}s lalu): "${body.slice(0, 30)}"`);
             return;
+        }
+    }
+
+    // Track pesan bot sendiri ke memory ring buffer agar bisa di-clear
+    if (msg.key?.fromMe) {
+        const clearCmd = registry?.get('clear');
+        if (clearCmd?.trackSentMessage && msg.key?.remoteJid) {
+            clearCmd.trackSentMessage(msg.key.remoteJid, msg.key);
         }
     }
 

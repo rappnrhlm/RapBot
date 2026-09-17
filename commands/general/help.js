@@ -112,9 +112,8 @@ module.exports = {
             acc: '✅ `!acc <ID Usulan>`\nMenyetujui usulan kos dari warga dan otomatis memasukkannya ke database (Khusus Admin).\nContoh: `!acc 1`',
             tolak: '❌ `!tolak <ID Usulan>`\nMenolak usulan kos dari warga (Khusus Admin).\nContoh: `!tolak 1`',
             sent: '✅ `!sent <ID>` atau `!sent 2 sampai 20`\nMenandai status kos menjadi SENT (mendukung satu ID, daftar koma, atau range).\nContoh:\n• `!sent 12` atau `!sent KST-12` atau `!sent KST-000012`\n• `!sent 2 sampai 20` atau `!sent 2 - 20`\n• `!sent 1, 3, 5`',
-            kirim: '✅ `!sent <ID>`\nMenandai status kos menjadi SENT (alias dari !sent).',
-            delkost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database (Khusus Admin).\nContoh: `!delkost 12` atau `!delkost KST-000012`',
-            hapuskost: '🗑️ `!delkost <ID>`\nMenghapus data kos dari database (alias dari !delkost).'
+            clear: '🧹 `!clear [jumlah]` atau `!del (reply chat)`\nMenghapus pesan bot (atau pesan member) untuk semua orang di grup agar riwayat chat bersih.\nContoh:\n• `!clear` (hapus 5 pesan bot terakhir)\n• `!clear 10` (hapus 10 pesan bot terakhir)\n• Reply chat + `!del` (hapus pesan tersebut)',
+            del: '🗑️ `!del (reply chat)`\nMenghapus pesan yang di-reply untuk semua orang di grup (alias dari !clear).'
         };
 
         if (!args || !args[0]) {
@@ -168,6 +167,8 @@ module.exports = {
 │ \`!listadmin\` — Daftar admin grup
 │ \`!tagall\` — Mention seluruh member grup
 │ \`!hidetag <teks>\` — Mention tersembunyi
+│ \`!clear [jumlah]\` — Bersihkan chat / riwayat pesan bot
+│ \`!del\` — Hapus pesan yang di-reply untuk semua
 │ \`!welcome on/off\` — Toggle sambutan member baru
 │ \`!setwelcome <teks>\` — Atur teks sambutan`
             );
