@@ -1593,24 +1593,71 @@ app.post('/api/bot/simulate', async (req, res) => {
             }
         }
 
-        // Normalize command aliases (e.g., adminmenu -> admin-menu, owner_list -> owner)
-        if (targetCmdName === 'adminmenu') targetCmdName = 'admin-menu';
-        if (targetCmdName === 'owner_list') {
+        // Normalize command aliases & subcommands
+        let invokedCommand = targetCmdName;
+        if (targetCmdName === 'adminmenu') {
+            targetCmdName = 'menu';
+            invokedCommand = 'admin-menu';
+        } else if (targetCmdName === 'owner_list') {
             targetCmdName = 'owner';
+            invokedCommand = 'owner';
             args = ['list'];
-        }
-        if (targetCmdName === 'kost_lengkap') {
+        } else if (targetCmdName === 'owner_add') {
+            targetCmdName = 'owner';
+            invokedCommand = 'owner';
+            if (args[0] !== 'add') args.unshift('add');
+        } else if (targetCmdName === 'owner_del' || targetCmdName === 'owner_delete') {
+            targetCmdName = 'owner';
+            invokedCommand = 'owner';
+            if (args[0] !== 'delete' && args[0] !== 'del') args.unshift('delete');
+        } else if (targetCmdName === 'autoreply_list') {
+            targetCmdName = 'autoreply-add';
+            invokedCommand = 'autoreply-list';
+        } else if (targetCmdName === 'autoreply_add') {
+            targetCmdName = 'autoreply-add';
+            invokedCommand = 'autoreply-add';
+        } else if (targetCmdName === 'autoreply_edit') {
+            targetCmdName = 'autoreply-add';
+            invokedCommand = 'autoreply-edit';
+        } else if (targetCmdName === 'autoreply_del') {
+            targetCmdName = 'autoreply-add';
+            invokedCommand = 'autoreply-del';
+        } else if (targetCmdName === 'setwelcome') {
+            targetCmdName = 'welcome';
+            invokedCommand = 'setwelcome';
+        } else if (targetCmdName === 'unpost') {
+            targetCmdName = 'post';
+            invokedCommand = 'unpost';
+        } else if (targetCmdName === 'unsent') {
+            targetCmdName = 'sent';
+            invokedCommand = 'unsent';
+        } else if (targetCmdName === 'tolakusul') {
+            targetCmdName = 'tolak';
+            invokedCommand = 'tolak';
+        } else if (targetCmdName === 'kost_lengkap') {
             targetCmdName = 'kost';
+            invokedCommand = 'kost';
             args = ['lengkap', ...(args.length ? args : ['1'])];
         } else if (targetCmdName === 'kost_pending') {
             targetCmdName = 'kost';
+            invokedCommand = 'kost';
             args = ['pending', ...args];
+        } else if (targetCmdName === 'kost_sent') {
+            targetCmdName = 'kost';
+            invokedCommand = 'kost';
+            args = ['sent', ...args];
         } else if (targetCmdName === 'kost_published') {
             targetCmdName = 'kost';
+            invokedCommand = 'kost';
             args = ['published', ...args];
         } else if (targetCmdName === 'kost_all') {
             targetCmdName = 'kost';
+            invokedCommand = 'kost';
             args = ['all', ...args];
+        } else if (targetCmdName === 'kost_dm') {
+            targetCmdName = 'kost';
+            invokedCommand = 'kost';
+            args = ['dm', ...args];
         }
 
         const capturedReplies = [];
@@ -1781,8 +1828,8 @@ app.post('/api/bot/simulate', async (req, res) => {
             from: simulatedFrom,
             senderNumber: cleanSender,
             args,
-            command: targetCmdName,
-            body: `!${targetCmdName} ${args.join(' ')}`.trim(),
+            command: invokedCommand,
+            body: `!${invokedCommand} ${args.join(' ')}`.trim(),
             isGroup,
             reply: async (text) => {
                 capturedReplies.push(typeof text === 'string' ? text : (text?.text || JSON.stringify(text)));
