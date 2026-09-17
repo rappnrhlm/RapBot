@@ -903,6 +903,52 @@ app.delete('/api/kost/:id', async (req, res) => {
     }
 });
 
+// Import / Restore kost data
+app.post('/api/kost/import', async (req, res) => {
+    try {
+        const currentPin = extractPin(req);
+        if (!validatePin(currentPin)) {
+            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        }
+
+        const { items, mode = 'merge' } = req.body;
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ success: false, message: 'Data array items tidak valid atau kosong.' });
+        }
+
+        let importedCount = 0;
+        for (const item of items) {
+            if (!item.name && !item.namaKost) continue;
+            const name = item.name || item.namaKost;
+            const instagram = item.instagram || item.contact?.instagram || null;
+            const tiktok = item.tiktok || item.contact?.tiktok || null;
+            const whatsapp = item.whatsapp || item.contact?.whatsapp || null;
+            const status = item.status || 'pending';
+            const groupId = item.groupId || item.group_id || null;
+
+            await database.addKost({
+                name,
+                instagram,
+                tiktok,
+                whatsapp,
+                status,
+                groupId,
+                addedBy: item.addedBy || item.added_by || 'import'
+            });
+            importedCount++;
+        }
+
+        res.json({
+            success: true,
+            message: `Berhasil mengimpor ${importedCount} data kos.`,
+            importedCount
+        });
+    } catch (err) {
+        console.error('[web/server] Error POST /api/kost/import:', err);
+        res.status(500).json({ success: false, message: 'Gagal mengimpor data: ' + err.message });
+    }
+});
+
 // Submissions List
 app.get('/api/submissions', async (req, res) => {
     try {

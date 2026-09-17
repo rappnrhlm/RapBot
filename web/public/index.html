@@ -814,23 +814,32 @@
                 <div id="modView-workspace" class="hidden space-y-4">
                     
                     <!-- Top Breadcrumb & Header of Active Module -->
-                    <div class="bg-white dark:bg-[#111827] rounded-3xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="bg-white dark:bg-[#111827] rounded-3xl p-4 sm:p-5 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
-                            <button onclick="closeModuleWorkspace()" title="Kembali ke Katalog Modul" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 text-xs font-semibold">
+                            <button onclick="closeModuleWorkspace()" title="Kembali ke Katalog Modul" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 text-xs font-semibold shadow-xs">
                                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                                <span>Katalog Modul</span>
+                                <span>Katalog</span>
                             </button>
-                            <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                            <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                             <div>
-                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2" id="activeModTitle">
-                                    <span>🏠 Manajemen Kos & Properti</span>
-                                </h4>
-                                <p class="text-[11px] text-slate-400" id="activeModSubtitle">Kelola listing data kos, status visibilitas penawaran, dan usulan warga.</p>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2" id="activeModTitle">
+                                        <span>🏠 Manajemen Kos & Properti</span>
+                                    </h4>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800" id="activeModBadge">
+                                        Aktif & Berjalan
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-0.5" id="activeModSubtitle">Kelola listing data kos, perintah custom bot, template pesan DM, moderasi usulan, dan integrasi grup.</p>
                             </div>
                         </div>
 
                         <!-- Dynamic Action Button inside Module -->
-                        <div id="modActionBtnContainer">
+                        <div id="modActionBtnContainer" class="flex items-center gap-2 flex-wrap">
+                            <button onclick="exportExtensionData('json')" title="Unduh data JSON lengkap" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-xs">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                <span class="hidden sm:inline">Backup</span> JSON
+                            </button>
                             <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                 Tambah Data Baru
@@ -838,34 +847,63 @@
                         </div>
                     </div>
 
-                    <!-- Sub-tabs Navigation inside Active Module -->
-                    <div id="modWorkspaceTabs" class="flex items-center gap-2 overflow-x-auto pb-1">
-                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
-                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5">
-                                <i data-lucide="building" class="w-3.5 h-3.5"></i>
-                                <span>Listing Data & Status (<span id="modListingCount">0</span>)</span>
+                    <!-- Sub-tabs Navigation inside Active Module (7 Modular Sub-Tabs) -->
+                    <div id="modWorkspaceTabs" class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow flex-nowrap">
+                            <!-- 1. Listing -->
+                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                                <span>Listing Data (<span id="modListingCount">0</span>)</span>
                             </button>
-                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-4 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <!-- 2. Submissions -->
+                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
                                 <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
-                                <span>Kotak Usulan Masuk (<span id="modSubCount">0</span>)</span>
+                                <span>Usulan Masuk (<span id="modSubCount">0</span>)</span>
+                            </button>
+                            <!-- 3. Perintah Custom & Panduan -->
+                            <button onclick="switchModSubTab('commands')" id="modSubTab-commands" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="terminal" class="w-3.5 h-3.5 text-purple-500"></i>
+                                <span>Perintah Custom & Simulator</span>
+                            </button>
+                            <!-- 4. Template Pesan DM -->
+                            <button onclick="switchModSubTab('templates')" id="modSubTab-templates" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-blue-500"></i>
+                                <span>Template Pesan & DM</span>
+                            </button>
+                            <!-- 5. Grup & Lingkup -->
+                            <button onclick="switchModSubTab('groups')" id="modSubTab-groups" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                <span>Grup Terhubung & Aturan</span>
+                            </button>
+                            <!-- 6. Statistik Modul -->
+                            <button onclick="switchModSubTab('analytics')" id="modSubTab-analytics" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-amber-500"></i>
+                                <span>Statistik Modul</span>
+                            </button>
+                            <!-- 7. Ekspor, Impor & API -->
+                            <button onclick="switchModSubTab('export')" id="modSubTab-export" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="code-2" class="w-3.5 h-3.5 text-rose-500"></i>
+                                <span>Ekspor & API Docs</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- 4A. Sub-View: Listing Data (Kost / Katalog) -->
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 1: LISTING DATA & STATUS                        -->
+                    <!-- ========================================================= -->
                     <div id="modSubView-listing" class="space-y-4">
                         <!-- Filters & Search -->
                         <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
                             <div class="relative flex-1 max-w-md">
                                 <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama iklan, detail, kontak WhatsApp/IG..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <input type="text" id="kostSearchInput" oninput="filterKost()" placeholder="Cari nama kos, detail, nomor WA/IG..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                             </div>
 
                             <div class="flex items-center gap-2 flex-wrap">
                                 <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
                                     <button onclick="filterKostStatus('all')" id="filterKost-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Data</button>
-                                    <button onclick="filterKostStatus('published')" id="filterKost-published" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟢 Sudah Diposting (Publik)</button>
-                                    <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">📩 Terkirim Penawaran / DM</button>
+                                    <button onclick="filterKostStatus('published')" id="filterKost-published" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟢 Tayang Publik</button>
+                                    <button onclick="filterKostStatus('sent')" id="filterKost-sent" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">📩 Terkirim DM</button>
                                     <button onclick="filterKostStatus('pending')" id="filterKost-pending" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🟡 Belum Ditawarkan</button>
                                 </div>
 
@@ -891,7 +929,9 @@
                         </div>
                     </div>
 
-                    <!-- 4B. Sub-View: Usulan Warga -->
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 2: USULAN WARGA & MODERASI                      -->
+                    <!-- ========================================================= -->
                     <div id="modSubView-submissions" class="hidden space-y-4">
                         <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3.5">
                             <div class="relative flex-1 max-w-md">
@@ -921,6 +961,507 @@
                         <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden">
                             <div id="submissionsContainer" class="p-4 sm:p-5">
                                 <div class="text-xs text-slate-400 py-12 text-center">Memuat data usulan...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 3: PERINTAH CUSTOM & SIMULATOR BOT WHATSAPP      -->
+                    <!-- ========================================================= -->
+                    <div id="modSubView-commands" class="hidden space-y-4">
+                        <!-- Top Info Banner -->
+                        <div class="bg-gradient-to-r from-purple-900/40 via-indigo-900/30 to-slate-900/40 border border-purple-500/20 rounded-2xl p-4 sm:p-5 text-xs text-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                        12 Perintah Khusus Modul
+                                    </span>
+                                    <span class="text-xs font-bold text-white">Katalog & Hak Akses Perintah</span>
+                                </div>
+                                <p class="text-[11px] text-slate-300">
+                                    Bot membagi hak akses perintah menjadi <strong>Publik</strong> (anggota grup umum), <strong>Admin Grup</strong> (grup induk/internal), dan <strong>Super Owner</strong>.
+                                </p>
+                            </div>
+                            <button onclick="scrollToSimulator()" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 whitespace-nowrap">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                Buka Simulator
+                            </button>
+                        </div>
+
+                        <!-- Filter & Search Controls for Commands -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div class="relative flex-1 max-w-md">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="extCmdSearchInput" oninput="filterExtCommands()" placeholder="Cari nama perintah, contoh: !cari, !dm, !acc..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            </div>
+
+                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 flex-wrap">
+                                <button onclick="filterExtCommandRole('all')" id="extCmdRole-all" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">Semua Hak Akses</button>
+                                <button onclick="filterExtCommandRole('public')" id="extCmdRole-public" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">👥 Member Publik</button>
+                                <button onclick="filterExtCommandRole('admin')" id="extCmdRole-admin" class="px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white">🛡️ Admin Induk</button>
+                            </div>
+                        </div>
+
+                        <!-- Grid Cards of Available Custom Commands -->
+                        <div id="extCommandsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+
+                        <!-- INTERACTIVE COMMAND SIMULATOR / TESTER -->
+                        <div id="extCommandSimulator" class="bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4 pt-6 mt-6">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                        <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Simulator Output Bot WhatsApp Interaktif</h5>
+                                        <p class="text-[11px] text-slate-400">Pilih perintah dan uji coba format respons pesan yang akan dikirim oleh bot.</p>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">Live Preview</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                                <!-- Simulator Controls (Left 5 Cols) -->
+                                <div class="lg:col-span-5 space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pilih Perintah Uji Coba</label>
+                                        <select id="simCommandSelect" onchange="onSimCommandChange()" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
+                                            <option value="cari">!cari <keyword> (Pencarian Publik)</option>
+                                            <option value="dm">!dm <ID> (Siap DM Promosi)</option>
+                                            <option value="kost_lengkap">!kost lengkap <ID> (Detail Kos)</option>
+                                            <option value="kost_pending">!kost pending (Daftar Antrean Admin)</option>
+                                            <option value="usulkost">!usulkost <Nama> > <Kontak> (Usulan Warga)</option>
+                                            <option value="acc">!acc <ID Usulan> (Approve Usulan)</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" id="simParamLabel">Parameter / Argumen</label>
+                                        <input type="text" id="simParamInput" value="mawar" placeholder="Contoh: mawar atau 1" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none font-mono">
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Tipe Obrolan</label>
+                                            <select id="simRoleSelect" class="w-full px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
+                                                <option value="public">Grup Publik / Warga</option>
+                                                <option value="admin">Grup Admin Induk</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Simulasi Pengirim</label>
+                                            <input type="text" id="simSenderInput" value="628123456789" class="w-full px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono">
+                                        </div>
+                                    </div>
+
+                                    <button onclick="runCommandSimulator()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-sm transition active:scale-98 flex items-center justify-center gap-2">
+                                        <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                        <span>Jalankan Simulasi Respons</span>
+                                    </button>
+                                </div>
+
+                                <!-- WhatsApp Chat Preview Bubble (Right 7 Cols) -->
+                                <div class="lg:col-span-7 bg-[#EFEAE2] dark:bg-[#0C1317] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between min-h-[220px]">
+                                    <div class="flex items-center justify-between pb-2 border-b border-slate-300/60 dark:border-slate-800/80 text-[10px] text-slate-500">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-[9px]">W</div>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200">WhatsApp Chat Simulator</span>
+                                        </div>
+                                        <span class="font-mono" id="simTimeDisplay">Sekarang</span>
+                                    </div>
+
+                                    <!-- User Bubble -->
+                                    <div class="flex justify-end my-2">
+                                        <div class="bg-[#D9FDD3] dark:bg-[#005C4B] text-slate-900 dark:text-slate-100 rounded-xl rounded-tr-none px-3 py-2 text-xs max-w-sm card-shadow shadow-xs font-mono">
+                                            <span id="simUserMessageText">!cari mawar</span>
+                                            <span class="text-[9px] text-slate-400 float-right ml-2 mt-1">✓✓</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bot Response Bubble -->
+                                    <div class="flex justify-start my-1" id="simBotBubbleContainer">
+                                        <div class="bg-white dark:bg-[#202C33] text-slate-900 dark:text-slate-100 rounded-xl rounded-tl-none px-3.5 py-2.5 text-xs max-w-md card-shadow whitespace-pre-wrap font-sans space-y-1" id="simBotMessageText">
+                                            Tekan tombol <strong>"Jalankan Simulasi Respons"</strong> untuk melihat hasil balasan bot.
+                                        </div>
+                                    </div>
+
+                                    <!-- Copy Output Button -->
+                                    <div class="pt-2 flex items-center justify-end">
+                                        <button onclick="copySimulatorOutput()" class="px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 hover:bg-white transition">
+                                            <i data-lucide="copy" class="w-3 h-3"></i>
+                                            Salin Balasan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 4: TEMPLATE PESAN DM & BALON PROMOSI            -->
+                    <!-- ========================================================= -->
+                    <div id="modSubView-templates" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            
+                            <!-- Left: Template Editor & Presets (7 cols) -->
+                            <div class="lg:col-span-7 bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <div>
+                                        <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Editor Template Pesan DM & Outreach</h5>
+                                        <p class="text-[11px] text-slate-400">Pesan yang digunakan saat menekan tombol salin DM atau perintah <code>!dm &lt;ID&gt;</code>.</p>
+                                    </div>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">Customizable</span>
+                                </div>
+
+                                <!-- Preset Switcher -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Pilih Preset Template</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <button onclick="selectTemplatePreset('outreach')" id="presetBtn-outreach" class="p-2.5 rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold text-left transition">
+                                            <div class="flex items-center gap-1.5">
+                                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                                <span>1. Promosi Gratis</span>
+                                            </div>
+                                            <p class="text-[10px] font-normal text-slate-500 mt-0.5">Penawaran kos baru</p>
+                                        </button>
+                                        <button onclick="selectTemplatePreset('published')" id="presetBtn-published" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-medium text-left transition">
+                                            <div class="flex items-center gap-1.5">
+                                                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                                <span>2. Konfirmasi Tayang</span>
+                                            </div>
+                                            <p class="text-[10px] font-normal text-slate-500 mt-0.5">Setelah posting feed/story</p>
+                                        </button>
+                                        <button onclick="selectTemplatePreset('submission_acc')" id="presetBtn-submission_acc" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-medium text-left transition">
+                                            <div class="flex items-center gap-1.5">
+                                                <i data-lucide="thumbs-up" class="w-3.5 h-3.5 text-amber-600"></i>
+                                                <span>3. Usulan Diterima</span>
+                                            </div>
+                                            <p class="text-[10px] font-normal text-slate-500 mt-0.5">Balasan ke warga pengusul</p>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Variables Pill Badges -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Variabel Dinamis (Klik untuk Sisipkan)</label>
+                                    <div class="flex items-center gap-1.5 flex-wrap text-[11px]">
+                                        <button onclick="insertTemplateVar('{NAMA_KOS}')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 font-mono transition"><code>{NAMA_KOS}</code></button>
+                                        <button onclick="insertTemplateVar('{ID}')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 font-mono transition"><code>{ID}</code></button>
+                                        <button onclick="insertTemplateVar('{OFFICIAL_IG}')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 font-mono transition"><code>{OFFICIAL_IG}</code></button>
+                                        <button onclick="insertTemplateVar('{CONTACT}')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 font-mono transition"><code>{CONTACT}</code></button>
+                                    </div>
+                                </div>
+
+                                <!-- Template Content Textarea -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Isi Template Pesan</label>
+                                    <textarea id="templateEditorContent" rows="7" oninput="updateTemplatePreview()" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 leading-relaxed font-sans"></textarea>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-2">
+                                    <button onclick="resetTemplateToDefault()" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                                        Reset ke Standar
+                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="copyCurrentTemplate()" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs">
+                                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                            Salin Template
+                                        </button>
+                                        <button onclick="saveCurrentTemplate()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition active:scale-95 flex items-center gap-1.5">
+                                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                                            Simpan Perubahan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Live WhatsApp Bubble Preview (5 cols) -->
+                            <div class="lg:col-span-5 bg-[#EFEAE2] dark:bg-[#0C1317] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between pb-3 border-b border-slate-300/60 dark:border-slate-800/80">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center text-white">
+                                                <i data-lucide="instagram" class="w-4 h-4"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="text-xs font-bold text-slate-800 dark:text-slate-200">Pratinjau Balon Chat DM</h6>
+                                                <span class="text-[10px] text-slate-500">Tampilan saat di-paste di IG / WA</span>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Preview</span>
+                                    </div>
+
+                                    <div class="py-2">
+                                        <div class="bg-white dark:bg-[#202C33] text-slate-900 dark:text-slate-100 rounded-2xl rounded-tr-none p-3.5 text-xs card-shadow whitespace-pre-wrap leading-relaxed space-y-1" id="templateLiveBubble">
+                                            <!-- Live preview content rendered by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 border-t border-slate-300/60 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+                                    <p class="flex items-center gap-1.5 font-medium">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500"></i>
+                                        <span>Template ini otomatis mengganti variabel dengan data riil saat dieksekusi via bot atau dashboard.</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 5: GRUP TERHUBUNG & ATURAN LINGKUP AKSES         -->
+                    <!-- ========================================================= -->
+                    <div id="modSubView-groups" class="hidden space-y-4">
+                        <!-- Top Diagram Banner -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Card A: Grup Admin (Induk) -->
+                            <div class="p-5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center">
+                                        <i data-lucide="shield" class="w-4 h-4"></i>
+                                    </div>
+                                    <h6 class="text-xs font-bold text-purple-900 dark:text-purple-200">Grup Induk / Internal Admin</h6>
+                                </div>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    Memiliki hak akses penuh: penambahan data (<code>!addkost</code>), penerbitan resmi (<code>!post</code>), penandaan DM (<code>!sent</code>), dan menerima notifikasi usulan warga otomatis.
+                                </p>
+                            </div>
+
+                            <!-- Card B: Grup Publik (Cabang/Komunitas) -->
+                            <div class="p-5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
+                                        <i data-lucide="users" class="w-4 h-4"></i>
+                                    </div>
+                                    <h6 class="text-xs font-bold text-emerald-900 dark:text-emerald-200">Grup Publik / Komunitas</h6>
+                                </div>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    Hanya dapat mencari data kos yang sudah resmi tayang (<code>!cari</code>) dan mengirimkan usulan kos baru (<code>!usulkost</code>) yang dibatasi oleh sistem cooldown.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Connected WhatsApp Groups Table -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow overflow-hidden p-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Daftar Grup WhatsApp Terintegrasi</h5>
+                                    <p class="text-[11px] text-slate-400">Grup yang berpartisipasi dalam ekosistem modul Manajemen Kos.</p>
+                                </div>
+                                <button onclick="switchTab('device')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-xs">
+                                    <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                                    Kelola Grup
+                                </button>
+                            </div>
+
+                            <div id="extGroupsContainer" class="overflow-x-auto">
+                                <div class="text-xs text-slate-400 py-8 text-center">Memuat daftar grup terhubung...</div>
+                            </div>
+                        </div>
+
+                        <!-- Operational Parameters & Anti-Spam Rules -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 card-shadow p-5 space-y-4">
+                            <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Aturan & Parameter Operasional Modul</h5>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs">
+                                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                        <i data-lucide="timer" class="w-4 h-4 text-indigo-500"></i>
+                                        <span>Cooldown Pencarian</span>
+                                    </div>
+                                    <div class="text-base font-extrabold text-indigo-600">10 Detik</div>
+                                    <p class="text-[10px] text-slate-400">Mencegah spam perintah <code>!cari</code> di grup publik.</p>
+                                </div>
+
+                                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i>
+                                        <span>Cooldown Usulan Kos</span>
+                                    </div>
+                                    <div class="text-base font-extrabold text-amber-600">30 Detik</div>
+                                    <p class="text-[10px] text-slate-400">Jeda pengiriman form <code>!usulkost</code> antar user.</p>
+                                </div>
+
+                                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                        <i data-lucide="list-ordered" class="w-4 h-4 text-emerald-500"></i>
+                                        <span>Batas Hasil Pencarian</span>
+                                    </div>
+                                    <div class="text-base font-extrabold text-emerald-600">5 Kos / Query</div>
+                                    <p class="text-[10px] text-slate-400">Maksimal listing kos yang dikirim agar pesan rapi.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 6: STATISTIK & ANALISIS MODUL                    -->
+                    <!-- ========================================================= -->
+                    <div id="modSubView-analytics" class="hidden space-y-4">
+                        <!-- Top KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+                            <!-- KPI 1: Total Prospek Database -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-1">
+                                <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">TOTAL DATABASE KOS</span>
+                                <div class="text-xl font-extrabold text-slate-900 dark:text-white" id="statModTotal">0</div>
+                                <span class="text-[10px] text-slate-500">Listing terdaftar di sistem</span>
+                            </div>
+
+                            <!-- KPI 2: Rasio Outreach DM -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-1">
+                                <span class="text-[10px] font-bold uppercase text-blue-500 tracking-wider">OUTREACH PENAWARAN (DM)</span>
+                                <div class="text-xl font-extrabold text-blue-600" id="statModSent">0</div>
+                                <span class="text-[10px] text-slate-500" id="statModSentPct">0% dari total kos</span>
+                            </div>
+
+                            <!-- KPI 3: Rasio Publikasi Resmi -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-1">
+                                <span class="text-[10px] font-bold uppercase text-emerald-500 tracking-wider">TAYANG RESMI (PUBLIK)</span>
+                                <div class="text-xl font-extrabold text-emerald-600" id="statModPublished">0</div>
+                                <span class="text-[10px] text-slate-500" id="statModPubPct">0% dari total kos</span>
+                            </div>
+
+                            <!-- KPI 4: Usulan Warga & Rasio ACC -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-1">
+                                <span class="text-[10px] font-bold uppercase text-amber-500 tracking-wider">USULAN WARGA MASUK</span>
+                                <div class="text-xl font-extrabold text-amber-600" id="statModSubmissions">0</div>
+                                <span class="text-[10px] text-slate-500" id="statModAccRatio">0% disetujui</span>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown: Saluran Kontak & Platform Sosial Media -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                                <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="share-2" class="w-4 h-4 text-indigo-500"></i>
+                                    <span>Distribusi Saluran Kontak Properti</span>
+                                </h5>
+                                <div class="space-y-2.5 text-xs pt-1" id="statContactDistribution">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                                <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="activity" class="w-4 h-4 text-emerald-500"></i>
+                                    <span>Status Corong Operasional (Funnel)</span>
+                                </h5>
+                                <div class="space-y-3 text-xs pt-1" id="statFunnelBars">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-VIEW 7: EKSPOR, IMPOR & REST API DEVELOPER            -->
+                    <!-- ========================================================= -->
+                    <div id="modSubView-export" class="hidden space-y-4">
+                        <!-- Data Management Actions -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Card 1: Download JSON -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 flex items-center justify-center">
+                                    <i data-lucide="file-json" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-xs font-bold text-slate-900 dark:text-white">Ekspor Format JSON</h6>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Cadangkan seluruh basis data kos lengkap dengan timestamp dan pengusul.</p>
+                                </div>
+                                <button onclick="exportExtensionData('json')" class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95 shadow-xs">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Unduh kost.json
+                                </button>
+                            </div>
+
+                            <!-- Card 2: Download CSV -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 flex items-center justify-center">
+                                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-xs font-bold text-slate-900 dark:text-white">Ekspor Spreadsheet CSV</h6>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Kompatibel langsung dibuka di Microsoft Excel atau Google Sheets.</p>
+                                </div>
+                                <button onclick="exportExtensionData('csv')" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95 shadow-xs">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Unduh Data CSV
+                                </button>
+                            </div>
+
+                            <!-- Card 3: Impor & Restore -->
+                            <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-3">
+                                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-600 flex items-center justify-center">
+                                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-xs font-bold text-slate-900 dark:text-white">Impor / Pulihkan Data</h6>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Unggah berkas JSON backup untuk menambahkan data secara massal.</p>
+                                </div>
+                                <button onclick="openImportKostModal()" class="w-full py-2 rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/50 text-purple-700 dark:text-purple-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                                    Impor File JSON
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- REST API Documentation for Extension -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 card-shadow space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                                <div>
+                                    <h5 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Dokumentasi REST API Modul</h5>
+                                    <p class="text-[11px] text-slate-400">Integrasikan data kos dengan aplikasi web, mobile, atau cron job eksternal.</p>
+                                </div>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">REST v1</span>
+                            </div>
+
+                            <div class="space-y-3 text-xs">
+                                <!-- Endpoint 1: GET /api/kost -->
+                                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 font-mono">
+                                            <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-bold text-[10px]">GET</span>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200">/api/kost</span>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400">Mendapatkan seluruh daftar kos</span>
+                                    </div>
+                                    <div class="bg-slate-900 text-slate-200 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto flex items-center justify-between">
+                                        <code>curl -X GET http://localhost:3001/api/kost</code>
+                                        <button onclick="copyApiSnippet('curl -X GET http://localhost:3001/api/kost')" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Endpoint 2: POST /api/kost -->
+                                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 font-mono">
+                                            <span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 font-bold text-[10px]">POST</span>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200">/api/kost</span>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400">Tambah data kos baru</span>
+                                    </div>
+                                    <div class="bg-slate-900 text-slate-200 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto flex items-center justify-between">
+                                        <code>curl -X POST http://localhost:3001/api/kost -H "Content-Type: application/json" -d '{"name":"Kost Baru","whatsapp":"08123456789","instagram":"kostbaru","pin":"YOUR_PIN"}'</code>
+                                        <button onclick="copyApiSnippet('curl -X POST http://localhost:3001/api/kost -H \"Content-Type: application/json\" -d \'{\"name\":\"Kost Baru\",\"whatsapp\":\"08123456789\",\"instagram\":\"kostbaru\",\"pin\":\"YOUR_PIN\"}\'')" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Endpoint 3: POST /api/kost/:id/publish -->
+                                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 font-mono">
+                                            <span class="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-400 font-bold text-[10px]">POST</span>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200">/api/kost/:id/publish</span>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400">Tayangkan kos ke pencarian publik</span>
+                                    </div>
+                                    <div class="bg-slate-900 text-slate-200 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto flex items-center justify-between">
+                                        <code>curl -X POST http://localhost:3001/api/kost/KST-000001/publish -H "Content-Type: application/json" -d '{"pin":"YOUR_PIN"}'</code>
+                                        <button onclick="copyApiSnippet('curl -X POST http://localhost:3001/api/kost/KST-000001/publish -H \"Content-Type: application/json\" -d \'{\"pin\":\"YOUR_PIN\"}\'')" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1423,6 +1964,51 @@
                 </button>
                 <button onclick="submitKostForm()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm">
                     Simpan Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4.1 Impor / Pulihkan Data Kos Modal -->
+    <div id="importKostModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-lg w-full border border-slate-200/70 dark:border-slate-800 card-shadow-lg space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-600 flex items-center justify-center">
+                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white">Impor & Pulihkan Data Kos</h4>
+                        <p class="text-[11px] text-slate-400">Unggah berkas JSON atau tempel format data kos</p>
+                    </div>
+                </div>
+                <button onclick="closeImportKostModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pilih File JSON dari Komputer</label>
+                    <input type="file" id="importKostFileInput" accept=".json" onchange="handleImportFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 dark:file:bg-purple-950/60 dark:file:text-purple-300 hover:file:bg-purple-100 cursor-pointer">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Atau Tempel JSON Data Langsung</label>
+                    <textarea id="importKostJsonText" rows="6" placeholder='[{"name":"Kost Cempaka","instagram":"kostcempaka","whatsapp":"08123456789"}]' class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-[11px] focus:outline-none"></textarea>
+                </div>
+
+                <div class="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                    <span>Sistem akan memeriksa dan memvalidasi setiap objek kos. ID baru otomatis digenerate jika belum ada.</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <button onclick="closeImportKostModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                    Batal
+                </button>
+                <button onclick="submitImportKostForm()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span>Mulai Impor Data</span>
                 </button>
             </div>
         </div>
@@ -1956,6 +2542,163 @@
         }
 
         let activeBusinessModule = null;
+        let extCommandRoleFilter = 'all';
+        let currentTemplatePreset = 'outreach';
+
+        const templatePresets = {
+            outreach: `Halo Kak, salam kenal dari tim @bukittinggikos 👋\n\nKami lihat {NAMA_KOS} lokasinya sangat strategis dan tempatnya nyaman banget. Kebetulan kami mengelola platform informasi kos & kontrakan khusus wilayah Bukittinggi.\n\nKami ingin menawarkan promosi gratis untuk {NAMA_KOS} agar semakin dikenal calon penyewa di Bukittinggi.\n\nJika Kakak berminat, cukup kirimkan foto unit dan detail harga/fasilitasnya ya, nanti akan kami bantu posting di media sosial dan direktori bot WhatsApp kami.\n\nTerima kasih banyak Kak, semoga sehat dan sukses selalu! 🙏`,
+
+            published: `Halo Kak dari tim @bukittinggikos! 🎉\n\nKabar baik, informasi seputar {NAMA_KOS} sudah resmi dipublikasikan di database & media sosial kami:\n🆔 ID Listing: {ID}\n📱 Akun Resmi: @bukittinggikos\n\nKini pencari kos dapat menemukan info {NAMA_KOS} secara otomatis via pencarian bot WhatsApp "!cari {NAMA_KOS}".\n\nSemoga lekas penuh kamarnya ya Kak! Terima kasih banyak atas kerjasamanya. 🙏`,
+
+            submission_acc: `Halo Kak, terima kasih banyak atas usulan data {NAMA_KOS} yang Kakak kirimkan ke tim @bukittinggikos! 🙌\n\nUsulan Kakak sudah kami verifikasi dan resmi disetujui masuk ke database bot WhatsApp kami dengan nomor ID: {ID}.\n\nKontribusi Kakak sangat berarti bagi para pencari hunian di Bukittinggi. Semoga harimu menyenangkan! ✨`
+        };
+
+        const customExtensionCommands = [
+            {
+                name: 'addkost',
+                syntax: '!addkost <Nama> > <Kontak>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menambah data listing kos baru secara langsung ke database bot.',
+                example: '!addkost Kost Melati > wa: 08123456789 | ig: kostmelati',
+                aliases: []
+            },
+            {
+                name: 'cari',
+                syntax: '!cari <Kata Kunci>',
+                role: 'public',
+                scope: 'Grup Publik & Admin',
+                desc: 'Mencari kos yang sudah aktif/tayang resmi untuk publik dengan filter kata kunci.',
+                example: '!cari birugo',
+                aliases: []
+            },
+            {
+                name: 'kost (status filter)',
+                syntax: '!kost [all|pending|sent|published]',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menampilkan daftar kos terdaftar berdasarkan status operasional.',
+                example: '!kost pending',
+                aliases: ['listkost']
+            },
+            {
+                name: 'kost dm (ringkas)',
+                syntax: '!kost dm [status]',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Format ringkas khusus nomor WhatsApp & tautan profil IG/TikTok untuk tim outreach.',
+                example: '!kost dm pending',
+                aliases: ['kostdm', 'kost ringkas']
+            },
+            {
+                name: 'kost lengkap',
+                syntax: '!kost lengkap <ID>',
+                role: 'all',
+                scope: 'Grup Publik & Admin',
+                desc: 'Melihat kartu detail spesifikasi properti kos lengkap berdasarkan nomor ID.',
+                example: '!kost lengkap 1',
+                aliases: []
+            },
+            {
+                name: 'dm (siap promosi)',
+                syntax: '!dm <ID>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menghasilkan 2 balon chat: kartu info kos & balon teks promosi siap salin.',
+                example: '!dm 12',
+                aliases: ['dmpromosi', 'dmkost']
+            },
+            {
+                name: 'sent (tandai DM)',
+                syntax: '!sent <ID>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menandai data kos sudah berhasil dihubungi/di-DM oleh tim outreach.',
+                example: '!sent 12',
+                aliases: ['tandaisent']
+            },
+            {
+                name: 'post (tayang publik)',
+                syntax: '!post <ID>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Mempublikasikan kos secara resmi agar muncul di hasil pencarian publik !cari.',
+                example: '!post 12',
+                aliases: ['publishkost', 'tayang']
+            },
+            {
+                name: 'delkost',
+                syntax: '!delkost <ID>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menghapus data kos dari database bot secara permanen.',
+                example: '!delkost 12',
+                aliases: ['hapuskost']
+            },
+            {
+                name: 'editkost',
+                syntax: '!editkost <ID> > <Data Baru>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Mengedit nama atau kontak kos langsung melalui perintah chat WhatsApp.',
+                example: '!editkost 12 > Kost Mawar Indah > wa: 08123456789',
+                aliases: []
+            },
+            {
+                name: 'usulkost',
+                syntax: '!usulkost <Nama> > <Kontak>',
+                role: 'public',
+                scope: 'Grup Publik & Member',
+                desc: 'Formulir usulan data kos baru dari warga yang otomatis diteruskan ke admin.',
+                example: '!usulkost Kost Flamboyan > wa: 085211223344',
+                aliases: ['submitkost', 'usul']
+            },
+            {
+                name: 'listusul',
+                syntax: '!listusul',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Melihat antrean seluruh usulan kos warga yang menunggu moderasi.',
+                example: '!listusul',
+                aliases: []
+            },
+            {
+                name: 'acc (setujui usulan)',
+                syntax: '!acc <ID Usulan>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menyetujui usulan warga dan otomatis memindahkannya menjadi data kos di sistem.',
+                example: '!acc 1',
+                aliases: ['approvekost', 'terimakost']
+            },
+            {
+                name: 'tolak (tolak usulan)',
+                syntax: '!tolak <ID Usulan>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menolak usulan kos warga yang tidak sesuai kriteria.',
+                example: '!tolak 1',
+                aliases: ['rejectkost']
+            },
+            {
+                name: 'delusul',
+                syntax: '!delusul <ID Usulan>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Menghapus usulan dari daftar antrean usulan masuk.',
+                example: '!delusul 1',
+                aliases: []
+            },
+            {
+                name: 'editusul',
+                syntax: '!editusul <ID Usulan> > <Data Baru>',
+                role: 'admin',
+                scope: 'Grup Admin Induk',
+                desc: 'Memperbaiki rincian usulan sebelum disetujui.',
+                example: '!editusul 1 > Kost Kenanga > wa: 08123456789',
+                aliases: []
+            }
+        ];
 
         function openModuleWorkspace(moduleKey) {
             activeBusinessModule = moduleKey;
@@ -1971,29 +2714,47 @@
 
             if (moduleKey === 'kost') {
                 if (titleEl) titleEl.innerHTML = '<i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i><span>Manajemen Kos & Properti</span>';
-                if (subEl) subEl.textContent = 'Kelola listing data kos, status tayang publik, penawaran DM, dan usulan masuk warga.';
+                if (subEl) subEl.textContent = 'Kelola listing data kos, perintah custom bot, template pesan DM, moderasi usulan, dan integrasi grup.';
+                
                 if (tabsContainer) {
                     tabsContainer.innerHTML = `
-                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
-                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5">
-                                <i data-lucide="building" class="w-3.5 h-3.5"></i>
-                                <span>Listing Data & Status (<span id="modListingCount">${rawKostData.length}</span>)</span>
+                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow flex-nowrap">
+                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                                <span>Listing Data (<span id="modListingCount">${rawKostData.length}</span>)</span>
                             </button>
-                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-4 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
                                 <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
-                                <span>Kotak Usulan Masuk (<span id="modSubCount">${rawSubmissionsData.length}</span>)</span>
+                                <span>Usulan Masuk (<span id="modSubCount">${rawSubmissionsData.length}</span>)</span>
+                            </button>
+                            <button onclick="switchModSubTab('commands')" id="modSubTab-commands" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="terminal" class="w-3.5 h-3.5 text-purple-500"></i>
+                                <span>Perintah Custom & Simulator</span>
+                            </button>
+                            <button onclick="switchModSubTab('templates')" id="modSubTab-templates" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-blue-500"></i>
+                                <span>Template Pesan & DM</span>
+                            </button>
+                            <button onclick="switchModSubTab('groups')" id="modSubTab-groups" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                <span>Grup Terhubung & Aturan</span>
+                            </button>
+                            <button onclick="switchModSubTab('analytics')" id="modSubTab-analytics" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-amber-500"></i>
+                                <span>Statistik Modul</span>
+                            </button>
+                            <button onclick="switchModSubTab('export')" id="modSubTab-export" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
+                                <i data-lucide="code-2" class="w-3.5 h-3.5 text-rose-500"></i>
+                                <span>Ekspor & API Docs</span>
                             </button>
                         </div>
                     `;
                 }
-                if (actionContainer) {
-                    actionContainer.innerHTML = `
-                        <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Tambah Data Baru
-                        </button>
-                    `;
-                }
+                
+                renderExtensionCommands();
+                renderExtensionTemplates();
+                renderExtensionGroups();
+                renderExtensionAnalytics();
                 switchModSubTab('listing');
             } else if (moduleKey === 'marketplace') {
                 if (titleEl) titleEl.innerHTML = '<i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-600"></i><span>Marketplace & Jual Beli Komunitas</span>';
@@ -2056,31 +2817,738 @@
 
         function switchModSubTab(sub) {
             currentModSubTab = sub;
-            ['listing', 'submissions', 'marketplace', 'services', 'features'].forEach(v => {
+            const allSubKeys = ['listing', 'submissions', 'commands', 'templates', 'groups', 'analytics', 'export', 'marketplace', 'services', 'features'];
+            
+            allSubKeys.forEach(v => {
                 const el = document.getElementById('modSubView-' + v);
                 if (el) el.classList.add('hidden');
                 const btn = document.getElementById('modSubTab-' + v);
-                if (btn) btn.className = "px-4 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 font-medium";
+                if (btn) btn.className = "px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 font-medium whitespace-nowrap transition text-slate-600 dark:text-slate-400";
             });
+
             const activeEl = document.getElementById('modSubView-' + sub);
             if (activeEl) activeEl.classList.remove('hidden');
             const activeBtn = document.getElementById('modSubTab-' + sub);
-            if (activeBtn) activeBtn.className = "px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5 shadow-xs";
+            if (activeBtn) activeBtn.className = "px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5 shadow-xs whitespace-nowrap";
             
             const btnContainer = document.getElementById('modActionBtnContainer');
             if (btnContainer && activeBusinessModule === 'kost') {
                 if (sub === 'listing') {
                     btnContainer.innerHTML = `
+                        <button onclick="exportExtensionData('json')" title="Unduh data JSON lengkap" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span class="hidden sm:inline">Backup</span> JSON
+                        </button>
                         <button onclick="openAddKostModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                             Tambah Data Baru
                         </button>
                     `;
-                } else {
-                    btnContainer.innerHTML = '';
+                } else if (sub === 'submissions') {
+                    btnContainer.innerHTML = `
+                        <button onclick="loadSubmissionsList()" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            Segarkan Usulan
+                        </button>
+                    `;
+                } else if (sub === 'commands') {
+                    btnContainer.innerHTML = `
+                        <button onclick="scrollToSimulator()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition active:scale-95">
+                            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                            Uji di Simulator
+                        </button>
+                    `;
+                } else if (sub === 'templates') {
+                    btnContainer.innerHTML = `
+                        <button onclick="copyCurrentTemplate()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition active:scale-95">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            Salin Template Aktif
+                        </button>
+                    `;
+                } else if (sub === 'groups') {
+                    btnContainer.innerHTML = `
+                        <button onclick="switchTab('device')" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                            Kelola Grup WA
+                        </button>
+                    `;
+                } else if (sub === 'analytics') {
+                    btnContainer.innerHTML = `
+                        <button onclick="renderExtensionAnalytics()" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            Segarkan Statistik
+                        </button>
+                    `;
+                } else if (sub === 'export') {
+                    btnContainer.innerHTML = `
+                        <button onclick="openImportKostModal()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition active:scale-95">
+                            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                            Impor JSON
+                        </button>
+                    `;
                 }
             }
+
+            if (sub === 'commands') renderExtensionCommands();
+            if (sub === 'templates') renderExtensionTemplates();
+            if (sub === 'groups') renderExtensionGroups();
+            if (sub === 'analytics') renderExtensionAnalytics();
+
             if (window.lucide) lucide.createIcons();
+        }
+
+        // -----------------------------------------------------------------
+        // SUBTAB 3: EXTENSION COMMANDS & INTERACTIVE SIMULATOR
+        // -----------------------------------------------------------------
+        function filterExtCommandRole(role) {
+            extCommandRoleFilter = role;
+            ['all', 'public', 'admin'].forEach(r => {
+                const el = document.getElementById('extCmdRole-' + r);
+                if (el) {
+                    if (r === role) {
+                        el.className = "px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs";
+                    } else {
+                        el.className = "px-3 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white";
+                    }
+                }
+            });
+            renderExtensionCommands();
+        }
+
+        function filterExtCommands() {
+            renderExtensionCommands();
+        }
+
+        function renderExtensionCommands() {
+            const container = document.getElementById('extCommandsContainer');
+            if (!container) return;
+
+            const q = (document.getElementById('extCmdSearchInput')?.value || '').toLowerCase().trim();
+            const filtered = customExtensionCommands.filter(cmd => {
+                const matchQ = cmd.name.toLowerCase().includes(q) || cmd.syntax.toLowerCase().includes(q) || cmd.desc.toLowerCase().includes(q);
+                if (!matchQ) return false;
+                if (extCommandRoleFilter === 'public') return cmd.role === 'public' || cmd.role === 'all';
+                if (extCommandRoleFilter === 'admin') return cmd.role === 'admin' || cmd.role === 'all';
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400 space-y-2">
+                        <i data-lucide="terminal" class="w-8 h-8 mx-auto text-slate-400"></i>
+                        <p class="text-xs font-semibold">Tidak ada perintah yang sesuai pencarian.</p>
+                    </div>
+                `;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = filtered.map(cmd => {
+                const isPub = cmd.role === 'public';
+                const isAdmin = cmd.role === 'admin';
+                const roleBadge = isPub 
+                    ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">👥 Publik</span>`
+                    : isAdmin 
+                    ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">🛡️ Admin</span>`
+                    : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">🌐 Semua</span>`;
+
+                return `
+                    <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#111827] card-shadow flex flex-col justify-between gap-3 hover:border-purple-400/40 transition">
+                        <div class="space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-1.5">
+                                        <h6 class="font-bold text-xs text-slate-900 dark:text-white font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md text-indigo-600 dark:text-indigo-400">${escapeHtml(cmd.syntax.split(' ')[0])}</h6>
+                                    </div>
+                                    <span class="text-[10px] text-slate-400 block">${escapeHtml(cmd.scope)}</span>
+                                </div>
+                                ${roleBadge}
+                            </div>
+                            
+                            <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">${escapeHtml(cmd.desc)}</p>
+                            
+                            <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 space-y-1">
+                                <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">FORMAT SINTAKS:</span>
+                                <code class="text-[11px] font-mono text-purple-600 dark:text-purple-400 block break-all font-semibold">${escapeHtml(cmd.syntax)}</code>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                            <button onclick="prepareSimulatorWith('${escapeHtml(cmd.name)}', '${escapeHtml(cmd.example).replace(/'/g, "\\'")}')" class="text-[11px] text-purple-600 dark:text-purple-400 font-semibold hover:underline flex items-center gap-1">
+                                <i data-lucide="play" class="w-3 h-3"></i>
+                                Coba Simulasi
+                            </button>
+                            <button onclick="copyCommandSyntax('${escapeHtml(cmd.example).replace(/'/g, "\\'")}')" title="Salin contoh perintah" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs flex items-center gap-1 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span class="text-[10px] font-medium">Salin</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function copyCommandSyntax(syntax) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(syntax).then(() => {
+                    showToast(`📋 Perintah "${syntax}" berhasil disalin!`, 'success');
+                });
+            } else {
+                showToast(`📋 Format: ${syntax}`, 'info');
+            }
+        }
+
+        function scrollToSimulator() {
+            const simEl = document.getElementById('extCommandSimulator');
+            if (simEl) {
+                simEl.scrollIntoView({ behavior: 'smooth' });
+                simEl.classList.add('ring-2', 'ring-purple-500/50');
+                setTimeout(() => simEl.classList.remove('ring-2', 'ring-purple-500/50'), 1500);
+            }
+        }
+
+        function prepareSimulatorWith(cmdName, sampleText) {
+            scrollToSimulator();
+            const selectEl = document.getElementById('simCommandSelect');
+            const paramInput = document.getElementById('simParamInput');
+            
+            if (cmdName.includes('cari')) {
+                if (selectEl) selectEl.value = 'cari';
+                if (paramInput) paramInput.value = 'mawar';
+            } else if (cmdName.includes('dm')) {
+                if (selectEl) selectEl.value = 'dm';
+                if (paramInput) paramInput.value = '1';
+            } else if (cmdName.includes('usulkost')) {
+                if (selectEl) selectEl.value = 'usulkost';
+                if (paramInput) paramInput.value = 'Kost Kenanga Putri > wa: 08123456789';
+            } else if (cmdName.includes('acc')) {
+                if (selectEl) selectEl.value = 'acc';
+                if (paramInput) paramInput.value = '1';
+            } else if (cmdName.includes('lengkap')) {
+                if (selectEl) selectEl.value = 'kost_lengkap';
+                if (paramInput) paramInput.value = '1';
+            } else {
+                if (selectEl) selectEl.value = 'kost_pending';
+                if (paramInput) paramInput.value = '';
+            }
+            onSimCommandChange();
+            runCommandSimulator();
+        }
+
+        function onSimCommandChange() {
+            const cmd = document.getElementById('simCommandSelect')?.value;
+            const paramInput = document.getElementById('simParamInput');
+            const paramLabel = document.getElementById('simParamLabel');
+            const roleSelect = document.getElementById('simRoleSelect');
+
+            if (cmd === 'cari') {
+                if (paramLabel) paramLabel.textContent = 'Kata Kunci Pencarian';
+                if (paramInput) paramInput.value = 'mawar';
+                if (roleSelect) roleSelect.value = 'public';
+            } else if (cmd === 'dm') {
+                if (paramLabel) paramLabel.textContent = 'ID Kost Target';
+                if (paramInput) paramInput.value = '1';
+                if (roleSelect) roleSelect.value = 'admin';
+            } else if (cmd === 'kost_lengkap') {
+                if (paramLabel) paramLabel.textContent = 'ID Kost Target';
+                if (paramInput) paramInput.value = '1';
+            } else if (cmd === 'kost_pending') {
+                if (paramLabel) paramLabel.textContent = 'Filter Status Kos';
+                if (paramInput) paramInput.value = 'pending';
+                if (roleSelect) roleSelect.value = 'admin';
+            } else if (cmd === 'usulkost') {
+                if (paramLabel) paramLabel.textContent = 'Format: <Nama Kos> > <Kontak>';
+                if (paramInput) paramInput.value = 'Kost Bougenville > wa: 082198765432 | ig: bougenville';
+                if (roleSelect) roleSelect.value = 'public';
+            } else if (cmd === 'acc') {
+                if (paramLabel) paramLabel.textContent = 'No ID Usulan Masuk';
+                if (paramInput) paramInput.value = '1';
+                if (roleSelect) roleSelect.value = 'admin';
+            }
+        }
+
+        function runCommandSimulator() {
+            const cmd = document.getElementById('simCommandSelect')?.value || 'cari';
+            const param = (document.getElementById('simParamInput')?.value || '').trim();
+            const role = document.getElementById('simRoleSelect')?.value || 'public';
+            const sender = document.getElementById('simSenderInput')?.value || '628123456789';
+
+            const userMsgEl = document.getElementById('simUserMessageText');
+            const botMsgEl = document.getElementById('simBotMessageText');
+            const timeEl = document.getElementById('simTimeDisplay');
+
+            if (timeEl) {
+                timeEl.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            let fullUserMsg = '!' + cmd + (param ? ' ' + param : '');
+            if (cmd === 'kost_lengkap') fullUserMsg = '!kost lengkap ' + param;
+            if (cmd === 'kost_pending') fullUserMsg = '!kost pending';
+
+            if (userMsgEl) userMsgEl.textContent = fullUserMsg;
+
+            let simulatedBotReply = '';
+
+            if (cmd === 'cari') {
+                const query = param || 'mawar';
+                const matches = rawKostData.filter(k => {
+                    const matchQ = (k.name || '').toLowerCase().includes(query.toLowerCase()) || (k.id || '').toLowerCase().includes(query.toLowerCase());
+                    if (role === 'public') {
+                        const st = (k.status || '').toLowerCase();
+                        return matchQ && (st === 'published' || st === 'posted');
+                    }
+                    return matchQ;
+                });
+
+                if (matches.length === 0) {
+                    if (role === 'public') {
+                        simulatedBotReply = `🔎 Belum ada data kos yang dipublikasikan atau cocok dengan kata kunci "${query}".\n\n💡 Punya info kos? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
+                    } else {
+                        simulatedBotReply = `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
+                    }
+                } else {
+                    if (role === 'public') {
+                        simulatedBotReply = `🔎 *HASIL PENCARIAN KOS*\nKata kunci: *${query}*\n\nDitemukan: ${matches.length} kos\n\n`;
+                        matches.slice(0, 5).forEach((k, idx) => {
+                            let c = [];
+                            if (k.instagram) c.push(`   📸 instagram.com/${k.instagram.replace('@','')}`);
+                            if (k.whatsapp) c.push(`   💬 wa.me/${String(k.whatsapp).replace(/\\D/g,'')}`);
+                            simulatedBotReply += `${idx + 1}. *${k.name}*\n${c.join('\n') || '   ℹ️ -'}\n\n`;
+                        });
+                        simulatedBotReply += `────────────────────\n📱 Official Instagram: *@bukittinggikos*\n💡 Punya info kos baru? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
+                    } else {
+                        simulatedBotReply = `🔎 *HASIL PENCARIAN (ADMIN)*\nKata kunci: ${query}\n\nDitemukan: ${matches.length}\n\n`;
+                        matches.slice(0, 5).forEach((k, idx) => {
+                            const stBadge = k.status === 'published' ? '🟢 SUDAH DIPOSTING' : (k.status === 'sent' ? '📩 TERKIRIM DM' : '🟡 BELUM DITAWARKAN');
+                            simulatedBotReply += `${idx + 1}. *${k.name}*\n   🆔 ${k.id}\n   📌 Status: ${stBadge}\n\n`;
+                        });
+                        simulatedBotReply += `────────────────────\n💡 Gunakan: \`!dm <ID>\` atau \`!post <ID>\``;
+                    }
+                }
+            } else if (cmd === 'dm') {
+                const targetId = param || '1';
+                const found = rawKostData.find(k => k.id === targetId || k.id === `KST-${String(targetId).padStart(6, '0')}`) || rawKostData[0] || { name: 'Kost Mawar Induk', id: 'KST-000001', instagram: 'kostmawar' };
+                
+                simulatedBotReply = `🏠 *SIAP DM KOST: ${found.name}*\n\n🆔 ID: \`${found.id}\`\n📌 Status: ⏳ BELUM DI-DM (PENDING)\n📸 Instagram: https://instagram.com/${(found.instagram || 'kost').replace('@','')}\n💬 WhatsApp: -\n\n────────────────────\n👇 *Teks template promosi ada di balon chat terpisah di bawah:*\n\n"${templatePresets.outreach.replace('{NAMA_KOS}', found.name)}"\n\nSetelah selesai di-DM, tandai dengan:\n\`!sent ${found.id}\``;
+            } else if (cmd === 'usulkost') {
+                const parts = param.split('>');
+                const name = parts[0]?.trim() || 'Kost Kenanga Putri';
+                const contact = parts.slice(1).join('>').trim() || '08123456789';
+                
+                simulatedBotReply = `✅ *Usulan Kos Berhasil Terkirim!*\n\n🏠 Nama: *${name}*\n📞 Kontak: ${contact}\n🆔 No Usulan: *#${rawSubmissionsData.length + 1}*\n\nTerima kasih atas kontribusinya! Usulan ini akan diverifikasi oleh tim admin *@bukittinggikos* sebelum resmi dipublikasikan. 🙏\n\n*(Bot otomatis meneruskan notifikasi usulan ini ke grup admin)*`;
+            } else if (cmd === 'acc') {
+                const targetId = param || '1';
+                simulatedBotReply = `✅ *Usulan #${targetId} Berhasil Disetujui!*\n\nData otomatis masuk ke database:\n🆔 ID Kos Baru: *KST-0000${String(rawKostData.length + 1).padStart(2, '0')}*\n🏠 Nama: *Kost Contoh Approved*\n📸 IG: https://instagram.com/kost_contoh\n📌 Status: 🟡 BELUM DITAWARKAN (PENDING)\n👤 Pengusul: wa.me/${sender}`;
+            } else if (cmd === 'kost_lengkap') {
+                const targetId = param || '1';
+                const found = rawKostData[0] || { name: 'Kost Farrel', id: 'KST-000001', instagram: 'kostfarrel_bukittinggi' };
+                simulatedBotReply = `🏠 *DETAIL KOST (${role.toUpperCase()} VIEW)*\n\n🆔 ID: ${found.id}\n🏠 Nama: *${found.name}*\n📸 Instagram: https://instagram.com/${(found.instagram || '').replace('@','')}\n💬 WhatsApp: https://wa.me/628123456789\n📌 Status: 🟢 SUDAH DIPOSTING (PUBLIK)\n\n────────────────────\n📱 Official Instagram: *@bukittinggikos*`;
+            } else {
+                simulatedBotReply = `📋 *DAFTAR KOST PENDING*\nTotal: ${rawKostData.filter(k => (k.status||'pending')==='pending').length} item\n\n1. *Kost Anggrek* (\`KST-000004\`)\n   📸 IG: https://instagram.com/kostanggrek\n\n2. *Kost Melati* (\`KST-000005\`)\n   💬 WA: https://wa.me/628123456789\n\n────────────────────\n💡 Ketik \`!dm <ID>\` untuk teks penawaran siap kirim.`;
+            }
+
+            if (botMsgEl) botMsgEl.textContent = simulatedBotReply;
+        }
+
+        function copySimulatorOutput() {
+            const text = document.getElementById('simBotMessageText')?.textContent;
+            if (text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => showToast('Balasan bot berhasil disalin!', 'success'));
+                } else {
+                    showToast('Balasan bot siap digunakan.', 'info');
+                }
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // SUBTAB 4: TEMPLATE PESAN & OUTREACH DM
+        // -----------------------------------------------------------------
+        function selectTemplatePreset(presetKey) {
+            currentTemplatePreset = presetKey;
+            ['outreach', 'published', 'submission_acc'].forEach(k => {
+                const btn = document.getElementById('presetBtn-' + k);
+                if (btn) {
+                    if (k === presetKey) {
+                        btn.className = "p-2.5 rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold text-left transition";
+                    } else {
+                        btn.className = "p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-medium text-left transition";
+                    }
+                }
+            });
+
+            const saved = localStorage.getItem('ext_template_' + presetKey) || templatePresets[presetKey];
+            const editor = document.getElementById('templateEditorContent');
+            if (editor) editor.value = saved;
+            updateTemplatePreview();
+        }
+
+        function renderExtensionTemplates() {
+            selectTemplatePreset(currentTemplatePreset);
+        }
+
+        function insertTemplateVar(variableName) {
+            const editor = document.getElementById('templateEditorContent');
+            if (!editor) return;
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            editor.value = text.substring(0, start) + variableName + text.substring(end);
+            editor.focus();
+            editor.selectionStart = editor.selectionEnd = start + variableName.length;
+            updateTemplatePreview();
+        }
+
+        function updateTemplatePreview() {
+            const editor = document.getElementById('templateEditorContent');
+            const previewEl = document.getElementById('templateLiveBubble');
+            if (!editor || !previewEl) return;
+
+            let text = editor.value;
+            const sampleKos = rawKostData[0] || { name: 'Kost Farrel Asri', id: 'KST-000001', instagram: 'kostfarrel' };
+            text = text.replace(/{NAMA_KOS}/g, sampleKos.name || 'Kost Farrel Asri')
+                       .replace(/{ID}/g, sampleKos.id || 'KST-000001')
+                       .replace(/{OFFICIAL_IG}/g, '@bukittinggikos')
+                       .replace(/{CONTACT}/g, 'wa.me/628123456789')
+                       .replace(/{TANGGAL}/g, new Date().toLocaleDateString('id-ID'));
+
+            previewEl.textContent = text;
+        }
+
+        function copyCurrentTemplate() {
+            const text = document.getElementById('templateLiveBubble')?.textContent;
+            if (text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => showToast('📋 Teks template pesan berhasil disalin!', 'success'));
+                } else {
+                    showToast('Teks template siap digunakan.', 'info');
+                }
+            }
+        }
+
+        function saveCurrentTemplate() {
+            const editor = document.getElementById('templateEditorContent');
+            if (editor) {
+                localStorage.setItem('ext_template_' + currentTemplatePreset, editor.value);
+                showToast('Template pesan berhasil disimpan di pengaturan lokal!', 'success');
+            }
+        }
+
+        function resetTemplateToDefault() {
+            if (confirm('Kembalikan template ini ke susunan teks bawaan?')) {
+                const def = templatePresets[currentTemplatePreset];
+                const editor = document.getElementById('templateEditorContent');
+                if (editor) editor.value = def;
+                localStorage.removeItem('ext_template_' + currentTemplatePreset);
+                updateTemplatePreview();
+                showToast('Template dikembalikan ke pengaturan awal.', 'info');
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // SUBTAB 5: EXTENSION GROUPS & OPERATIONAL SCOPES
+        // -----------------------------------------------------------------
+        function renderExtensionGroups() {
+            const container = document.getElementById('extGroupsContainer');
+            if (!container) return;
+
+            if (rawGroupsData.length === 0) {
+                container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">Belum ada grup yang terdaftar. Hubungkan grup di tab Device.</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                            <th class="py-3 px-4">NAMA GRUP WHATSAPP</th>
+                            <th class="py-3 px-4">PERAN DALAM MODUL</th>
+                            <th class="py-3 px-4">HAK AKSES PERINTAH</th>
+                            <th class="py-3 px-4">RELASI INDUK</th>
+                            <th class="py-3 px-4 text-right">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        ${rawGroupsData.map(g => {
+                            const isInduk = g.role === 'admin' || g.role === 'indukan';
+                            const roleBadge = isInduk 
+                                ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">🛡️ Grup Admin Induk</span>`
+                                : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">👥 Grup Publik Cabang</span>`;
+                            
+                            const accessInfo = isInduk 
+                                ? `<span class="text-slate-700 dark:text-slate-300">Penuh (<code>!addkost</code>, <code>!dm</code>, <code>!post</code>, <code>!acc</code>)</span>`
+                                : `<span class="text-slate-500">Pencarian Publik (<code>!cari</code>, <code>!usulkost</code>)</span>`;
+
+                            const parentName = g.parentGroupName || g.parentGroupId || 'Induk Mandiri';
+
+                            return `
+                                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                                    <td class="py-3 px-4">
+                                        <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(g.name || 'Grup WA')}</h6>
+                                        <span class="font-mono text-[10px] text-slate-400">${escapeHtml(g.id)}</span>
+                                    </td>
+                                    <td class="py-3 px-4">${roleBadge}</td>
+                                    <td class="py-3 px-4">${accessInfo}</td>
+                                    <td class="py-3 px-4 text-slate-500 font-medium">${escapeHtml(parentName)}</td>
+                                    <td class="py-3 px-4 text-right">
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Terhubung
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // -----------------------------------------------------------------
+        // SUBTAB 6: EXTENSION ANALYTICS & METRICS
+        // -----------------------------------------------------------------
+        function renderExtensionAnalytics() {
+            const total = rawKostData.length;
+            const published = rawKostData.filter(k => (k.status||'').toLowerCase() === 'published' || (k.status||'').toLowerCase() === 'posted').length;
+            const sent = rawKostData.filter(k => (k.status||'').toLowerCase() === 'sent').length;
+            const pending = rawKostData.filter(k => (k.status||'pending').toLowerCase() === 'pending').length;
+
+            const totalSubs = rawSubmissionsData.length;
+            const approvedSubs = rawSubmissionsData.filter(s => (s.status||'').toLowerCase() === 'approved').length;
+            const accRatio = totalSubs > 0 ? Math.round((approvedSubs / totalSubs) * 100) : 0;
+            const sentPct = total > 0 ? Math.round((sent / total) * 100) : 0;
+            const pubPct = total > 0 ? Math.round((published / total) * 100) : 0;
+
+            const elTotal = document.getElementById('statModTotal');
+            const elSent = document.getElementById('statModSent');
+            const elSentPct = document.getElementById('statModSentPct');
+            const elPub = document.getElementById('statModPublished');
+            const elPubPct = document.getElementById('statModPubPct');
+            const elSubs = document.getElementById('statModSubmissions');
+            const elAccRatio = document.getElementById('statModAccRatio');
+
+            if (elTotal) elTotal.textContent = total;
+            if (elSent) elSent.textContent = sent;
+            if (elSentPct) elSentPct.textContent = `${sentPct}% dari total database`;
+            if (elPub) elPub.textContent = published;
+            if (elPubPct) elPubPct.textContent = `${pubPct}% tayang di pencarian publik`;
+            if (elSubs) elSubs.textContent = totalSubs;
+            if (elAccRatio) elAccRatio.textContent = `${accRatio}% tingkat disetujui (${approvedSubs}/${totalSubs})`;
+
+            // Contact distribution
+            const waCount = rawKostData.filter(k => k.whatsapp || k.contact?.whatsapp).length;
+            const igCount = rawKostData.filter(k => k.instagram || k.contact?.instagram).length;
+            const ttCount = rawKostData.filter(k => k.tiktok || k.contact?.tiktok).length;
+
+            const distContainer = document.getElementById('statContactDistribution');
+            if (distContainer) {
+                distContainer.innerHTML = `
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[11px] font-medium">
+                            <span class="flex items-center gap-1.5 text-pink-600 dark:text-pink-400 font-bold"><i data-lucide="instagram" class="w-3.5 h-3.5"></i> Instagram</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">${igCount} kos (${total > 0 ? Math.round((igCount/total)*100) : 0}%)</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div class="h-full bg-pink-500 rounded-full" style="width: ${total > 0 ? (igCount/total)*100 : 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[11px] font-medium">
+                            <span class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold"><i data-lucide="phone" class="w-3.5 h-3.5"></i> WhatsApp</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">${waCount} kos (${total > 0 ? Math.round((waCount/total)*100) : 0}%)</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div class="h-full bg-emerald-500 rounded-full" style="width: ${total > 0 ? (waCount/total)*100 : 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[11px] font-medium">
+                            <span class="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-bold"><i data-lucide="video" class="w-3.5 h-3.5"></i> TikTok</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">${ttCount} kos (${total > 0 ? Math.round((ttCount/total)*100) : 0}%)</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div class="h-full bg-indigo-500 rounded-full" style="width: ${total > 0 ? (ttCount/total)*100 : 0}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Funnel Bars
+            const funnelContainer = document.getElementById('statFunnelBars');
+            if (funnelContainer) {
+                funnelContainer.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-slate-500 font-medium">1. Prospek Baru (Belum Ditawarkan)</span>
+                            <span class="font-bold text-amber-600">${pending}</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div class="h-full bg-amber-400 rounded-full" style="width: ${total > 0 ? (pending/total)*100 : 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-slate-500 font-medium">2. Sudah Terkirim Outreach DM</span>
+                            <span class="font-bold text-blue-600">${sent}</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div class="h-full bg-blue-500 rounded-full" style="width: ${total > 0 ? (sent/total)*100 : 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-slate-500 font-medium">3. Tayang Publik Resmi (!cari)</span>
+                            <span class="font-bold text-emerald-600">${published}</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div class="h-full bg-emerald-500 rounded-full" style="width: ${total > 0 ? (published/total)*100 : 0}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // -----------------------------------------------------------------
+        // SUBTAB 7: EXPORT, IMPORT & REST API
+        // -----------------------------------------------------------------
+        function exportExtensionData(type) {
+            if (type === 'json') {
+                const exportObj = {
+                    exportedAt: new Date().toISOString(),
+                    totalKost: rawKostData.length,
+                    totalSubmissions: rawSubmissionsData.length,
+                    kost: rawKostData,
+                    submissions: rawSubmissionsData
+                };
+                const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `kost_database_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Berkas JSON berhasil diunduh!', 'success');
+            } else if (type === 'csv') {
+                if (rawKostData.length === 0) {
+                    showToast('Belum ada data kos untuk diekspor.', 'warning');
+                    return;
+                }
+                const headers = ['ID', 'Nama Kos', 'Status', 'WhatsApp', 'Instagram', 'TikTok', 'Ditambahkan Oleh', 'Waktu Input'];
+                const rows = rawKostData.map(k => [
+                    `"${k.id || ''}"`,
+                    `"${(k.name || '').replace(/"/g, '""')}"`,
+                    `"${k.status || 'pending'}"`,
+                    `"${k.whatsapp || k.contact?.whatsapp || ''}"`,
+                    `"${k.instagram || k.contact?.instagram || ''}"`,
+                    `"${k.tiktok || k.contact?.tiktok || ''}"`,
+                    `"${k.addedBy || k.added_by || ''}"`,
+                    `"${k.createdAt || k.created_at || ''}"`
+                ]);
+                const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `kost_listing_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Berkas CSV spreadsheet berhasil diunduh!', 'success');
+            }
+        }
+
+        function openImportKostModal() {
+            document.getElementById('importKostJsonText').value = '';
+            const fileInput = document.getElementById('importKostFileInput');
+            if (fileInput) fileInput.value = '';
+            
+            const modal = document.getElementById('importKostModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeImportKostModal() {
+            const modal = document.getElementById('importKostModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function handleImportFileSelect(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const textarea = document.getElementById('importKostJsonText');
+                if (textarea) textarea.value = text;
+            };
+            reader.readAsText(file);
+        }
+
+        async function submitImportKostForm() {
+            if (!checkSuperuserOrWarn()) return;
+            const rawText = (document.getElementById('importKostJsonText')?.value || '').trim();
+            if (!rawText) {
+                showToast('Tempelkan format JSON atau pilih berkas file.', 'warning');
+                return;
+            }
+
+            let parsedItems = [];
+            try {
+                const parsed = JSON.parse(rawText);
+                if (Array.isArray(parsed)) {
+                    parsedItems = parsed;
+                } else if (parsed && Array.isArray(parsed.kost)) {
+                    parsedItems = parsed.kost;
+                } else if (parsed && Array.isArray(parsed.data)) {
+                    parsedItems = parsed.data;
+                } else {
+                    showToast('Format JSON harus berupa Array data kos.', 'error');
+                    return;
+                }
+            } catch (err) {
+                showToast('Format JSON tidak valid: ' + err.message, 'error');
+                return;
+            }
+
+            try {
+                showToast(`Mengimpor ${parsedItems.length} data kos...`, 'info');
+                const res = await fetch('/api/kost/import', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ items: parsedItems })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast(`Berhasil mengimpor ${result.importedCount} data kos! 🎉`, 'success');
+                    closeImportKostModal();
+                    loadKostList();
+                    fetchStatus();
+                } else {
+                    showToast(result.message || 'Gagal mengimpor data.', 'error');
+                }
+            } catch (err) {
+                showToast('Error impor: ' + err.message, 'error');
+            }
+        }
+
+        function copyApiSnippet(snippet) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(snippet).then(() => showToast('Contoh curl berhasil disalin!', 'success'));
+            } else {
+                showToast(snippet, 'info');
+            }
         }
 
         function switchSysSubTab(sub) {
