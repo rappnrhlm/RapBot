@@ -1659,6 +1659,56 @@ app.post('/api/bot/simulate', async (req, res) => {
             messageTimestamp: Math.floor(Date.now() / 1000)
         };
 
+        // Sandbox database proxy: Read-only for existing data, no-op/mock for mutations (tidak merubah cache / file / database)
+        const sandboxedDatabase = new Proxy(database, {
+            get(target, prop, receiver) {
+                // Intercept mutation / logging / stat increment methods
+                if (prop === 'incrementCommandStats' || prop === 'incrementMessageStats' || prop === 'logCommand') {
+                    return () => {}; // No-op
+                }
+                if (prop === 'addKost') {
+                    return async (kostData) => ({
+                        success: true,
+                        message: 'Simulasi: Kos berhasil ditambahkan (Sandbox)',
+                        data: {
+                            id: `KST-${String(Math.floor(Math.random() * 900000) + 100000)}`,
+                            ...kostData,
+                            status: 'pending',
+                            createdAt: new Date().toISOString()
+                        }
+                    });
+                }
+                if (prop === 'updateKostStatus' || prop === 'updateKost' || prop === 'deleteKost') {
+                    return async () => ({ success: true, message: 'Simulasi berhasil (Sandbox)' });
+                }
+                if (prop === 'submitKostProposal') {
+                    return async (propData) => ({
+                        success: true,
+                        submissionId: Math.floor(Math.random() * 900) + 100,
+                        id: `SUB-${Date.now()}`
+                    });
+                }
+                if (prop === 'reviewKostSubmission' || prop === 'deleteKostSubmission') {
+                    return async () => ({ success: true, message: 'Simulasi status usulan diubah (Sandbox)' });
+                }
+                if (prop === 'saveBroadcast' || prop === 'markBroadcastDeleted') {
+                    return () => ({ id: `sim_bc_${Date.now()}` });
+                }
+                if (prop === 'addOwner' || prop === 'removeOwner' || prop === 'setGroupWelcome') {
+                    return async () => true;
+                }
+                if (prop === 'isGroupInitialized') {
+                    return () => true; // Always true in simulation context so admin commands can run preview
+                }
+
+                const orig = Reflect.get(target, prop, receiver);
+                if (typeof orig === 'function') {
+                    return orig.bind(target);
+                }
+                return orig;
+            }
+        });
+
         const ctx = {
             sock: virtualSock,
             msg: virtualMsg,
@@ -1676,7 +1726,7 @@ app.post('/api/bot/simulate', async (req, res) => {
             },
             commands: registry,
             services: {
-                database,
+                database: sandboxedDatabase,
                 serverStats: require('../services/serverStats')
             },
             utils: {
@@ -1707,6 +1757,7 @@ app.post('/api/bot/simulate', async (req, res) => {
         res.json({
             success: true,
             realtime: true,
+            sandbox: true,
             command: targetCmdName,
             args,
             fullUserMsg: `!${targetCmdName} ${args.join(' ')}`.trim(),
