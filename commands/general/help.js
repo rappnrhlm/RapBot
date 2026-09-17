@@ -76,7 +76,7 @@ module.exports = {
             stiker: '🎨 `!stiker`\nKirim gambar dengan caption `!stiker` atau reply gambar untuk dijadikan stiker WhatsApp.',
             sticker: '🎨 `!stiker`\nKirim gambar dengan caption `!stiker` atau reply gambar.',
             s: '🎨 `!stiker`\nKirim gambar dengan caption `!s` atau reply gambar.',
-            smeme: '🎨 `!smeme <teks atas|teks bawah>`\nKirim/reply gambar dengan caption `!smeme teks atas|teks bawah` untuk membuat stiker meme.',
+            smeme: '🎨 `!smeme <teks atas|teks bawah>`\nKirim/reply gambar atau stiker dengan caption `!smeme teks atas|teks bawah` untuk membuat stiker meme.',
             brat: '🎨 `!brat <teks>`\nMembuat stiker teks bergaya Brat aesthetic (hijau lime / putih).\nContoh: `!brat halo dunia`',
             toimg: '🖼️ `!toimg`\nReply stiker dengan `!toimg` untuk mengubahnya kembali menjadi foto/gambar.',
             toimage: '🖼️ `!toimg`\nReply stiker dengan `!toimage` untuk mengubahnya kembali menjadi foto/gambar.',

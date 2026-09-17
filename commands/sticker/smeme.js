@@ -1,6 +1,7 @@
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const sharp = require('sharp');
 
 async function drawMeme(imageBuffer, topText, bottomText) {
     const img = await loadImage(imageBuffer);
@@ -39,8 +40,8 @@ module.exports = {
     name: 'smeme',
     aliases: ['stickermeme', 'memesticker'],
     category: 'sticker',
-    description: 'Membuat stiker meme dengan teks atas dan bawah.',
-    usage: '!smeme teks atas|teks bawah',
+    description: 'Membuat stiker meme dari gambar atau stiker dengan teks atas dan bawah.',
+    usage: '!smeme teks atas|teks bawah (reply gambar/stiker)',
 
     async execute({ sock, msg, from, args, reply, services }) {
         const database = services?.database || require('../../services/database');
@@ -50,12 +51,20 @@ module.exports = {
         const topText = textParts[0] ? textParts[0].trim() : '';
         const bottomText = textParts[1] ? textParts[1].trim() : '';
 
-        const imageMsg =
-            msg.message?.imageMessage ||
-            msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+        const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        const imageMsg = msg.message?.imageMessage || quoted?.imageMessage;
+        const stickerMsg = msg.message?.stickerMessage || quoted?.stickerMessage;
+        const viewOnceWrapper =
+            quoted?.viewOnceMessage?.message ||
+            quoted?.viewOnceMessageV2?.message ||
+            quoted?.viewOnceMessageV2Extension?.message;
+        const voImageMsg = viewOnceWrapper?.imageMessage;
 
-        if (!imageMsg) {
-            const guide = '❌ Kirim/reply gambar dengan caption:\n*!smeme teks atas|teks bawah*\n\nContoh:\n!smeme ketika ngoding|error 500';
+        const targetMedia = imageMsg || voImageMsg || stickerMsg;
+        const isSticker = Boolean(stickerMsg && !imageMsg && !voImageMsg);
+
+        if (!targetMedia) {
+            const guide = '❌ Kirim/reply gambar atau stiker dengan caption:\n*!smeme teks atas|teks bawah*\n\nContoh:\n!smeme ketika ngoding|error 500';
             if (typeof reply === 'function') {
                 await reply(guide);
             } else {
@@ -71,13 +80,18 @@ module.exports = {
         }
 
         try {
-            const stream = await downloadContentFromMessage(imageMsg, 'image');
+            const stream = await downloadContentFromMessage(targetMedia, isSticker ? 'sticker' : 'image');
             let buffer = Buffer.alloc(0);
             for await (const chunk of stream) {
                 buffer = Buffer.concat([buffer, chunk]);
             }
 
-            const memeBuffer = await drawMeme(buffer, topText, bottomText);
+            let imageBuffer = buffer;
+            if (isSticker) {
+                imageBuffer = await sharp(buffer).png().toBuffer();
+            }
+
+            const memeBuffer = await drawMeme(imageBuffer, topText, bottomText);
 
             const sticker = new Sticker(memeBuffer, {
                 pack: 'Meme Sticker',
