@@ -517,6 +517,12 @@
                                 <i data-lucide="send" class="w-4 h-4"></i>
                                 Kirim Siaran
                             </button>
+                            <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                                <button type="button" onclick="submitUndoBroadcast()" title="Tarik / hapus pesan siaran terakhir serentak dari seluruh grup" class="w-full py-2 px-3 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-semibold transition active:scale-[0.98] flex items-center justify-center gap-2">
+                                    <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+                                    <span>Tarik / Hapus Siaran Terakhir</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -552,7 +558,7 @@
                             <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
                                 <i data-lucide="history" class="w-4 h-4"></i>
                             </div>
-                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Riwayat Pengiriman</h4>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Riwayat Pengiriman & Siaran</h4>
                         </div>
                         <button onclick="loadSendHistory()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
                             <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
@@ -566,10 +572,12 @@
                                     <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Tipe</th>
                                     <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Tujuan</th>
                                     <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Pesan</th>
+                                    <th class="text-left py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Status</th>
+                                    <th class="text-right py-2.5 px-3 font-semibold text-slate-500 dark:text-slate-400">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="sendHistoryBody">
-                                <tr><td colspan="4" class="text-center py-8 text-slate-400">Belum ada riwayat pengiriman</td></tr>
+                                <tr><td colspan="6" class="text-center py-8 text-slate-400">Belum ada riwayat pengiriman</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2159,6 +2167,12 @@
                 <button onclick="submitBroadcast()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
                     Kirim Siaran
+                </button>
+            </div>
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeBroadcastModal(); submitUndoBroadcast();" class="w-full py-2 px-3 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+                    <span>Tarik / Hapus Siaran Terakhir</span>
                 </button>
             </div>
         </div>
@@ -5928,29 +5942,114 @@
             }
         }
 
-        function loadSendHistory() {
+        let cachedBroadcasts = [];
+
+        async function submitUndoBroadcast(broadcastId = null) {
+            if (!checkSuperuserOrWarn()) return;
+            const confirmMsg = broadcastId 
+                ? 'Tarik dan hapus pesan siaran ini serentak untuk SEMUA grup tujuan?' 
+                : 'Tarik dan hapus pesan siaran TERAKHIR serentak untuk SEMUA grup tujuan?';
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                showToast('Menarik pesan siaran dari WhatsApp...', 'info');
+                const res = await fetch('/api/bot/broadcast/delete', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ id: broadcastId })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast(result.message || 'Pesan siaran berhasil ditarik serentak!', 'success');
+                    await loadSendHistory();
+                    if (typeof loadCommandLogs === 'function') loadCommandLogs();
+                } else {
+                    showToast(result.message || 'Gagal menarik siaran.', 'error');
+                }
+            } catch (err) {
+                showToast(`Error menarik siaran: ${err.message}`, 'error');
+            }
+        }
+
+        async function loadSendHistory() {
             const body = document.getElementById('sendHistoryBody');
             if (!body) return;
+
+            try {
+                const res = await fetch('/api/bot/broadcasts', {
+                    headers: getAuthHeaders()
+                });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.broadcasts)) {
+                    cachedBroadcasts = data.broadcasts;
+                }
+            } catch (err) {
+                console.warn('[loadSendHistory] Error fetching broadcasts:', err);
+            }
+
+            if (cachedBroadcasts.length > 0) {
+                body.innerHTML = cachedBroadcasts.map(b => {
+                    const statusHtml = b.deleted
+                        ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300"><i data-lucide="ban" class="w-3 h-3"></i> Ditarik</span>`
+                        : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300"><i data-lucide="check" class="w-3 h-3"></i> Terkirim (${b.sentCount || 0})</span>`;
+
+                    const actionHtml = b.deleted
+                        ? `<span class="text-[11px] text-slate-400 italic">Sudah ditarik</span>`
+                        : `<button onclick="submitUndoBroadcast('${escapeHtml(b.id)}')" title="Tarik/Hapus pesan ini dari semua grup" class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 text-[11px] font-semibold border border-rose-200 dark:border-rose-900/50 transition flex items-center gap-1.5 ml-auto">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                            Tarik Pesan
+                        </button>`;
+
+                    const targetLabel = b.target === 'all' 
+                        ? '📢 Semua Grup' 
+                        : b.target === 'indukan' 
+                            ? '🏠 Grup Indukan' 
+                            : b.target === 'cabang' 
+                                ? '🔗 Grup Cabang' 
+                                : (b.target || '-');
+
+                    return `
+                        <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                            <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">${escapeHtml(b.timestamp || '-')}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">BROADCAST</span>
+                            </td>
+                            <td class="py-2.5 px-3 font-semibold text-slate-700 dark:text-slate-300 text-[11px]">
+                                ${escapeHtml(targetLabel)}
+                            </td>
+                            <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300 max-w-[240px] truncate text-[11px]" title="${escapeHtml(b.message || '')}">
+                                ${escapeHtml(b.message || '-')}
+                            </td>
+                            <td class="py-2.5 px-3">${statusHtml}</td>
+                            <td class="py-2.5 px-3 text-right">${actionHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
 
             const sendLogs = rawLogsData.filter(l => 
                 (l.command && (l.command.includes('broadcast') || l.command.includes('send') || l.command.includes('siaran')))
             );
 
             if (sendLogs.length === 0) {
-                body.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada riwayat pengiriman pesan/siaran.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada riwayat pengiriman pesan/siaran.</td></tr>`;
                 return;
             }
 
             body.innerHTML = sendLogs.slice(0, 20).map(l => `
                 <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                    <td class="py-2 px-3 text-slate-400 font-mono text-[11px]">${escapeHtml(l.timestamp || '-')}</td>
-                    <td class="py-2 px-3">
+                    <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">${escapeHtml(l.timestamp || '-')}</td>
+                    <td class="py-2.5 px-3">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.command.includes('direct') ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'}">${l.command.includes('direct') ? 'DIRECT' : 'BROADCAST'}</span>
                     </td>
-                    <td class="py-2 px-3 font-mono text-slate-600 dark:text-slate-300 text-[11px]">${escapeHtml(l.from || l.sender || '-')}</td>
-                    <td class="py-2 px-3 text-slate-700 dark:text-slate-300 font-mono text-[11px]">!${escapeHtml(l.command)}</td>
+                    <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300 text-[11px]">${escapeHtml(l.from || l.sender || '-')}</td>
+                    <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300 font-mono text-[11px]" colspan="3">!${escapeHtml(l.command)}</td>
                 </tr>
             `).join('');
+            if (window.lucide) lucide.createIcons();
         }
 
         function openBroadcastModal() {

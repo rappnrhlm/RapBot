@@ -68,6 +68,9 @@ module.exports = {
             stats: '📊 `!stats`\nMenampilkan statistik bot (pesan, stiker, command) serta monitor server STB (CPU, RAM, Uptime).',
             status: '📊 `!stats`\nMenampilkan statistik bot dan server STB.',
             botstats: '📊 `!stats`\nMenampilkan statistik bot dan server STB.',
+            culik: '🔓 `!culik`\nReply pesan foto/video sekali lihat (View Once) untuk mengambil dan melihatnya kembali.',
+            rvo: '🔓 `!culik`\nReply pesan foto/video sekali lihat (View Once) untuk mengambilnya.',
+            viewonce: '🔓 `!culik`\nReply pesan foto/video sekali lihat (View Once) untuk mengambilnya.',
 
             // Sticker
             stiker: '🎨 `!stiker`\nKirim gambar dengan caption `!stiker` atau reply gambar untuk dijadikan stiker WhatsApp.',
@@ -75,6 +78,9 @@ module.exports = {
             s: '🎨 `!stiker`\nKirim gambar dengan caption `!s` atau reply gambar.',
             smeme: '🎨 `!smeme <teks atas|teks bawah>`\nKirim/reply gambar dengan caption `!smeme teks atas|teks bawah` untuk membuat stiker meme.',
             brat: '🎨 `!brat <teks>`\nMembuat stiker teks bergaya Brat aesthetic (hijau lime / putih).\nContoh: `!brat halo dunia`',
+            toimg: '🖼️ `!toimg`\nReply stiker dengan `!toimg` untuk mengubahnya kembali menjadi foto/gambar.',
+            toimage: '🖼️ `!toimg`\nReply stiker dengan `!toimage` untuk mengubahnya kembali menjadi foto/gambar.',
+            togambar: '🖼️ `!toimg`\nReply stiker dengan `!togambar` untuk mengubahnya kembali menjadi foto/gambar.',
 
             // Group
             groupinfo: '👥 `!groupinfo`\nMenampilkan informasi lengkap grup (nama, deskripsi, pembuat, jumlah member).',
@@ -91,6 +97,8 @@ module.exports = {
             // Owner
             owner: '👑 `!owner list` | `!owner add <nomor>` | `!owner delete <nomor>`\nManajemen daftar owner bot (Khusus Super Owner).',
             owners: '👑 `!owner list`\nMenampilkan daftar owner bot.',
+            tariksiaran: '📢 `!tariksiaran` / `!undobc`\nMenarik / menghapus pesan siaran terakhir serentak dari semua grup tujuan (Khusus Owner).',
+            undobc: '📢 `!undobc`\nMenarik / menghapus pesan siaran terakhir serentak dari semua grup tujuan (Khusus Owner).',
 
             // Autoreply
             autoreply: '🤖 `!autoreply list` | `!autoreply-add` | `!autoreply-edit` | `!autoreply-del`\nPengaturan pesan balasan otomatis bot (Khusus Owner).',
@@ -146,6 +154,8 @@ module.exports = {
             sections.push(
 `🎨 *STICKER & MEDIA*
 │ \`!stiker\` — Ubah gambar jadi stiker (caption/reply)
+│ \`!toimg\` — Ubah stiker kembali jadi foto/gambar (reply)
+│ \`!culik\` — Ambil foto/video sekali lihat (reply view once)
 │ \`!smeme <atas|bawah>\` — Buat stiker meme teks
 │ \`!brat <teks>\` — Buat stiker Brat aesthetic`
             );

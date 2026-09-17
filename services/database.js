@@ -15,6 +15,7 @@ const KOST_FILE = path.join(DATA_DIR, 'kost.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
 const DISCOVERED_GROUPS_FILE = path.join(DATA_DIR, 'discovered_groups.json');
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'kost_submissions.json');
+const BROADCAST_FILE = path.join(DATA_DIR, 'broadcasts.json');
 
 const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '');
 
@@ -43,6 +44,7 @@ const cache = {
     },
     logs: [],
     submissions: [],
+    broadcasts: [],
     initialized: false
 };
 
@@ -100,6 +102,11 @@ function initLocalCache() {
         if (Array.isArray(rawSubmissions)) {
             cache.submissions = rawSubmissions;
         }
+
+        const rawBroadcasts = readJSON(BROADCAST_FILE, null);
+        if (Array.isArray(rawBroadcasts)) {
+            cache.broadcasts = rawBroadcasts;
+        }
     } catch (err) {
         console.warn('[database] Warning: error initializing local cache:', err.message);
     }
@@ -120,6 +127,7 @@ function ensureDataFiles() {
     if (!fs.existsSync(DISCOVERED_GROUPS_FILE)) writeJSON(DISCOVERED_GROUPS_FILE, []);
     if (!fs.existsSync(KOST_FILE)) writeJSON(KOST_FILE, []);
     if (!fs.existsSync(SUBMISSIONS_FILE)) writeJSON(SUBMISSIONS_FILE, []);
+    if (!fs.existsSync(BROADCAST_FILE)) writeJSON(BROADCAST_FILE, cache.broadcasts);
 }
 
 initLocalCache();
@@ -2504,10 +2512,62 @@ async function deleteKostSubmission(id) {
     return { success: true, message: 'Usulan berhasil dihapus.' };
 }
 
+// ====================================================
+// BROADCAST REPOSITORY & HISTORY
+// ====================================================
+
+function saveBroadcast(broadcastData) {
+    const entry = {
+        id: broadcastData.id || `bc_${Date.now()}`,
+        timestamp: broadcastData.timestamp || new Date().toISOString(),
+        target: broadcastData.target || 'all',
+        targetJid: broadcastData.targetJid || null,
+        message: broadcastData.message || '',
+        sentCount: broadcastData.sentCount || 0,
+        totalTarget: broadcastData.totalTarget || 0,
+        messages: Array.isArray(broadcastData.messages) ? broadcastData.messages : [],
+        deleted: Boolean(broadcastData.deleted),
+        deletedAt: broadcastData.deletedAt || null
+    };
+
+    cache.broadcasts.push(entry);
+    if (cache.broadcasts.length > 500) {
+        cache.broadcasts.splice(0, cache.broadcasts.length - 500);
+    }
+    syncDataFile(BROADCAST_FILE, cache.broadcasts);
+    return entry;
+}
+
+function getBroadcasts(limit = 50) {
+    return [...cache.broadcasts].reverse().slice(0, limit);
+}
+
+function getBroadcastById(id) {
+    if (!id) return null;
+    return cache.broadcasts.find(b => b.id === id) || null;
+}
+
+function getLatestBroadcast() {
+    if (!cache.broadcasts || cache.broadcasts.length === 0) return null;
+    return cache.broadcasts[cache.broadcasts.length - 1];
+}
+
+function markBroadcastDeleted(id) {
+    const entry = cache.broadcasts.find(b => b.id === id);
+    if (entry) {
+        entry.deleted = true;
+        entry.deletedAt = new Date().toISOString();
+        syncDataFile(BROADCAST_FILE, cache.broadcasts);
+        return entry;
+    }
+    return null;
+}
+
 module.exports = {
     DATA_DIR,
     SUPER_OWNER,
     SUBMISSIONS_FILE,
+    BROADCAST_FILE,
     ensureDataFiles,
     ensureAllTables,
     ensureKostTable: ensureAllTables,
@@ -2598,5 +2658,12 @@ module.exports = {
     getKostSubmissionById,
     updateKostSubmission,
     reviewKostSubmission,
-    deleteKostSubmission
+    deleteKostSubmission,
+
+    // Broadcast History & Undo
+    saveBroadcast,
+    getBroadcasts,
+    getBroadcastById,
+    getLatestBroadcast,
+    markBroadcastDeleted
 };

@@ -47,6 +47,7 @@ module.exports = {
 │ \`!owner list\`
 │ \`!owner add <nomor>\`
 │ \`!owner delete <nomor>\`
+│ \`!tariksiaran\` / \`!undobc\`
 
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
@@ -67,8 +68,10 @@ module.exports = {
 │ \`!help\`
 │ \`!stats\`
 
-🎨 STICKER
+🎨 STICKER & MEDIA
 │ \`!stiker\`
+│ \`!toimg\`
+│ \`!culik\`
 │ \`!smeme <teks atas|teks bawah>\`
 │ \`!brat <teks>\`
 

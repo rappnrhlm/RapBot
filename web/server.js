@@ -1384,11 +1384,19 @@ app.post('/api/bot/broadcast', async (req, res) => {
 
         let sentCount = 0;
         const errors = [];
+        const sentMessages = [];
 
         for (const jid of targetJids) {
             try {
-                await activeBotSocket.sendMessage(jid, { text: String(message) });
+                const sentMsg = await activeBotSocket.sendMessage(jid, { text: String(message) });
                 sentCount++;
+                if (sentMsg && sentMsg.key) {
+                    sentMessages.push({
+                        jid,
+                        messageId: sentMsg.key.id,
+                        key: sentMsg.key
+                    });
+                }
                 // Small delay to avoid rate limit
                 await new Promise(r => setTimeout(r, 400));
             } catch (sendErr) {
@@ -1397,6 +1405,18 @@ app.post('/api/bot/broadcast', async (req, res) => {
             }
         }
 
+        const bcRecord = database.saveBroadcast({
+            id: `bc_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            target: target || (targetJid ? 'single' : 'all'),
+            targetJid: targetJid || null,
+            message: String(message),
+            sentCount,
+            totalTarget: targetJids.length,
+            messages: sentMessages,
+            deleted: false
+        });
+
         database.logCommand(`broadcast:${target || 'custom'}`, 'system', 'admin', true);
 
         res.json({
@@ -1404,11 +1424,91 @@ app.post('/api/bot/broadcast', async (req, res) => {
             message: `Pesan siaran berhasil dikirim ke ${sentCount} dari ${targetJids.length} grup.`,
             sentCount,
             totalTarget: targetJids.length,
+            broadcastId: bcRecord.id,
+            broadcast: bcRecord,
             errors: errors.length > 0 ? errors : undefined
         });
     } catch (err) {
         console.error('[web/server] Error broadcast:', err);
         res.status(500).json({ success: false, message: `Gagal mengirim siaran: ${err.message}` });
+    }
+});
+
+// Get broadcast history
+app.get('/api/bot/broadcasts', (req, res) => {
+    try {
+        const pin = extractPin(req);
+        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+        const list = database.getBroadcasts(30);
+        res.json({ success: true, broadcasts: list });
+    } catch (err) {
+        console.error('[web/server] Error getting broadcasts:', err);
+        res.status(500).json({ success: false, message: 'Gagal memuat riwayat siaran.' });
+    }
+});
+
+// Undo / Delete broadcast messages for everyone
+app.post('/api/bot/broadcast/delete', async (req, res) => {
+    try {
+        const pin = extractPin(req);
+        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+
+        const sock = getBotSocket();
+        if (!sock) {
+            return res.status(503).json({ success: false, message: 'Bot WhatsApp sedang offline / belum terhubung.' });
+        }
+
+        const { id } = req.body || {};
+        const bc = id ? database.getBroadcastById(id) : database.getLatestBroadcast();
+
+        if (!bc) {
+            return res.status(404).json({ success: false, message: 'Tidak ada data siaran yang dapat ditarik/dihapus.' });
+        }
+
+        if (bc.deleted) {
+            return res.status(400).json({ success: false, message: 'Pesan siaran ini sudah pernah ditarik/dihapus sebelumnya.' });
+        }
+
+        let deletedCount = 0;
+        const errors = [];
+
+        if (Array.isArray(bc.messages) && bc.messages.length > 0) {
+            for (const item of bc.messages) {
+                try {
+                    if (item.key) {
+                        await sock.sendMessage(item.jid, { delete: item.key });
+                    } else if (item.messageId) {
+                        await sock.sendMessage(item.jid, {
+                            delete: {
+                                remoteJid: item.jid,
+                                fromMe: true,
+                                id: item.messageId
+                            }
+                        });
+                    }
+                    deletedCount++;
+                    // Delay between deletes to avoid flood
+                    await new Promise(r => setTimeout(r, 300));
+                } catch (delErr) {
+                    console.warn(`[broadcast/delete] Gagal hapus ke ${item.jid}:`, delErr.message);
+                    errors.push({ jid: item.jid, error: delErr.message });
+                }
+            }
+        }
+
+        database.markBroadcastDeleted(bc.id);
+        database.logCommand(`broadcast:undo:${bc.id}`, 'system', 'admin', true);
+
+        res.json({
+            success: true,
+            message: `Berhasil menarik/menghapus pesan siaran serentak dari ${deletedCount} target grup.`,
+            deletedCount,
+            totalTarget: bc.messages?.length || 0,
+            errors: errors.length > 0 ? errors : undefined
+        });
+    } catch (err) {
+        console.error('[web/server] Error undo broadcast:', err);
+        res.status(500).json({ success: false, message: `Gagal menarik siaran: ${err.message}` });
     }
 });
 
