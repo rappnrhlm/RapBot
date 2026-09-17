@@ -119,8 +119,6 @@ module.exports = {
                     { quoted: msg }
                 );
             }
-
-            database.incrementCommandStats('culik');
         } catch (err) {
             console.error('[commands/general/culik] Error downloading view once media:', err);
             const errMsg = `❌ Gagal mengambil media sekali lihat (${err.message}). Pastikan media belum kedaluwarsa.`;

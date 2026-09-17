@@ -46,7 +46,6 @@ module.exports = {
                         { video: gifBuffer, gifPlayback: true, caption: '✅ Berhasil mengubah stiker bergerak menjadi GIF!' },
                         { quoted: msg }
                     );
-                    database.incrementCommandStats('toimg');
                     return;
                 } catch (animErr) {
                     console.warn('[commands/sticker/toimg] Gagal convert animasi ke gif, mencoba fallback ke PNG:', animErr.message);
@@ -59,8 +58,6 @@ module.exports = {
                 { image: pngBuffer, caption: '✅ Berhasil mengubah stiker menjadi gambar!' },
                 { quoted: msg }
             );
-
-            database.incrementCommandStats('toimg');
         } catch (err) {
             console.error('[commands/sticker/toimg] Error converting sticker to image:', err);
             const errorMsg = '❌ Gagal mengubah stiker menjadi gambar. Pastikan stiker yang di-reply valid.';
