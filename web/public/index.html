@@ -5062,7 +5062,11 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    showToast(action === 'approve' ? 'Usulan disetujui & otomatis ditambahkan ke daftar item 🟢' : 'Usulan ditolak ❌', 'success');
+                    if (action === 'approve') {
+                        showToast(result.japriSent ? '✅ Usulan disetujui & otomatis dijapri ke WhatsApp pengusul!' : '✅ Usulan disetujui & otomatis ditambahkan ke listing!', 'success');
+                    } else {
+                        showToast('Usulan ditolak ❌', 'success');
+                    }
                     loadSubmissionsList();
                     loadKostList();
                     fetchStatus();

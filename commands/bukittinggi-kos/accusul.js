@@ -94,6 +94,28 @@ module.exports = {
         // Update status usulan jadi approved
         await database.reviewKostSubmission(targetId, 'approved', senderNumber || 'admin');
 
+        // Otomatis japri ke nomor warga/pengusul
+        let japriSent = false;
+        if (sub.submittedBy && sub.submittedBy !== 'warga' && sub.submittedBy !== 'unknown' && sock) {
+            try {
+                let cleanNum = String(sub.submittedBy).replace(/[^0-9]/g, '');
+                if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.substring(1);
+                const submitterJid = cleanNum + '@s.whatsapp.net';
+
+                const defaultTemplate = 
+`Halo Kak, terima kasih banyak atas usulan data *${addResult.data.name}* yang Kakak kirimkan ke tim @bukittinggikos! 🙌
+
+Usulan Kakak sudah kami verifikasi dan resmi disetujui masuk ke database bot WhatsApp kami dengan nomor ID: *${addResult.data.id}*.
+
+Kontribusi Kakak sangat berarti bagi para pencari hunian di Bukittinggi. Semoga harimu menyenangkan! ✨`;
+
+                await sock.sendMessage(submitterJid, { text: defaultTemplate });
+                japriSent = true;
+            } catch (dmErr) {
+                console.warn(`[accusul] Gagal kirim japri ke ${sub.submittedBy}:`, dmErr.message);
+            }
+        }
+
         let contactLines = [];
         if (addResult.data.instagram) contactLines.push(`   📸 IG: ${database.formatInstagramUrl(addResult.data.instagram)}`);
         if (addResult.data.whatsapp) contactLines.push(`   💬 WA: ${database.formatWhatsappUrl(addResult.data.whatsapp)}`);
@@ -107,7 +129,7 @@ Data otomatis masuk ke database:
 🏠 Nama: *${addResult.data.name}*
 ${contactLines.join('\n')}
 📌 Status: ⏳ PENDING
-👤 Pengusul: wa.me/${sub.submittedBy || 'unknown'}`;
+👤 Pengusul: wa.me/${sub.submittedBy || 'unknown'}${japriSent ? '\n📩 *Notifikasi persetujuan telah otomatis dijapri ke pengusul!*' : ''}`;
 
         return sendReply(succMsg);
     }

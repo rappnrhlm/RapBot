@@ -1003,11 +1003,41 @@ app.post('/api/submissions/:id/review', async (req, res) => {
             }
         }
 
+        // Auto Japri ke pengusul jika disetujui & bot socket online
+        let japriSent = false;
+        if (statusTarget === 'approved' && result.submission) {
+            const sub = result.submission;
+            const sock = getBotSocket();
+            if (sub.submittedBy && sub.submittedBy !== 'warga' && sub.submittedBy !== 'unknown' && sock) {
+                try {
+                    let cleanNum = String(sub.submittedBy).replace(/[^0-9]/g, '');
+                    if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.substring(1);
+                    const submitterJid = cleanNum + '@s.whatsapp.net';
+
+                    const kostName = addedKost?.name || sub.name;
+                    const kostId = addedKost?.id || sub.id;
+
+                    const defaultAccMsg =
+`Halo Kak, terima kasih banyak atas usulan data *${kostName}* yang Kakak kirimkan ke tim @bukittinggikos! 🙌
+
+Usulan Kakak sudah kami verifikasi dan resmi disetujui masuk ke database bot WhatsApp kami dengan nomor ID: *${kostId}*.
+
+Kontribusi Kakak sangat berarti bagi para pencari hunian di Bukittinggi. Semoga harimu menyenangkan! ✨`;
+
+                    await sock.sendMessage(submitterJid, { text: defaultAccMsg });
+                    japriSent = true;
+                } catch (dmErr) {
+                    console.warn(`[WebServer] Gagal auto-japri pengusul usulan #${id}:`, dmErr.message);
+                }
+            }
+        }
+
         res.json({
             success: true,
-            message: `Usulan #${id} berhasil di-${statusTarget}.`,
+            message: `Usulan #${id} berhasil di-${statusTarget}.${japriSent ? ' Notifikasi japri WhatsApp telah dikirimkan ke pengusul.' : ''}`,
             data: result.submission,
-            addedKost
+            addedKost,
+            japriSent
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
