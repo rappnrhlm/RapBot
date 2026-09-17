@@ -1593,8 +1593,12 @@ app.post('/api/bot/simulate', async (req, res) => {
             }
         }
 
-        // Normalize command aliases (e.g., adminmenu -> admin-menu)
+        // Normalize command aliases (e.g., adminmenu -> admin-menu, owner_list -> owner)
         if (targetCmdName === 'adminmenu') targetCmdName = 'admin-menu';
+        if (targetCmdName === 'owner_list') {
+            targetCmdName = 'owner';
+            args = ['list'];
+        }
         if (targetCmdName === 'kost_lengkap') {
             targetCmdName = 'kost';
             args = ['lengkap', ...(args.length ? args : ['1'])];
@@ -1638,11 +1642,20 @@ app.post('/api/bot/simulate', async (req, res) => {
                     owner: '6285195532009@s.whatsapp.net',
                     participants: [
                         { id: '6285195532009@s.whatsapp.net', admin: 'superadmin' },
+                        { id: '628123456789@s.whatsapp.net', admin: 'admin' },
                         { id: `${cleanSender}@s.whatsapp.net`, admin: role === 'admin' ? 'admin' : null },
                         { id: '6281234567890@s.whatsapp.net', admin: 'admin' },
                         { id: '6285277889900@s.whatsapp.net', admin: null }
                     ]
                 };
+            },
+            groupParticipantsUpdate: async (jid, participants, action) => {
+                capturedReplies.push(`👥 [Aksi Grup: ${String(action).toUpperCase()} pada ${participants.join(', ')}]`);
+                return true;
+            },
+            groupUpdateSubject: async (jid, subject) => {
+                capturedReplies.push(`🏷️ [Nama Grup Diubah Menjadi: "${subject}"]`);
+                return true;
             }
         };
 

@@ -1043,6 +1043,9 @@
                                         <select id="simCommandSelect" onchange="onSimCommandChange()" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
                                             <optgroup label="📌 Modul Kos Bukittinggi">
                                                 <option value="cari">!cari &lt;kata kunci&gt; (Pencarian Publik)</option>
+                                                <option value="addkost">!addkost &lt;Nama Kos&gt; &gt; &lt;Kontak&gt; (Tambah Kos Langsung)</option>
+                                                <option value="editkost">!editkost &lt;ID&gt; | nama: &lt;baru&gt; (Edit Data Kos)</option>
+                                                <option value="delkost">!delkost &lt;ID&gt; (Hapus Data Kos)</option>
                                                 <option value="dm">!dm &lt;ID&gt; (Siap DM Promosi)</option>
                                                 <option value="kost_lengkap">!kost lengkap &lt;ID&gt; (Detail Kos)</option>
                                                 <option value="kost_pending">!kost pending (Antrean Kos Baru)</option>
@@ -1051,8 +1054,10 @@
                                                 <option value="post">!post &lt;ID&gt; (Tayangkan ke Publik)</option>
                                                 <option value="sent">!sent &lt;ID&gt; (Tandai Terkirim DM)</option>
                                                 <option value="usulkost">!usulkost &lt;Nama&gt; &gt; &lt;Kontak&gt; (Usulan Warga)</option>
+                                                <option value="editusul">!editusul &lt;No&gt; | nama: &lt;baru&gt; (Edit Usulan)</option>
                                                 <option value="acc">!acc &lt;No Usulan&gt; (Setujui Usulan)</option>
                                                 <option value="tolakusul">!tolakusul &lt;No Usulan&gt; (Tolak Usulan)</option>
+                                                <option value="delusul">!delusul &lt;No Usulan&gt; (Hapus Antrean Usulan)</option>
                                                 <option value="listusul">!listusul (Daftar Antrean Usulan)</option>
                                             </optgroup>
                                             <optgroup label="⚡ Menu & Informasi Umum">
@@ -1064,11 +1069,16 @@
                                                 <option value="jid">!jid / !id (Cek ID Grup / User)</option>
                                                 <option value="help">!help &lt;perintah&gt; (Bantuan Perintah)</option>
                                             </optgroup>
-                                            <optgroup label="👥 Pengelolaan Grup">
+                                            <optgroup label="👥 Pengelolaan & Moderasi Grup">
                                                 <option value="groupinfo">!groupinfo (Informasi Lengkap Grup)</option>
+                                                <option value="listadmin">!listadmin (Daftar Admin Grup)</option>
                                                 <option value="tagall">!tagall &lt;pesan&gt; (Mention Seluruh Member)</option>
                                                 <option value="hidetag">!hidetag &lt;pesan&gt; (Siaran Tanpa List Tag)</option>
-                                                <option value="listadmin">!listadmin (Daftar Admin Grup)</option>
+                                                <option value="add">!add &lt;nomor&gt; (Undang/Tambah Member)</option>
+                                                <option value="kick">!kick &lt;nomor/@mention&gt; (Keluarkan Member)</option>
+                                                <option value="promote">!promote &lt;nomor/@mention&gt; (Jadikan Admin)</option>
+                                                <option value="demote">!demote &lt;nomor/@mention&gt; (Turunkan Admin)</option>
+                                                <option value="clear">!clear &lt;jumlah&gt; (Bersihkan Pesan Bot)</option>
                                                 <option value="welcome">!welcome (Status Pesan Sambutan)</option>
                                                 <option value="initgroup">!initgroup (Inisialisasi Peran Grup)</option>
                                             </optgroup>
@@ -1078,6 +1088,10 @@
                                                 <option value="smeme">!smeme &lt;teks atas|teks bawah&gt; (Stiker Meme)</option>
                                                 <option value="toimg">!toimg (Ubah Stiker Jadi Gambar)</option>
                                                 <option value="culik">!culik (Undang Member ke Grup)</option>
+                                            </optgroup>
+                                            <optgroup label="👑 Khusus Owner & Siaran">
+                                                <option value="owner_list">!owner list (Daftar Owner Terdaftar)</option>
+                                                <option value="tariksiaran">!tariksiaran &lt;ID&gt; (Tarik Pesan Siaran)</option>
                                             </optgroup>
                                             <optgroup label="✍️ Kustom & Autoreply">
                                                 <option value="custom">✍️ Ketik Bebas / Uji Autoreply Baru</option>
@@ -3233,8 +3247,19 @@
             
             const rawName = (cmdName || '').replace(/^!/, '').toLowerCase();
             
-            if (['cari', 'dm', 'kost_lengkap', 'kost_pending', 'kost_published', 'kost_all', 'post', 'sent', 'usulkost', 'acc', 'tolakusul', 'listusul', 'menu', 'adminmenu', 'ping', 'stats', 'owner', 'jid', 'help', 'groupinfo', 'tagall', 'hidetag', 'listadmin', 'welcome', 'initgroup', 'brat', 'stiker', 'smeme', 'toimg', 'culik'].includes(rawName)) {
+            const allCommands = [
+                'cari', 'addkost', 'editkost', 'delkost', 'dm', 'kost_lengkap', 'kost_pending', 'kost_published', 'kost_all',
+                'post', 'sent', 'usulkost', 'editusul', 'acc', 'tolakusul', 'delusul', 'listusul',
+                'menu', 'adminmenu', 'ping', 'stats', 'owner', 'jid', 'help',
+                'groupinfo', 'listadmin', 'tagall', 'hidetag', 'add', 'kick', 'promote', 'demote', 'clear', 'welcome', 'initgroup',
+                'brat', 'stiker', 'smeme', 'toimg', 'culik',
+                'owner_list', 'tariksiaran'
+            ];
+
+            if (allCommands.includes(rawName)) {
                 if (selectEl) selectEl.value = rawName;
+            } else if (rawName === 'kost') {
+                if (selectEl) selectEl.value = 'kost_pending';
             } else if (rawName.includes('lengkap')) {
                 if (selectEl) selectEl.value = 'kost_lengkap';
             } else if (rawName.includes('pending')) {
@@ -3261,6 +3286,9 @@
 
             const presets = {
                 cari: { label: 'Kata Kunci Pencarian Kos', val: 'mawar', role: 'public' },
+                addkost: { label: 'Format: <Nama Kos> > <Kontak (ig/wa/tt)>', val: 'Kost Mawar Asri > ig: kostmawar | wa: 08123456789', role: 'admin' },
+                editkost: { label: 'Format: <ID> | nama: <baru> | ig: <baru>', val: '1 | nama: Kost Mawar Induk V2 | wa: 082199887766', role: 'admin' },
+                delkost: { label: 'ID Kost yang Akan Dihapus (Contoh: 1)', val: '1', role: 'admin' },
                 dm: { label: 'ID Kost Target (Contoh: 1)', val: '1', role: 'admin' },
                 kost_lengkap: { label: 'ID Kost Target (Contoh: 1)', val: '1', role: 'admin' },
                 kost_pending: { label: 'Filter Tambahan (Opsional)', val: '', role: 'admin' },
@@ -3269,8 +3297,10 @@
                 post: { label: 'ID Kost yang Akan Ditayangkan', val: '1', role: 'admin' },
                 sent: { label: 'ID Kost yang Sudah Terkirim DM', val: '1', role: 'admin' },
                 usulkost: { label: 'Format: <Nama Kos> > <Kontak>', val: 'Kost Bougenville > wa: 082198765432 | ig: bougenville', role: 'public' },
-                acc: { label: 'No ID Usulan Masuk', val: '1', role: 'admin' },
-                tolakusul: { label: 'No ID Usulan Masuk', val: '1', role: 'admin' },
+                editusul: { label: 'Format: <No Usulan> | nama: <baru> | kontak: <baru>', val: '1 | nama: Kost Melati Asri > wa: 08123456789', role: 'admin' },
+                acc: { label: 'No ID Usulan Masuk (Contoh: 1)', val: '1', role: 'admin' },
+                tolakusul: { label: 'No ID Usulan Masuk (Contoh: 1)', val: '1', role: 'admin' },
+                delusul: { label: 'No ID Usulan yang Dihapus (Contoh: 1)', val: '1', role: 'admin' },
                 listusul: { label: 'Filter Status Usulan (Opsional)', val: '', role: 'admin' },
                 menu: { label: 'Kategori Menu (Opsional)', val: '', role: 'public' },
                 adminmenu: { label: 'Kategori Admin (Opsional)', val: '', role: 'admin' },
@@ -3280,9 +3310,14 @@
                 jid: { label: 'Target / Mention (Opsional)', val: '', role: 'public' },
                 help: { label: 'Nama Perintah Spesifik', val: 'cari', role: 'public' },
                 groupinfo: { label: 'Parameter Info (Opsional)', val: '', role: 'public' },
+                listadmin: { label: 'Filter Admin (Opsional)', val: '', role: 'public' },
                 tagall: { label: 'Pesan Pengumuman', val: 'Halo semua, rapat rutin malam ini jam 20.00 WIB!', role: 'admin' },
                 hidetag: { label: 'Pesan Broadcast Rahasia', val: 'Info penting: Silakan cek pengumuman di grup!', role: 'admin' },
-                listadmin: { label: 'Filter Admin (Opsional)', val: '', role: 'public' },
+                add: { label: 'Nomor WhatsApp Target (Contoh: 6281234567890)', val: '6281234567890', role: 'admin' },
+                kick: { label: 'Nomor WhatsApp Target (Contoh: 6281234567890)', val: '6281234567890', role: 'admin' },
+                promote: { label: 'Nomor WhatsApp Target (Contoh: 6281234567890)', val: '6281234567890', role: 'admin' },
+                demote: { label: 'Nomor WhatsApp Target (Contoh: 6281234567890)', val: '6281234567890', role: 'admin' },
+                clear: { label: 'Jumlah Pesan yang Dihapus (Contoh: 10)', val: '10', role: 'admin' },
                 welcome: { label: 'Opsi: on / off / status', val: 'status', role: 'admin' },
                 initgroup: { label: 'Tipe Grup: kos / admin / general', val: 'kos', role: 'admin' },
                 brat: { label: 'Teks Stiker Brat', val: 'Halo Bukittinggi!', role: 'public' },
@@ -3290,7 +3325,9 @@
                 smeme: { label: 'Format: Teks Atas | Teks Bawah', val: 'KETIKA KOS PENUH | TAPI TETAP DICARI', role: 'public' },
                 toimg: { label: 'Kualitas / Parameter (Opsional)', val: '', role: 'public' },
                 culik: { label: 'Nomor Target (Contoh: 6281234567890)', val: '628123456789', role: 'admin' },
-                custom: { label: 'Ketik Bebas (Perintah !xyz atau Kata Kunci Autoreply)', val: '!info', role: 'public' }
+                owner_list: { label: 'Aksi: list / add <nomor> / delete <nomor>', val: 'list', role: 'admin' },
+                tariksiaran: { label: 'ID Broadcast (Contoh: bc_123456)', val: 'bc_123456', role: 'admin' },
+                custom: { label: 'Ketik Bebas (Perintah !xyz atau Kata Kunci Autoreply)', val: '!addkost Kost Indah > wa: 08123456789', role: 'public' }
             };
 
             const cfg = presets[cmd] || presets.custom;
