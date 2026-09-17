@@ -3360,8 +3360,15 @@
             const container = document.getElementById('extGroupsContainer');
             if (!container) return;
 
-            if (rawGroupsData.length === 0) {
-                container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">Belum ada grup yang terdaftar. Hubungkan grup di tab Device.</div>`;
+            // Filter hanya grup yang terintegrasi dengan modul Kos
+            const kosGroups = rawGroupsData.filter(g => {
+                const type = (g.type || '').toLowerCase();
+                const name = (g.name || g.groupName || '').toLowerCase();
+                return type === 'kos' || type === 'kost' || name.includes('kos') || name.includes('kost');
+            });
+
+            if (kosGroups.length === 0) {
+                container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">Belum ada grup bertipe "kos" yang terdaftar. Hubungkan grup di tab Device atau gunakan <code>!initgroup [admin|public] [nama]</code>.</div>`;
                 return;
             }
 
@@ -3377,7 +3384,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
-                        ${rawGroupsData.map(g => {
+                        ${kosGroups.map(g => {
                             const isInduk = g.role === 'admin' || g.role === 'indukan';
                             const roleBadge = isInduk 
                                 ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">🛡️ Grup Admin Induk</span>`
@@ -3392,7 +3399,7 @@
                             return `
                                 <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
                                     <td class="py-3 px-4">
-                                        <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(g.name || 'Grup WA')}</h6>
+                                        <h6 class="font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(g.name || g.groupName || 'Grup Kos')}</h6>
                                         <span class="font-mono text-[10px] text-slate-400">${escapeHtml(g.id)}</span>
                                     </td>
                                     <td class="py-3 px-4">${roleBadge}</td>
