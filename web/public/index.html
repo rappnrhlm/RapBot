@@ -1027,7 +1027,12 @@
                                         <p class="text-[11px] text-slate-400">Pilih perintah dan uji coba format respons pesan yang akan dikirim oleh bot.</p>
                                     </div>
                                 </div>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">Live Preview</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        Realtime Engine
+                                    </span>
+                                </div>
                             </div>
 
                             <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -3294,7 +3299,7 @@
             if (roleSelect && cfg.role) roleSelect.value = cfg.role;
         }
 
-        function runCommandSimulator() {
+        async function runCommandSimulator() {
             const cmd = document.getElementById('simCommandSelect')?.value || 'cari';
             const param = (document.getElementById('simParamInput')?.value || '').trim();
             const role = document.getElementById('simRoleSelect')?.value || 'public';
@@ -3326,10 +3331,37 @@
             }
 
             if (userMsgEl) userMsgEl.textContent = fullUserMsg;
+            if (botMsgEl) {
+                botMsgEl.innerHTML = '<div class="flex items-center gap-2 text-slate-400"><div class="w-3.5 h-3.5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div><span>Menjalankan engine bot secara realtime...</span></div>';
+            }
 
+            try {
+                // Panggil endpoint backend realtime yang mengeksekusi command handler asli & database MariaDB/JSON
+                const res = await fetch('/api/bot/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        command: cmd,
+                        param,
+                        sender,
+                        role,
+                        isGroup: true
+                    })
+                });
+
+                const data = await res.json();
+                if (data && data.success && data.reply) {
+                    if (botMsgEl) botMsgEl.textContent = data.reply;
+                    return;
+                }
+            } catch (apiErr) {
+                console.warn('[Simulator] API Backend offline/gagal, beralih ke fallback internal:', apiErr);
+            }
+
+            // Fallback jika fetch backend tidak dapat diakses
             let simulatedBotReply = '';
 
-            // 1. Cek apakah ada Custom Autoreply yang cocok dari database autoreplies
+            // Cek apakah ada Custom Autoreply yang cocok dari data autoreply
             if (typeof rawAutorepliesData !== 'undefined' && Array.isArray(rawAutorepliesData) && rawAutorepliesData.length > 0) {
                 const checkText = (cmd === 'custom' ? param : fullUserMsg).toLowerCase();
                 const matchedAr = rawAutorepliesData.find(ar => {
@@ -3346,7 +3378,6 @@
             }
 
             if (!simulatedBotReply) {
-                // Command Simulation Engine
                 switch(cmd) {
                     case 'cari': {
                         const query = param || 'mawar';
@@ -3360,11 +3391,9 @@
                         });
 
                         if (matches.length === 0) {
-                            if (role === 'public') {
-                                simulatedBotReply = `🔎 Belum ada data kos yang dipublikasikan atau cocok dengan kata kunci "${query}".\n\n💡 Punya info kos? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
-                            } else {
-                                simulatedBotReply = `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
-                            }
+                            simulatedBotReply = role === 'public'
+                                ? `🔎 Belum ada data kos yang dipublikasikan atau cocok dengan kata kunci "${query}".\n\n💡 Punya info kos? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``
+                                : `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
                         } else {
                             if (role === 'public') {
                                 simulatedBotReply = `🔎 *HASIL PENCARIAN KOS*\nKata kunci: *${query}*\n\nDitemukan: ${matches.length} kos\n\n`;
@@ -3402,7 +3431,6 @@
                         const name = parts[0]?.trim() || 'Kost Kenanga Putri';
                         const contact = parts.slice(1).join('>').trim() || 'wa: 08123456789';
                         const count = (typeof rawSubmissionsData !== 'undefined' && Array.isArray(rawSubmissionsData) ? rawSubmissionsData.length : 3);
-                        
                         simulatedBotReply = `✅ *Usulan Kos Berhasil Terkirim!*\n\n🏠 Nama: *${name}*\n📞 Kontak: ${contact}\n🆔 No Usulan: *#${count + 1}*\n\nTerima kasih atas kontribusinya! Usulan ini akan diverifikasi oleh tim admin *@bukittinggikos* sebelum resmi dipublikasikan. 🙏\n\n*(Bot otomatis meneruskan notifikasi usulan ini ke grup admin)*`;
                         break;
                     }
@@ -3415,63 +3443,8 @@
                         break;
                     }
 
-                    case 'tolakusul': {
-                        const targetId = param || '1';
-                        simulatedBotReply = `❌ *Usulan #${targetId} Telah Ditolak*\n\nStatus usulan diperbarui menjadi Ditolak / Dihapus dari antrean verifikasi.\n👤 Pengusul menerima notifikasi penolakan secara otomatis.`;
-                        break;
-                    }
-
-                    case 'listusul': {
-                        const count = (typeof rawSubmissionsData !== 'undefined' && Array.isArray(rawSubmissionsData) ? rawSubmissionsData.length : 2);
-                        simulatedBotReply = `📥 *DAFTAR USULAN KOS MASUK*\nTotal Pending: ${count} usulan\n\n1. *#1 Kost Mawar Asri*\n   📞 Kontak: wa: 08123456789 | ig: @kostmawar\n   👤 Oleh: wa.me/6285277889900\n\n2. *#2 Kost Melati Indah*\n   📞 Kontak: wa: 085299887766\n   👤 Oleh: wa.me/6281355443322\n\n────────────────────\n💡 Setujui: \`!acc <No>\` | Tolak: \`!tolakusul <No>\``;
-                        break;
-                    }
-
-                    case 'kost_lengkap': {
-                        const targetId = param || '1';
-                        const list = (typeof rawKostData !== 'undefined' && Array.isArray(rawKostData) ? rawKostData : []);
-                        const found = list.find(k => k.id === targetId || k.id === `KST-${String(targetId).padStart(6, '0')}`) || list[0] || { name: 'Kost Farrel', id: 'KST-000001', instagram: 'kostfarrel_bukittinggi', whatsapp: '628123456789', status: 'published' };
-                        simulatedBotReply = `🏠 *DETAIL DATA KOST (${role.toUpperCase()} VIEW)*\n\n🆔 ID: \`${found.id}\`\n🏠 Nama: *${found.name}*\n📸 Instagram: https://instagram.com/${(found.instagram || '').replace('@','')}\n💬 WhatsApp: https://wa.me/${(found.whatsapp || '628123456789').replace(/\D/g,'')}\n📌 Status: 🟢 SUDAH DIPOSTING (PUBLIK)\n\n────────────────────\n📱 Official Instagram: *@bukittinggikos*`;
-                        break;
-                    }
-
-                    case 'kost_pending': {
-                        const list = (typeof rawKostData !== 'undefined' && Array.isArray(rawKostData) ? rawKostData.filter(k => (k.status||'pending')==='pending') : []);
-                        const total = list.length || 3;
-                        simulatedBotReply = `📋 *DAFTAR KOST PENDING (BELUM DITAWARKAN)*\nTotal Antrean: ${total} kos\n\n1. *Kost Anggrek Putih* (\`KST-000004\`)\n   📸 IG: https://instagram.com/kostanggrek\n\n2. *Kost Melati Residence* (\`KST-000005\`)\n   💬 WA: https://wa.me/628123456789\n\n3. *Kost Merak Indah* (\`KST-000008\`)\n   📸 IG: https://instagram.com/kostmerak\n\n────────────────────\n💡 Ketik \`!dm <ID>\` untuk melihat teks penawaran siap kirim.`;
-                        break;
-                    }
-
-                    case 'kost_published': {
-                        simulatedBotReply = `🌐 *DAFTAR KOST TAYANG (PUBLISHED)*\n\n1. *Kost Mawar Induk* (\`KST-000001\`)\n   📸 IG: https://instagram.com/kostmawar\n2. *Kost Dahlia Asri* (\`KST-000002\`)\n   💬 WA: https://wa.me/628123456789\n3. *Kost Kenanga* (\`KST-000003\`)\n   📸 IG: https://instagram.com/kostkenanga\n\n────────────────────\n🔍 Cari kos: \`!cari <kata kunci>\``;
-                        break;
-                    }
-
-                    case 'kost_all': {
-                        const total = (typeof rawKostData !== 'undefined' && Array.isArray(rawKostData) ? rawKostData.length : 15);
-                        simulatedBotReply = `📊 *RINGKASAN STATISTIK DATABASE KOST*\n\n📦 Total Database: *${total} Kos*\n🟢 Sudah Diposting: *${Math.max(1, Math.floor(total * 0.6))}*\n📩 Terkirim DM: *${Math.max(1, Math.floor(total * 0.2))}*\n🟡 Pending/Belum Ditawarkan: *${Math.max(1, Math.floor(total * 0.2))}*\n\nKelola data penuh via Dashboard Web: *http://localhost:3001*`;
-                        break;
-                    }
-
-                    case 'post': {
-                        const targetId = param || '1';
-                        simulatedBotReply = `🚀 *KOST BERHASIL DITAYANGKAN (PUBLISHED)*\n\n🆔 ID: \`KST-${String(targetId).padStart(6, '0')}\`\n📌 Status sekarang: 🟢 *SUDAH DIPOSTING*\n\nData kos ini kini sudah bisa dicari oleh seluruh pengguna publik melalui perintah \`!cari\`. ✨`;
-                        break;
-                    }
-
-                    case 'sent': {
-                        const targetId = param || '1';
-                        simulatedBotReply = `📩 *STATUS DIUPDATE: TERKIRIM DM*\n\n🆔 ID: \`KST-${String(targetId).padStart(6, '0')}\`\n📌 Status sekarang: 📩 *TERKIRIM DM*\n👤 Ditandai oleh admin: wa.me/${sender}\n\nTahap selanjutnya: menunggu respons dari pemilik kos sebelum dipublikasikan via \`!post\`.`;
-                        break;
-                    }
-
                     case 'menu': {
                         simulatedBotReply = `🤖 *RAPBOT WHATSAPP ASSISTANT*\n\nHalo kak! Berikut daftar perintah yang dapat kamu gunakan:\n\n🏠 *Modul Kos Bukittinggi*\n• \`!cari <nama/daerah>\` - Cari info kos publik\n• \`!usulkost <nama> > <kontak>\` - Usulkan info kos baru\n\n⚡ *Umum & Informasi*\n• \`!menu\` - Tampilkan menu ini\n• \`!ping\` - Cek responsivitas bot\n• \`!owner\` - Kontak pengelola bot\n• \`!jid\` - Info identitas akun / grup\n\n🎨 *Stiker & Media*\n• \`!brat <teks>\` - Buat stiker teks brat\n• \`!stiker\` - Jadikan gambar stiker WA\n• \`!smeme <atas|bawah>\` - Stiker meme teks\n\n────────────────────\n💡 *Prefix:* \`!\` | Versi: *2.0.0*`;
-                        break;
-                    }
-
-                    case 'adminmenu': {
-                        simulatedBotReply = `🛡️ *MENU KHUSUS ADMIN & MODERATOR*\n\n📌 *Administrasi Kos*\n• \`!dm <ID>\` - Dapatkan template outreach DM\n• \`!post <ID>\` - Publikasikan kos ke publik\n• \`!sent <ID>\` - Tandai kos sudah di-DM\n• \`!kost pending\` - Lihat antrean kos baru\n• \`!listusul\` - Daftar usulan warga\n• \`!acc <No>\` - Setujui usulan kos masuk\n• \`!tolakusul <No>\` - Tolak usulan\n\n👥 *Manajemen Grup*\n• \`!tagall <pesan>\` - Mention seluruh member\n• \`!hidetag <pesan>\` - Tag diam-diam / broadcast\n• \`!welcome <on/off>\` - Toggle salam otomatis\n• \`!initgroup <tipe>\` - Inisialisasi peran grup\n\n⚡ *Server & Stats*\n• \`!stats\` - Statistik memori & uptime bot`;
                         break;
                     }
 
@@ -3480,100 +3453,8 @@
                         break;
                     }
 
-                    case 'stats': {
-                        simulatedBotReply = `📊 *STATISTIK BOT & SISTEM*\n\n🤖 *Bot Stats:*\n• Total Perintah Dijalankan: *1,429*\n• Pesan Terproses: *8,920*\n• Autoreply Aktif: *${(typeof rawAutorepliesData !== 'undefined' ? rawAutorepliesData.length : 5)} aturan*\n\n💻 *Server Stats:*\n• Platform: Linux x64\n• Node.js: v20.x\n• Memory Usage: ~118 MB / 4 GB\n• Baileys Socket: Connected (Multi-Device)`;
-                        break;
-                    }
-
-                    case 'owner': {
-                        simulatedBotReply = `👑 *KONTAK OWNER / PENGELOLA BOT*\n\n👤 Nama: *Raffa / RapBot Team*\n📱 WhatsApp: wa.me/6285195532009\n🌐 Website: *https://bukittinggikos.com*\n📸 Instagram: *@bukittinggikos*\n\nSilakan hubungi jika ada kendala atau permohonan kerjasama.`;
-                        break;
-                    }
-
-                    case 'jid': {
-                        simulatedBotReply = `🆔 *IDENTITAS AKUN & GRUP*\n\n👤 Sender JID: \`${sender}@s.whatsapp.net\`\n👥 Chat / Group JID: \`120363048921820938@g.us\`\n🏷️ Tipe Chat: *Grup WhatsApp*\n👑 Hak Akses: *${role === 'admin' || role === 'owner' ? 'Admin / Owner' : 'Member Publik'}*`;
-                        break;
-                    }
-
-                    case 'help': {
-                        const q = (param || 'cari').toLowerCase();
-                        simulatedBotReply = `📖 *PANDUAN PERINTAH: !${q}*\n\n📌 *Deskripsi:* Membantu pengguna menjalankan fungsi \`${q}\`.\n💡 *Contoh Penggunaan:* \`!${q} ${q === 'cari' ? 'mawar' : '1'}\`\n🔒 *Akses:* ${role === 'admin' ? 'Khusus Admin' : 'Semua Pengguna'}\n\nKetik \`!menu\` untuk melihat seluruh daftar perintah.`;
-                        break;
-                    }
-
-                    case 'groupinfo': {
-                        simulatedBotReply = `👥 *INFORMASI GRUP*\n\n🏷️ Nama Grup: *Komunitas Kos Bukittinggi*\n🆔 JID: \`120363048921820938@g.us\`\n👑 Owner Grup: wa.me/6285195532009\n👥 Total Anggota: *128 Member*\n🛡️ Total Admin: *4 Admin*\n👋 Welcome Message: *🟢 Aktif*`;
-                        break;
-                    }
-
-                    case 'tagall': {
-                        const msg = param || 'Pengumuman untuk seluruh member grup!';
-                        simulatedBotReply = `📢 *PENGUMUMAN GRUP*\n\n${msg}\n\n👥 *Daftar Anggota:* \n@6281234567890 @6285277889900 @6281355443322 @6282198765432 @6285195532009`;
-                        break;
-                    }
-
-                    case 'hidetag': {
-                        const msg = param || 'Informasi penting broadcast tanpa deretan mention!';
-                        simulatedBotReply = `📢 *INFO BROADCAST:*\n\n${msg}\n\n*(Bot telah menyisipkan tag tersembunyi ke seluruh 128 anggota grup)*`;
-                        break;
-                    }
-
-                    case 'listadmin': {
-                        simulatedBotReply = `🛡️ *DAFTAR ADMIN GRUP*\n\n1. 👑 Super Admin: @6285195532009\n2. 🛡️ Admin 1: @6281234567890\n3. 🛡️ Admin 2: @6285277889900\n4. 🤖 RapBot: @6285100000000`;
-                        break;
-                    }
-
-                    case 'welcome': {
-                        const opt = (param || 'status').toLowerCase();
-                        if (opt === 'on') simulatedBotReply = `✅ *Pesan sambutan otomatis (Welcome) telah DIAKTIFKAN untuk grup ini.*`;
-                        else if (opt === 'off') simulatedBotReply = `⛔ *Pesan sambutan otomatis (Welcome) telah DINONAKTIFKAN untuk grup ini.*`;
-                        else simulatedBotReply = `ℹ️ *STATUS WELCOME MESSAGE*\n\nStatus: *🟢 AKTIF*\nPesan default: *"Selamat datang @user di grup Komunitas Kos Bukittinggi! Silakan baca deskripsi grup ya."*`;
-                        break;
-                    }
-
-                    case 'initgroup': {
-                        const grpType = param || 'kos';
-                        simulatedBotReply = `🏢 *INISIALISASI PERAN GRUP BERHASIL*\n\nGrup ini sekarang terdaftar sebagai: *Grup Modul ${grpType.toUpperCase()}*\nSemua fitur pencarian, penawaran DM, dan notifikasi usulan otomatis disinkronkan ke grup ini.`;
-                        break;
-                    }
-
-                    case 'brat': {
-                        const txt = param || 'Halo Bukittinggi!';
-                        simulatedBotReply = `🎨 *[STIKER WA BRAT BERHASIL DIBUAT]*\n\n🖼️ *(File Stiker Animasi/Gambar WebP dikirim ke chat)*\n📝 Teks Stiker: "${txt}"\n✨ Background: Hijau Khas Brat / Monokrom`;
-                        break;
-                    }
-
-                    case 'stiker': {
-                        simulatedBotReply = `🎨 *[STIKER WHATSAPP BERHASIL DIBUAT]*\n\n🖼️ *(Gambar terlampir dikonversi menjadi Stiker WebP 512x512)*\n🏷️ Packname: *RapBot*\n👤 Author: *BukittinggiKos*`;
-                        break;
-                    }
-
-                    case 'smeme': {
-                        const parts = (param || 'TEKS ATAS | TEKS BAWAH').split('|');
-                        const top = parts[0]?.trim() || 'TEKS ATAS';
-                        const bottom = parts[1]?.trim() || 'TEKS BAWAH';
-                        simulatedBotReply = `🎨 *[STIKER MEME BERHASIL DIBUAT]*\n\n🖼️ *(Stiker Meme dikirim ke chat)*\n⬆️ Teks Atas: *${top}*\n⬇️ Teks Bawah: *${bottom}*`;
-                        break;
-                    }
-
-                    case 'toimg': {
-                        simulatedBotReply = `🖼️ *[KONVERSI STIKER KE GAMBAR SELESAI]*\n\n📸 File gambar JPG/PNG resolusi tinggi berhasil diekstrak dari stiker dan dikirim ke percakapan.`;
-                        break;
-                    }
-
-                    case 'culik': {
-                        const targetNum = param || '628123456789';
-                        simulatedBotReply = `📥 *UNDANGAN GRUP BERHASIL TERKIRIM*\n\n📩 Bot telah mengirimkan tautan undangan grup ke nomor: \`wa.me/${targetNum.replace(/\D/g,'')}\`.`;
-                        break;
-                    }
-
-                    default: { // custom or unhandled
-                        const cmdClean = fullUserMsg.replace(/^!/, '').trim().toLowerCase();
-                        if (cmdClean.startsWith('help')) {
-                            simulatedBotReply = `📖 *PANDUAN PERINTAH: !${cmdClean.replace('help','').trim() || 'menu'}*\nKetik \`!menu\` untuk daftar perintah lengkap.`;
-                        } else {
-                            simulatedBotReply = `🤖 *RESPON PERINTAH / INPUT BEBAS*\n\n📩 Pesan yang diterima: *"${fullUserMsg}"*\n👤 Pengirim: wa.me/${sender}\n\n💡 Perintah atau kata kunci ini diproses bot. Anda dapat menambahkan respons khusus untuk teks ini di tab **Autoreply Bot**.`;
-                        }
+                    default: {
+                        simulatedBotReply = `🤖 *RESPON PERINTAH: ${fullUserMsg}*\n\nPerintah telah diproses oleh bot. Silakan periksa parameter dan izin grup.`;
                         break;
                     }
                 }

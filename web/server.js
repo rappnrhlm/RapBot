@@ -1558,6 +1558,166 @@ app.post('/api/bot/sync', async (req, res) => {
     }
 });
 
+// ----------------------------------------------------
+// Realtime Bot Command & Autoreply Simulator API
+// ----------------------------------------------------
+const { loadCommands } = require('../handlers/messageHandler');
+let simCommandRegistry = null;
+
+function getSimCommandRegistry() {
+    if (!simCommandRegistry) {
+        simCommandRegistry = loadCommands();
+    }
+    return simCommandRegistry;
+}
+
+app.post('/api/bot/simulate', async (req, res) => {
+    try {
+        const { command, param = '', sender = '628123456789', role = 'public', isGroup = true } = req.body;
+        const registry = getSimCommandRegistry();
+
+        let rawInput = String(command || '').trim();
+        let targetCmdName = rawInput.toLowerCase();
+        let args = [];
+
+        if (rawInput === 'custom') {
+            const clean = String(param || '').trim();
+            const textToParse = clean.startsWith('!') ? clean.slice(1).trim() : clean;
+            const parts = textToParse.split(/\s+/);
+            targetCmdName = (parts[0] || '').toLowerCase();
+            args = parts.slice(1);
+        } else {
+            targetCmdName = rawInput.replace(/^!/, '').toLowerCase();
+            if (param) {
+                args = String(param).trim().split(/\s+/);
+            }
+        }
+
+        // Normalize command aliases (e.g., adminmenu -> admin-menu)
+        if (targetCmdName === 'adminmenu') targetCmdName = 'admin-menu';
+        if (targetCmdName === 'kost_lengkap') {
+            targetCmdName = 'kost';
+            args = ['lengkap', ...(args.length ? args : ['1'])];
+        } else if (targetCmdName === 'kost_pending') {
+            targetCmdName = 'kost';
+            args = ['pending', ...args];
+        } else if (targetCmdName === 'kost_published') {
+            targetCmdName = 'kost';
+            args = ['published', ...args];
+        } else if (targetCmdName === 'kost_all') {
+            targetCmdName = 'kost';
+            args = ['all', ...args];
+        }
+
+        const capturedReplies = [];
+        const cleanSender = String(sender).replace(/\D/g, '') || '628123456789';
+        const simulatedFrom = isGroup ? '120363048921820938@g.us' : `${cleanSender}@s.whatsapp.net`;
+        const activeSock = getBotSocket();
+
+        // Virtual Socket for capturing real output
+        const virtualSock = {
+            user: activeSock?.user || { id: '6285195532009:1@s.whatsapp.net', name: 'RapBot Assistant' },
+            sendMessage: async (jid, content, options) => {
+                if (typeof content === 'string') {
+                    capturedReplies.push(content);
+                } else if (content?.text) {
+                    capturedReplies.push(content.text);
+                } else if (content?.caption) {
+                    capturedReplies.push(content.caption);
+                } else if (content?.image) {
+                    capturedReplies.push(`🎨 [Media Gambar/Stiker Terlampir]`);
+                } else {
+                    capturedReplies.push(JSON.stringify(content, null, 2));
+                }
+                return { key: { id: `SIM_${Date.now()}`, remoteJid: jid, fromMe: true } };
+            },
+            groupMetadata: async (jid) => {
+                return {
+                    id: jid,
+                    subject: 'Komunitas Kos Bukittinggi (Simulasi Realtime)',
+                    owner: '6285195532009@s.whatsapp.net',
+                    participants: [
+                        { id: '6285195532009@s.whatsapp.net', admin: 'superadmin' },
+                        { id: `${cleanSender}@s.whatsapp.net`, admin: role === 'admin' ? 'admin' : null },
+                        { id: '6281234567890@s.whatsapp.net', admin: 'admin' },
+                        { id: '6285277889900@s.whatsapp.net', admin: null }
+                    ]
+                };
+            }
+        };
+
+        const virtualMsg = {
+            key: {
+                remoteJid: simulatedFrom,
+                fromMe: false,
+                id: `SIM_MSG_${Date.now()}`,
+                participant: isGroup ? `${cleanSender}@s.whatsapp.net` : undefined
+            },
+            message: {
+                conversation: `!${targetCmdName} ${args.join(' ')}`.trim()
+            },
+            messageTimestamp: Math.floor(Date.now() / 1000)
+        };
+
+        const ctx = {
+            sock: virtualSock,
+            msg: virtualMsg,
+            from: simulatedFrom,
+            senderNumber: cleanSender,
+            args,
+            command: targetCmdName,
+            body: `!${targetCmdName} ${args.join(' ')}`.trim(),
+            isGroup,
+            reply: async (text) => {
+                capturedReplies.push(typeof text === 'string' ? text : (text?.text || JSON.stringify(text)));
+            },
+            send: async (content) => {
+                capturedReplies.push(typeof content === 'string' ? content : (content?.text || content?.caption || '🎨 [Media Terlampir]'));
+            },
+            commands: registry,
+            services: {
+                database,
+                serverStats: require('../services/serverStats')
+            },
+            utils: {
+                json: require('../utils/json'),
+                phone: require('../utils/phone'),
+                jid: require('../utils/jid'),
+                group: require('../utils/group')
+            }
+        };
+
+        // 1. Check Command Registry
+        const cmdObj = registry.get(targetCmdName);
+        if (cmdObj) {
+            await cmdObj.execute(ctx);
+        } else {
+            // 2. Check Real Autoreply from Database
+            const fullBody = `!${targetCmdName} ${args.join(' ')}`.trim();
+            const matchedAr = database.findAutoreply(fullBody, simulatedFrom) || database.findAutoreply(targetCmdName, simulatedFrom);
+            if (matchedAr) {
+                capturedReplies.push(matchedAr.response || matchedAr.reply || 'Pesan otomatis berhasil dipicu.');
+            } else {
+                capturedReplies.push(`❓ Perintah *!${targetCmdName}* tidak ditemukan di sistem.`);
+            }
+        }
+
+        const finalOutput = capturedReplies.filter(Boolean).join('\n\n────────────────────\n\n') || '✅ Perintah berhasil diproses tanpa output balasan teks.';
+
+        res.json({
+            success: true,
+            realtime: true,
+            command: targetCmdName,
+            args,
+            fullUserMsg: `!${targetCmdName} ${args.join(' ')}`.trim(),
+            reply: finalOutput
+        });
+    } catch (err) {
+        console.error('[Simulator] Realtime error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 app.get('/test', (req, res) => {
     res.send('OK');
 });
