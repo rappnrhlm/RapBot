@@ -1755,13 +1755,30 @@ app.post('/api/bot/simulate', async (req, res) => {
         if (cmdObj) {
             await cmdObj.execute(ctx);
         } else {
-            // 2. Check Real Autoreply from Database
-            const fullBody = `!${targetCmdName} ${args.join(' ')}`.trim();
-            const matchedAr = database.findAutoreply(fullBody, simulatedFrom) || database.findAutoreply(targetCmdName, simulatedFrom);
+            // 2. Check Real Autoreply from Database (support custom free input phrase matching)
+            const checkQuery = rawInput === 'custom' ? (param || '').trim() : `!${targetCmdName} ${args.join(' ')}`.trim();
+            const matchedAr = database.findAutoreply(checkQuery, simulatedFrom) || database.findAutoreply(targetCmdName, simulatedFrom);
             if (matchedAr) {
-                capturedReplies.push(matchedAr.response || matchedAr.reply || 'Pesan otomatis berhasil dipicu.');
+                let responseText = matchedAr.response || matchedAr.reply || 'Pesan otomatis berhasil dipicu.';
+                const now = new Date();
+                const timeWib = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB';
+                const dateWib = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full' });
+                responseText = responseText
+                    .replace(/\{jid\}/gi, simulatedFrom)
+                    .replace(/\{groupJid\}/gi, simulatedFrom)
+                    .replace(/\{groupId\}/gi, simulatedFrom)
+                    .replace(/\{userId\}/gi, cleanSender)
+                    .replace(/\{userJid\}/gi, `${cleanSender}@s.whatsapp.net`)
+                    .replace(/\{sender\}/gi, cleanSender)
+                    .replace(/\{senderNumber\}/gi, cleanSender)
+                    .replace(/\{groupName\}/gi, 'Komunitas Kos Bukittinggi')
+                    .replace(/\{group\}/gi, 'Komunitas Kos Bukittinggi')
+                    .replace(/\{time\}/gi, timeWib)
+                    .replace(/\{date\}/gi, dateWib)
+                    .replace(/\{prefix\}/gi, '!');
+                capturedReplies.push(responseText);
             } else {
-                capturedReplies.push(`❓ Perintah *!${targetCmdName}* tidak ditemukan di sistem.`);
+                capturedReplies.push(`❓ Perintah *!${targetCmdName}* tidak ditemukan di sistem.\n\nKetik *!help* atau *!menu* untuk melihat daftar perintah yang tersedia.`);
             }
         }
 

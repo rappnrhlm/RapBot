@@ -1052,6 +1052,7 @@
                                                 <option value="kost_published">!kost published (Kos Tayang Publik)</option>
                                                 <option value="kost_all">!kost all (Statistik Database Kos)</option>
                                                 <option value="post">!post &lt;ID&gt; (Tayangkan ke Publik)</option>
+                                                <option value="sent">!sent &lt;ID&gt; (Tandai Kos Terkirim DM)</option>
                                                 <option value="usulkost">!usulkost &lt;Nama&gt; &gt; &lt;Kontak&gt; (Kirim Usulan Kos Warga)</option>
                                                 <option value="editusul">!editusul &lt;No&gt; | nama: &lt;baru&gt; (Edit Data Usulan Masuk)</option>
                                                 <option value="acc">!acc &lt;No Usulan&gt; (Setujui Usulan Warga Masuk ke Database)</option>
@@ -3296,7 +3297,7 @@
                 post: { label: 'ID Kost yang Akan Ditayangkan', val: '1', role: 'admin' },
                 sent: { label: 'ID Kost yang Sudah Terkirim DM', val: '1', role: 'admin' },
                 usulkost: { label: 'Format: <Nama Kos> > <Kontak>', val: 'Kost Bougenville > wa: 082198765432 | ig: bougenville', role: 'public' },
-                editusul: { label: 'Format: <No Usulan> | nama: <baru> | kontak: <baru>', val: '1 | nama: Kost Melati Asri > wa: 08123456789', role: 'admin' },
+                editusul: { label: 'Format: <No Usulan> <Nama Baru> > <Kontak Baru>', val: '1 Kost Melati Asri > wa: 08123456789 | ig: @kostmelati', role: 'admin' },
                 acc: { label: 'No ID Usulan Masuk (Contoh: 1)', val: '1', role: 'admin' },
                 tolak: { label: 'No ID Usulan yang Ditolak (Contoh: 1)', val: '1', role: 'admin' },
                 tolakusul: { label: 'No ID Usulan yang Ditolak (Contoh: 1)', val: '1', role: 'admin' },
