@@ -1229,25 +1229,58 @@
         return `Halo Kak, salam kenal dari tim @bukittinggikos 👋\n\nKami lihat ${name} lokasinya strategis dan tempatnya nyaman banget. Kebetulan kami baru buat platform informasi kos & kontrakan khusus wilayah Bukittinggi.\n\nKarena baru launching, kami mau menawarkan promosi gratis untuk ${name} supaya bisa makin dikenal pencari kos di Bukittinggi.\n\nKalau Kakak berminat, cukup kirimkan foto unit dan detail harganya ya, nanti bantu kami buatkan postingannya.\n\nTerima kasih banyak Kak, semoga sehat selalu!`;
     }
 
-    async function copyDmTemplate(name) {
-        const text = getDmText(name);
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
+    async function copyToClipboard(text, successMsg = 'Berhasil disalin ke clipboard!') {
+        if (text === undefined || text === null) return false;
+        text = String(text);
+        let copied = false;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
                 await navigator.clipboard.writeText(text);
-            } else {
+                copied = true;
+            } catch (e) {
+                console.warn('Clipboard API error, trying fallback:', e);
+            }
+        }
+
+        if (!copied) {
+            try {
                 const ta = document.createElement('textarea');
                 ta.value = text;
                 ta.style.position = 'fixed';
+                ta.style.top = '-9999px';
+                ta.style.left = '-9999px';
                 ta.style.opacity = '0';
+                ta.setAttribute('readonly', '');
                 document.body.appendChild(ta);
+                ta.focus();
                 ta.select();
-                document.execCommand('copy');
+                ta.setSelectionRange(0, 99999);
+                copied = document.execCommand('copy');
                 document.body.removeChild(ta);
+            } catch (err) {
+                console.error('execCommand copy fallback error:', err);
             }
-            showToast(`📋 Teks DM untuk "${name}" tersalin ke clipboard!`, 'success');
-        } catch (err) {
-            showToast(`❌ Gagal menyalin: ${err.message}`, 'error');
         }
+
+        if (copied) {
+            showToast(successMsg, 'success');
+            return true;
+        } else {
+            window.prompt('Salin teks secara manual (Ctrl+C / Cmd+C):', text);
+            return false;
+        }
+    }
+
+    async function copyDmTemplate(name) {
+        const text = getDmText(name);
+        await copyToClipboard(text, `📋 Teks DM untuk "${name}" tersalin ke clipboard!`);
+    }
+
+    function copyDmTemplateById(id) {
+        const k = state.items.find(item => item.id === id);
+        const name = k ? k.name : (id || 'Kost');
+        copyDmTemplate(name);
     }
 
     // Load registered groups for dropdown
@@ -1382,7 +1415,7 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <button class="action-button dm-copy-btn" onclick="copyDmTemplate('${escapeHtml(k.name).replace(/'/g, "\\'")}')" title="Salin template DM promosi untuk Instagram">📋 Salin DM</button>
+                    <button class="action-button dm-copy-btn" onclick="copyDmTemplateById('${k.id}')" title="Salin template DM promosi untuk Instagram">📋 Salin DM</button>
                     <button class="action-button publish-action" onclick="togglePublish('${k.id}', ${isPublished})" title="${isPublished ? 'Tarik dari publik (Kembalikan ke Sent)' : 'Tayangkan resmi ke pencarian publik (!cari)'}">
                         ${isPublished ? '↩️ Unpost' : '🟢 Publish'}
                     </button>

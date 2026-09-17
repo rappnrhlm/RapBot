@@ -1436,8 +1436,8 @@
                                         <span class="text-[10px] text-slate-400">Mendapatkan seluruh daftar kos</span>
                                     </div>
                                     <div class="bg-slate-900 text-slate-200 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto flex items-center justify-between">
-                                        <code>curl -X GET http://localhost:3001/api/kost</code>
-                                        <button onclick="copyApiSnippet('curl -X GET http://localhost:3001/api/kost')" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                        <code id="apiSnippet1">curl -X GET http://localhost:3001/api/kost</code>
+                                        <button onclick="copySnippetById('apiSnippet1')" title="Salin curl" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                                     </div>
                                 </div>
 
@@ -1451,8 +1451,8 @@
                                         <span class="text-[10px] text-slate-400">Tambah data kos baru</span>
                                     </div>
                                     <div class="bg-slate-900 text-slate-200 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto flex items-center justify-between">
-                                        <code>curl -X POST http://localhost:3001/api/kost -H "Content-Type: application/json" -d '{"name":"Kost Baru","whatsapp":"08123456789","instagram":"kostbaru","pin":"YOUR_PIN"}'</code>
-                                        <button onclick="copyApiSnippet('curl -X POST http://localhost:3001/api/kost -H \"Content-Type: application/json\" -d \'{\"name\":\"Kost Baru\",\"whatsapp\":\"08123456789\",\"instagram\":\"kostbaru\",\"pin\":\"YOUR_PIN\"}\'')" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                        <code id="apiSnippet2">curl -X POST http://localhost:3001/api/kost -H "Content-Type: application/json" -d '{"name":"Kost Baru","whatsapp":"08123456789","instagram":"kostbaru","pin":"YOUR_PIN"}'</code>
+                                        <button onclick="copySnippetById('apiSnippet2')" title="Salin curl" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                                     </div>
                                 </div>
 
@@ -1466,8 +1466,8 @@
                                         <span class="text-[10px] text-slate-400">Tayangkan kos ke pencarian publik</span>
                                     </div>
                                     <div class="bg-slate-900 text-slate-200 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto flex items-center justify-between">
-                                        <code>curl -X POST http://localhost:3001/api/kost/KST-000001/publish -H "Content-Type: application/json" -d '{"pin":"YOUR_PIN"}'</code>
-                                        <button onclick="copyApiSnippet('curl -X POST http://localhost:3001/api/kost/KST-000001/publish -H \"Content-Type: application/json\" -d \'{\"pin\":\"YOUR_PIN\"}\'')" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                        <code id="apiSnippet3">curl -X POST http://localhost:3001/api/kost/KST-000001/publish -H "Content-Type: application/json" -d '{"pin":"YOUR_PIN"}'</code>
+                                        <button onclick="copySnippetById('apiSnippet3')" title="Salin curl" class="text-slate-400 hover:text-white px-2 py-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -2312,6 +2312,59 @@
         }
 
         // -----------------------------------------------------------------
+        // 2B. UNIVERSAL CLIPBOARD UTILITY (SUPPORTS HTTPS, HTTP, & FALLBACK)
+        // -----------------------------------------------------------------
+        async function copyToClipboard(text, successMsg = 'Berhasil disalin ke clipboard!') {
+            if (text === undefined || text === null) return false;
+            text = String(text);
+            let copied = false;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    copied = true;
+                } catch (e) {
+                    console.warn('navigator.clipboard.writeText gagal, beralih ke fallback execCommand:', e);
+                }
+            }
+
+            if (!copied) {
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.top = '-9999px';
+                    textArea.style.left = '-9999px';
+                    textArea.style.opacity = '0';
+                    textArea.setAttribute('readonly', '');
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    textArea.setSelectionRange(0, 99999);
+                    copied = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                } catch (err) {
+                    console.error('execCommand copy fallback gagal:', err);
+                }
+            }
+
+            if (copied) {
+                showToast(successMsg, 'success');
+                return true;
+            } else {
+                window.prompt('Salin teks secara manual (Ctrl+C / Cmd+C):', text);
+                return false;
+            }
+        }
+
+        function copySnippetById(elementId) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                copyToClipboard(el.textContent.trim(), 'Contoh curl berhasil disalin!');
+            }
+        }
+
+        // -----------------------------------------------------------------
         // 3. TAB & SUB-TAB SWITCHING (8 CATEGORIES)
         // -----------------------------------------------------------------
         const ALL_TABS = ['dashboard', 'device', 'send', 'autoreply', 'extension', 'api', 'statistik', 'settings'];
@@ -3095,11 +3148,11 @@
                         </div>
 
                         <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                            <button onclick="prepareSimulatorWith('${escapeHtml(cmd.name)}', '${escapeHtml(cmd.example).replace(/'/g, "\\'")}')" class="text-[11px] text-purple-600 dark:text-purple-400 font-semibold hover:underline flex items-center gap-1">
+                            <button onclick="prepareSimulatorWith('${escapeHtml(cmd.name)}')" class="text-[11px] text-purple-600 dark:text-purple-400 font-semibold hover:underline flex items-center gap-1">
                                 <i data-lucide="play" class="w-3 h-3"></i>
                                 Coba Simulasi
                             </button>
-                            <button onclick="copyCommandSyntax('${escapeHtml(cmd.example).replace(/'/g, "\\'")}')" title="Salin contoh perintah" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs flex items-center gap-1 transition">
+                            <button onclick="copyCommandSyntaxByName('${escapeHtml(cmd.name)}')" title="Salin contoh perintah" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs flex items-center gap-1 transition">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                 <span class="text-[10px] font-medium">Salin</span>
                             </button>
@@ -3110,14 +3163,17 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        function copyCommandSyntax(syntax) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(syntax).then(() => {
-                    showToast(`📋 Perintah "${syntax}" berhasil disalin!`, 'success');
-                });
-            } else {
-                showToast(`📋 Format: ${syntax}`, 'info');
+        function copyCommandSyntaxByName(cmdName) {
+            const cmd = EXTENSION_COMMANDS.find(c => c.name === cmdName);
+            if (cmd && cmd.example) {
+                copyCommandSyntax(cmd.example);
+            } else if (cmdName) {
+                copyCommandSyntax('!' + cmdName);
             }
+        }
+
+        function copyCommandSyntax(syntax) {
+            copyToClipboard(syntax, `📋 Perintah "${syntax}" berhasil disalin!`);
         }
 
         function scrollToSimulator() {
@@ -3275,11 +3331,9 @@
         function copySimulatorOutput() {
             const text = document.getElementById('simBotMessageText')?.textContent;
             if (text) {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => showToast('Balasan bot berhasil disalin!', 'success'));
-                } else {
-                    showToast('Balasan bot siap digunakan.', 'info');
-                }
+                copyToClipboard(text, '📋 Balasan bot berhasil disalin!');
+            } else {
+                showToast('Tidak ada teks balasan simulasi.', 'warning');
             }
         }
 
@@ -3340,11 +3394,9 @@
         function copyCurrentTemplate() {
             const text = document.getElementById('templateLiveBubble')?.textContent;
             if (text) {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => showToast('📋 Teks template pesan berhasil disalin!', 'success'));
-                } else {
-                    showToast('Teks template siap digunakan.', 'info');
-                }
+                copyToClipboard(text, '📋 Teks template pesan berhasil disalin!');
+            } else {
+                showToast('Tidak ada teks template pesan.', 'warning');
             }
         }
 
@@ -3672,11 +3724,7 @@
         }
 
         function copyApiSnippet(snippet) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(snippet).then(() => showToast('Contoh curl berhasil disalin!', 'success'));
-            } else {
-                showToast(snippet, 'info');
-            }
+            copyToClipboard(snippet, 'Contoh curl berhasil disalin!');
         }
 
         function switchSysSubTab(sub) {
@@ -4127,7 +4175,12 @@
                                     </div>
                                     <div class="min-w-0">
                                         <h6 class="font-bold text-xs text-slate-900 dark:text-white truncate">${escapeHtml(g.name || 'Grup Tanpa Nama')}</h6>
-                                        <p class="font-mono text-[10px] text-slate-400 truncate">${escapeHtml(g.id)}</p>
+                                        <p class="font-mono text-[10px] text-slate-400 truncate flex items-center gap-1">
+                                            <span>${escapeHtml(g.id)}</span>
+                                            <button onclick="copyToClipboard('${escapeHtml(g.id)}', 'JID Grup berhasil disalin!')" title="Salin JID Grup" class="p-0.5 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </td>
@@ -4185,7 +4238,12 @@
                                     <h6 class="font-bold text-xs text-slate-900 dark:text-white truncate">${escapeHtml(g.name || 'Grup Tanpa Nama')}</h6>
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isUndef ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}">${isUndef ? 'UNDEFINED' : (g.role || 'GRUP').toUpperCase()}</span>
                                 </div>
-                                <p class="font-mono text-[10px] text-slate-400 truncate">${escapeHtml(g.id)}</p>
+                                <p class="font-mono text-[10px] text-slate-400 truncate flex items-center gap-1">
+                                    <span>${escapeHtml(g.id)}</span>
+                                    <button onclick="copyToClipboard('${escapeHtml(g.id)}', 'JID Grup berhasil disalin!')" title="Salin JID Grup" class="p-0.5 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                        <i data-lucide="copy" class="w-3 h-3"></i>
+                                    </button>
+                                </p>
                             </div>
                             <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
                                 <span class="text-[11px] text-slate-500">${g.participantsCount || '-'} member</span>
@@ -4629,7 +4687,7 @@
                             <td class="py-3 px-4">${statusDropdownHtml}</td>
                             <td class="py-3 px-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <button onclick="copyKostDmText('${escapeHtml(k.name).replace(/'/g, "\\'")}')" title="Salin template balon pesan DM promosi" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 transition">
+                                    <button onclick="copyKostDmById('${escapeHtml(k.id)}')" title="Salin template balon pesan DM promosi" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 transition">
                                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                     </button>
                                     <button onclick="toggleKostPublish('${escapeHtml(k.id)}', ${isPublished})" title="${isPublished ? 'Tarik dari publik (Kembalikan ke status DM)' : 'Tayangkan Resmi ke Publik (!cari publik)'}" class="p-1.5 rounded-lg border ${isPublished ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:border-emerald-700' : 'border-slate-200 text-slate-500 hover:text-emerald-600'} hover:bg-emerald-100/50 transition">
@@ -4701,7 +4759,7 @@
                             <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
                                 <span class="font-mono text-[11px] text-slate-400">${escapeHtml(k.contact?.whatsapp || k.whatsapp || k.instagram || '-')}</span>
                                 <div class="flex items-center gap-1.5">
-                                    <button onclick="copyKostDmText('${escapeHtml(k.name).replace(/'/g, "\\'")}')" title="Salin Template DM" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-indigo-600"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                    <button onclick="copyKostDmById('${escapeHtml(k.id)}')" title="Salin Template DM" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-indigo-600"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                                     <button onclick="toggleKostPublish('${escapeHtml(k.id)}', ${isPublished})" title="${isPublished ? 'Tarik dari Publik' : 'Tayangkan ke Publik'}" class="p-1.5 rounded-lg border ${isPublished ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-slate-200 text-slate-500'}"><i data-lucide="${isPublished ? 'globe' : 'send'}" class="w-3.5 h-3.5"></i></button>
                                     <button onclick="editKostModal('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
                                     <button onclick="deleteKostPrompt('${escapeHtml(k.id)}')" class="p-1.5 rounded-lg border border-rose-200 text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -4716,17 +4774,15 @@
             if (window.lucide) lucide.createIcons();
         }
 
+        function copyKostDmById(id) {
+            const k = rawKostData.find(item => item.id === id);
+            const name = k ? k.name : (id || 'Kost');
+            copyKostDmText(name);
+        }
+
         function copyKostDmText(name) {
             const text = `Halo Kak, salam kenal dari tim @bukittinggikos 👋\n\nKami lihat ${name} lokasinya strategis dan tempatnya nyaman banget. Kebetulan kami baru buat platform informasi kos & kontrakan khusus wilayah Bukittinggi.\n\nKarena baru launching, kami mau menawarkan promosi gratis untuk ${name} supaya bisa makin dikenal pencari kos di Bukittinggi.\n\nKalau Kakak berminat, cukup kirimkan foto unit dan detail harganya ya, nanti bantu kami buatkan postingannya.\n\nTerima kasih banyak Kak, semoga sehat selalu!`;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast(`📋 Teks DM promosi untuk "${name}" berhasil disalin!`, 'success');
-                }).catch(() => {
-                    showToast('Gagal menyalin otomatis.', 'warning');
-                });
-            } else {
-                showToast(`📋 Teks promosi siap untuk "${name}"!`, 'info');
-            }
+            copyToClipboard(text, `📋 Teks DM promosi untuk "${name}" berhasil disalin!`);
         }
 
         async function changeKostStatus(id, newStatus) {
@@ -5505,7 +5561,14 @@
                 return `
                     <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
                         <td class="py-3 px-4 font-bold text-xs text-slate-900 dark:text-white">${escapeHtml(o.name || 'Owner')}</td>
-                        <td class="py-3 px-4 font-mono text-xs text-slate-600 dark:text-slate-400">${escapeHtml(o.number)}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-slate-600 dark:text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span>${escapeHtml(o.number)}</span>
+                                <button onclick="copyToClipboard('${escapeHtml(o.number)}', 'Nomor WhatsApp owner disalin!')" title="Salin Nomor WhatsApp" class="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="py-3 px-4">
                             ${isSuper ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">SUPER OWNER</span>` : `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">ADMIN BOT</span>`}
                         </td>
@@ -5707,7 +5770,14 @@
             if (featuresViewMode === 'table') {
                 let rowsHtml = filtered.map(f => `
                     <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                        <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">!${escapeHtml(f.name)}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                            <div class="flex items-center gap-1.5">
+                                <span>!${escapeHtml(f.name)}</span>
+                                <button onclick="copyToClipboard('!${escapeHtml(f.name)}', 'Perintah !${escapeHtml(f.name)} disalin!')" title="Salin Perintah" class="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="py-3 px-4">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase">${escapeHtml(f.category || 'GENERAL')}</span>
                         </td>
@@ -5742,7 +5812,12 @@
                 let cardsHtml = filtered.map(f => `
                     <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2">
                         <div class="flex items-center justify-between">
-                            <h6 class="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">!${escapeHtml(f.name)}</h6>
+                            <div class="flex items-center gap-1.5">
+                                <h6 class="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">!${escapeHtml(f.name)}</h6>
+                                <button onclick="copyToClipboard('!${escapeHtml(f.name)}', 'Perintah !${escapeHtml(f.name)} disalin!')" title="Salin Perintah" class="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                </button>
+                            </div>
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.permission === 'owner' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}">${(f.permission || 'PUBLIK').toUpperCase()}</span>
                         </div>
                         <p class="text-[11px] text-slate-600 dark:text-slate-300">${escapeHtml(f.description || '-')}</p>
@@ -5772,7 +5847,14 @@
 
             let rowsHtml = filtered.map(f => `
                 <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                    <td class="py-2.5 px-3 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">!${escapeHtml(f.name)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                        <div class="flex items-center gap-1.5">
+                            <span>!${escapeHtml(f.name)}</span>
+                            <button onclick="copyToClipboard('!${escapeHtml(f.name)}', 'Perintah !${escapeHtml(f.name)} disalin!')" title="Salin Perintah" class="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </td>
                     <td class="py-2.5 px-3">
                         <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase">${escapeHtml(f.category || 'UMUM')}</span>
                     </td>
@@ -6218,7 +6300,14 @@
                 return `
                     <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
                         <td class="py-2.5 px-3 whitespace-nowrap">${methodBadge}</td>
-                        <td class="py-2.5 px-3 font-mono font-bold text-xs text-slate-800 dark:text-slate-200">${escapeHtml(api.path)}</td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <div class="flex items-center gap-1.5">
+                                <span>${escapeHtml(api.path)}</span>
+                                <button onclick="copyToClipboard('${escapeHtml(api.path)}', 'Path endpoint disalin!')" title="Salin Path Endpoint" class="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="py-2.5 px-3">${authBadge}</td>
                         <td class="py-2.5 px-3 text-xs text-slate-500 dark:text-slate-400">${escapeHtml(api.desc)}</td>
                     </tr>
@@ -6240,6 +6329,7 @@
                     </tbody>
                 </table>
             `;
+            if (window.lucide) lucide.createIcons();
         }
 
         // -----------------------------------------------------------------
