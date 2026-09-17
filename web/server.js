@@ -1719,13 +1719,23 @@ app.post('/api/bot/simulate', async (req, res) => {
             messageTimestamp: Math.floor(Date.now() / 1000)
         };
 
-        // Sandbox database proxy: Read-only for existing data, no-op/mock for mutations (tidak merubah cache / file / database)
+        // Sandbox database proxy: Read-only for existing data, 100% mock for all mutation methods (tidak merubah cache / file / database MariaDB)
         const sandboxedDatabase = new Proxy(database, {
             get(target, prop, receiver) {
-                // Intercept mutation / logging / stat increment methods
-                if (prop === 'incrementCommandStats' || prop === 'incrementMessageStats' || prop === 'logCommand') {
-                    return () => {}; // No-op
+                // Intercept stat increment & logging methods (no-op)
+                if (
+                    prop === 'incrementCommandStats' ||
+                    prop === 'incrementMessageStats' ||
+                    prop === 'incrementStickerStats' ||
+                    prop === 'incrementBratStats' ||
+                    prop === 'logCommand' ||
+                    prop === 'syncKostBackup' ||
+                    prop === 'flushStatsToDb'
+                ) {
+                    return () => {};
                 }
+
+                // Kost Mutations
                 if (prop === 'addKost') {
                     return async (kostData) => ({
                         success: true,
@@ -1739,34 +1749,124 @@ app.post('/api/bot/simulate', async (req, res) => {
                     });
                 }
                 if (prop === 'deleteKost') {
-                    return async (targetId) => ({
-                        success: true,
-                        data: {
-                            id: targetId.startsWith('KST-') ? targetId : `KST-${String(targetId).padStart(6, '0')}`,
-                            name: 'Kost Contoh (Simulasi Sandbox)'
-                        }
-                    });
+                    return async (targetId) => {
+                        const cleanId = database.normalizeKostId(targetId) || targetId;
+                        const current = await database.getKostById(cleanId).catch(() => null);
+                        return {
+                            success: true,
+                            data: {
+                                id: cleanId,
+                                name: current?.name || 'Kost Contoh (Simulasi Sandbox)'
+                            }
+                        };
+                    };
                 }
                 if (prop === 'updateKost') {
-                    return async (targetId, updateData) => ({
-                        success: true,
-                        data: {
-                            id: targetId.startsWith('KST-') ? targetId : `KST-${String(targetId).padStart(6, '0')}`,
-                            name: updateData.name || 'Kost Contoh (Simulasi)',
-                            instagram: updateData.instagram || 'kostcontoh',
-                            whatsapp: updateData.whatsapp || '628123456789',
-                            tiktok: updateData.tiktok || null,
-                            status: 'pending'
-                        }
-                    });
+                    return async (targetId, updateData) => {
+                        const cleanId = database.normalizeKostId(targetId) || targetId;
+                        const current = await database.getKostById(cleanId).catch(() => null);
+                        return {
+                            success: true,
+                            data: {
+                                id: cleanId,
+                                name: updateData.name || current?.name || 'Kost Contoh (Simulasi)',
+                                instagram: updateData.instagram !== undefined ? updateData.instagram : (current?.instagram || null),
+                                whatsapp: updateData.whatsapp !== undefined ? updateData.whatsapp : (current?.whatsapp || null),
+                                tiktok: updateData.tiktok !== undefined ? updateData.tiktok : (current?.tiktok || null),
+                                status: updateData.status || current?.status || 'pending'
+                            }
+                        };
+                    };
                 }
-                if (prop === 'updateKostStatus') {
-                    return async (targetId, newStatus) => ({
+                if (prop === 'updateKostStatus' || prop === 'setKostStatus') {
+                    return async (targetId, targetStatus, updatedBy = '', targetGroup = null) => {
+                        const cleanId = database.normalizeKostId(targetId) || targetId;
+                        const current = await database.getKostById(cleanId).catch(() => null);
+                        return {
+                            success: true,
+                            message: `Status kost ${cleanId} berhasil diubah menjadi ${String(targetStatus).toUpperCase()} (Simulasi Sandbox).`,
+                            data: {
+                                id: cleanId,
+                                name: current?.name || 'Kost Contoh (Simulasi Sandbox)',
+                                status: targetStatus,
+                                sentAt: targetStatus === 'pending' ? null : new Date().toISOString(),
+                                sentBy: targetStatus === 'pending' ? null : (updatedBy || cleanSender || 'admin')
+                            }
+                        };
+                    };
+                }
+                if (prop === 'markKostSent') {
+                    return async (arg1, arg2 = '', arg3 = null) => {
+                        let targetId = (typeof arg1 === 'string' && arg1.endsWith('@g.us')) ? arg2 : arg1;
+                        let targetSentBy = (typeof arg2 === 'string' && !arg2.endsWith('@g.us')) ? arg2 : (arg3 || cleanSender || 'admin');
+                        const cleanId = database.normalizeKostId(targetId) || targetId;
+                        const current = await database.getKostById(cleanId).catch(() => null);
+                        return {
+                            success: true,
+                            data: {
+                                id: cleanId,
+                                name: current?.name || 'Kost Contoh (Simulasi Sandbox)',
+                                status: 'sent',
+                                sentAt: new Date().toISOString(),
+                                sentBy: targetSentBy || 'admin'
+                            }
+                        };
+                    };
+                }
+                if (prop === 'markKostPublished') {
+                    return async (arg1, arg2 = '', arg3 = null) => {
+                        let targetId = (typeof arg1 === 'string' && arg1.endsWith('@g.us')) ? arg2 : arg1;
+                        let targetPublishedBy = (typeof arg2 === 'string' && !arg2.endsWith('@g.us')) ? arg2 : (arg3 || cleanSender || 'admin');
+                        const cleanId = database.normalizeKostId(targetId) || targetId;
+                        const current = await database.getKostById(cleanId).catch(() => null);
+                        return {
+                            success: true,
+                            data: {
+                                id: cleanId,
+                                name: current?.name || 'Kost Contoh (Simulasi Sandbox)',
+                                status: 'published',
+                                sentAt: new Date().toISOString(),
+                                sentBy: targetPublishedBy || 'admin'
+                            }
+                        };
+                    };
+                }
+                if (prop === 'markKostBatchSent') {
+                    return async (ids, groupId, senderNumber = '') => {
+                        const cleanIds = Array.isArray(ids) ? ids.map(id => database.normalizeKostId(id) || id) : [];
+                        return {
+                            success: true,
+                            updated: cleanIds.map(id => ({ id, name: 'Kost ' + id, status: 'sent' })),
+                            alreadySent: [],
+                            notFound: [],
+                            total: cleanIds.length
+                        };
+                    };
+                }
+                if (prop === 'setKostBatchStatus') {
+                    return async (ids, targetStatus, updatedBy = '', groupId = null) => {
+                        const cleanIds = Array.isArray(ids) ? ids.map(id => database.normalizeKostId(id) || id) : [];
+                        return {
+                            success: true,
+                            updated: cleanIds.map(id => ({ id, name: 'Kost ' + id, status: targetStatus })),
+                            alreadyInStatus: [],
+                            notFound: [],
+                            total: cleanIds.length
+                        };
+                    };
+                }
+
+                // Submissions Mutations
+                if (prop === 'addKostSubmission') {
+                    return async (subData) => ({
                         success: true,
-                        data: {
-                            id: targetId.startsWith('KST-') ? targetId : `KST-${String(targetId).padStart(6, '0')}`,
-                            name: 'Kost Contoh (Simulasi)',
-                            status: newStatus
+                        submission: {
+                            id: Math.floor(Math.random() * 900) + 1,
+                            name: subData.name,
+                            contactsRaw: subData.contactsRaw,
+                            submittedBy: subData.submittedBy || cleanSender,
+                            status: 'pending',
+                            submittedAt: new Date().toISOString()
                         }
                     });
                 }
@@ -1784,7 +1884,7 @@ app.post('/api/bot/simulate', async (req, res) => {
                             id: targetId,
                             name: subData.name || 'Kost Contoh (Simulasi)',
                             contactsRaw: subData.contactsRaw || 'wa: 08123456789',
-                            status: 'pending'
+                            status: subData.status || 'pending'
                         }
                     });
                 }
@@ -1804,11 +1904,96 @@ app.post('/api/bot/simulate', async (req, res) => {
                         message: `Usulan #${targetId} berhasil dihapus (Simulasi Sandbox).`
                     });
                 }
+
+                // Autoreply Mutations
+                if (prop === 'addAutoreply') {
+                    return async (trigger, response, createdBy) => ({
+                        success: true,
+                        item: { trigger, response, createdBy: createdBy || 'owner' }
+                    });
+                }
+                if (prop === 'editAutoreply') {
+                    return async (trigger, response) => ({
+                        success: true,
+                        item: { trigger, response }
+                    });
+                }
+                if (prop === 'deleteAutoreply') {
+                    return async (trigger) => ({
+                        success: true,
+                        message: `Autoreply "${trigger}" berhasil dihapus (Simulasi Sandbox).`
+                    });
+                }
+                if (prop === 'saveAutoreplies') {
+                    return async () => true;
+                }
+
+                // Group Mutations
+                if (prop === 'addGroup') {
+                    return async (groupData) => ({
+                        success: true,
+                        group: {
+                            id: groupData.id,
+                            name: groupData.name,
+                            role: groupData.role || 'admin',
+                            type: groupData.type || 'kos'
+                        }
+                    });
+                }
+                if (prop === 'updateGroup') {
+                    return async (id, updates) => ({
+                        success: true,
+                        group: {
+                            id,
+                            name: updates.name || 'Grup',
+                            role: updates.role || 'admin',
+                            type: updates.type || 'kos',
+                            parentGroupId: updates.parentGroupId || null
+                        }
+                    });
+                }
+                if (prop === 'deleteGroup') {
+                    return async (id) => ({
+                        success: true,
+                        message: `Registrasi grup ${id} berhasil dihapus (Simulasi Sandbox).`
+                    });
+                }
+                if (prop === 'saveGroups') {
+                    return async () => true;
+                }
+
+                // Welcome Mutations
+                if (prop === 'saveWelcomeConfig') {
+                    return async (cfg) => ({
+                        enabled: cfg.enabled !== undefined ? cfg.enabled : true,
+                        text: cfg.text || '',
+                        isCustom: true
+                    });
+                }
+                if (prop === 'resetWelcomeConfig') {
+                    return async () => true;
+                }
+                if (prop === 'setGroupWelcome') {
+                    return async () => true;
+                }
+
+                // Owner Mutations
+                if (prop === 'addOwner') {
+                    return async (num, name) => ({ success: true, message: `Owner ${name} (${num}) berhasil ditambahkan (Simulasi Sandbox).` });
+                }
+                if (prop === 'updateOwner') {
+                    return async (oldNum, data) => ({ success: true, message: `Owner ${data.name || oldNum} berhasil diperbarui (Simulasi Sandbox).` });
+                }
+                if (prop === 'deleteOwner') {
+                    return async (num) => ({ success: true, message: `Owner ${num} berhasil dihapus (Simulasi Sandbox).` });
+                }
+                if (prop === 'saveOwners') {
+                    return async () => true;
+                }
+
+                // Broadcast & Sim Flags
                 if (prop === 'saveBroadcast' || prop === 'markBroadcastDeleted') {
                     return () => ({ id: `sim_bc_${Date.now()}` });
-                }
-                if (prop === 'addOwner' || prop === 'removeOwner' || prop === 'setGroupWelcome') {
-                    return async () => true;
                 }
                 if (prop === 'isGroupInitialized') {
                     return () => true; // Always true in simulation context so admin commands can run preview
