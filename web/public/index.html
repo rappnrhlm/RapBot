@@ -1035,137 +1035,89 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                                <!-- Simulator Controls (Left 5 Cols) -->
-                                 <div class="lg:col-span-5 space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pilih Perintah Uji Coba</label>
-                                        <select id="simCommandSelect" onchange="onSimCommandChange()" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none">
-                                            <optgroup label="📌 Modul Bukittinggi Kos">
-                                                <option value="cari">!cari &lt;kata kunci&gt; (Cari Kos Publik)</option>
-                                                <option value="addkost">!addkost &lt;Nama Kos&gt; &gt; &lt;Kontak&gt; (Tambah Kos - Admin)</option>
-                                                <option value="editkost">!editkost &lt;ID&gt; &lt;Nama Baru&gt; &gt; &lt;Kontak Baru&gt; (Edit Kos - Admin)</option>
-                                                <option value="delkost">!delkost &lt;ID&gt; (Hapus Kos - Admin)</option>
-                                                <option value="dm">!dm &lt;ID&gt; (Template DM Siap Kirim - Admin)</option>
-                                                <option value="kost_lengkap">!kost lengkap &lt;ID&gt; (Detail Lengkap Kos)</option>
-                                                <option value="kost_pending">!kost pending (Daftar Kos Belum Di-DM - Admin)</option>
-                                                <option value="kost_sent">!kost sent (Daftar Kos Sudah Di-DM - Admin)</option>
-                                                <option value="kost_published">!kost published (Daftar Kos Tayang Publik)</option>
-                                                <option value="kost_all">!kost all (Semua Daftar Kos - Admin)</option>
-                                                <option value="kost_dm">!kost dm (Format Ringkas Link DM - Admin)</option>
-                                                <option value="post">!post &lt;ID&gt; (Tayangkan Kos ke Publik - Admin)</option>
-                                                <option value="unpost">!unpost &lt;ID&gt; (Tarik Kos dari Publik - Admin)</option>
-                                                <option value="sent">!sent &lt;ID/range&gt; (Tandai Kos Terkirim DM - Admin)</option>
-                                                <option value="unsent">!unsent &lt;ID/range&gt; (Kembalikan Status Kos ke Pending - Admin)</option>
-                                                <option value="usulkost">!usulkost &lt;Nama Kos&gt; &gt; &lt;Kontak&gt; (Usulkan Info Kos - Warga)</option>
-                                                <option value="listusul">!listusul [status] (Daftar Usulan Warga - Admin)</option>
-                                                <option value="acc">!acc &lt;ID Usulan&gt; (Setujui Usulan Warga - Admin)</option>
-                                                <option value="tolak">!tolak &lt;ID Usulan&gt; (Tolak Usulan Warga - Admin)</option>
-                                                <option value="editusul">!editusul &lt;ID&gt; &lt;Nama&gt; &gt; &lt;Kontak&gt; (Edit Usulan Warga - Admin)</option>
-                                                <option value="delusul">!delusul &lt;ID Usulan&gt; (Hapus Usulan Warga - Admin)</option>
-                                            </optgroup>
-                                            <optgroup label="⚡ Menu & Informasi Umum">
-                                                <option value="menu">!menu (Menu Utama Bot)</option>
-                                                <option value="adminmenu">!admin-menu (Menu Khusus Admin Grup)</option>
-                                                <option value="help">!help [perintah] (Panduan Bantuan Perintah)</option>
-                                                <option value="ping">!ping (Cek Kecepatan & Responsivitas)</option>
-                                                <option value="stats">!stats (Statistik Bot & Server STB)</option>
-                                                <option value="owner">!owner (Kontak Pengelola Bot)</option>
-                                                <option value="jid">!jid / !id (Cek WhatsApp JID & Info Grup)</option>
-                                            </optgroup>
-                                            <optgroup label="👥 Pengelolaan & Moderasi Grup">
-                                                <option value="groupinfo">!groupinfo (Informasi Lengkap Grup)</option>
-                                                <option value="listadmin">!listadmin (Daftar Seluruh Admin Grup)</option>
-                                                <option value="tagall">!tagall [pesan] (Mention Seluruh Member Grup)</option>
-                                                <option value="hidetag">!hidetag &lt;pesan&gt; (Siaran Tersembunyi Tanpa List Tag)</option>
-                                                <option value="add">!add &lt;nomor&gt; (Tambah Anggota ke Grup)</option>
-                                                <option value="kick">!kick &lt;@user/nomor&gt; (Keluarkan Anggota)</option>
-                                                <option value="promote">!promote &lt;@user/nomor&gt; (Jadikan Admin)</option>
-                                                <option value="demote">!demote &lt;@user/nomor&gt; (Turunkan Jadi Anggota)</option>
-                                                <option value="clear">!clear [jumlah] (Bersihkan Chat / Pesan Bot)</option>
-                                                <option value="welcome">!welcome [on|off|reset] (Status & Toggle Sambutan)</option>
-                                                <option value="setwelcome">!setwelcome &lt;teks&gt; (Atur Format Sambutan Baru)</option>
-                                                <option value="initgroup">!initgroup [admin|public] (Registrasi Grup)</option>
-                                                <option value="editgroup">!editgroup &lt;nama&gt; [--role] [--link] (Edit Registrasi Grup)</option>
-                                            </optgroup>
-                                            <optgroup label="🎨 Stiker & Media">
-                                                <option value="stiker">!stiker (Ubah Gambar Jadi Stiker)</option>
-                                                <option value="toimg">!toimg (Ubah Stiker Jadi Gambar/GIF)</option>
-                                                <option value="culik">!culik (Ambil Media Sekali Lihat / View Once)</option>
-                                                <option value="brat">!brat &lt;teks&gt; (Stiker Teks Brat Aesthetic)</option>
-                                                <option value="smeme">!smeme &lt;teks atas|teks bawah&gt; (Stiker Meme Teks)</option>
-                                            </optgroup>
-                                            <optgroup label="👑 Khusus Owner & Siaran">
-                                                <option value="owner_list">!owner list (Daftar Owner Terdaftar)</option>
-                                                <option value="tariksiaran">!tariksiaran (Tarik Pesan Siaran Terakhir)</option>
-                                                <option value="autoreply_list">!autoreply-list (Lihat Semua Autoreply)</option>
-                                                <option value="autoreply_add">!autoreply-add &lt;trig&gt;|&lt;resp&gt; (Tambah Autoreply)</option>
-                                                <option value="autoreply_edit">!autoreply-edit &lt;trig&gt;|&lt;resp&gt; (Ubah Autoreply)</option>
-                                                <option value="autoreply_del">!autoreply-del &lt;trig&gt; (Hapus Autoreply)</option>
-                                            </optgroup>
-                                            <optgroup label="✍️ Kustom & Autoreply Bebas">
-                                                <option value="custom">✍️ Ketik Bebas (Perintah !xyz atau Autoreply)</option>
-                                            </optgroup>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" id="simParamLabel">Parameter / Argumen</label>
-                                        <input type="text" id="simParamInput" value="mawar" onkeydown="if(event.key==='Enter') runCommandSimulator()" placeholder="Contoh: mawar atau 1" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none font-mono">
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Tipe Obrolan</label>
-                                            <select id="simRoleSelect" class="w-full px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
-                                                <option value="public">Grup Publik / Warga</option>
-                                                <option value="admin">Grup Admin Induk</option>
-                                            </select>
+                            <!-- Pure WhatsApp Interactive Chat Simulator -->
+                            <div class="space-y-0 rounded-2xl overflow-hidden border border-slate-200/90 dark:border-slate-800 shadow-md">
+                                <!-- WhatsApp Header Bar -->
+                                <div class="bg-[#008069] dark:bg-[#1F2C34] text-white px-4 py-3 flex items-center justify-between shadow-xs">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative">
+                                            <div class="w-10 h-10 rounded-full bg-emerald-700/60 dark:bg-emerald-600/40 border border-white/20 flex items-center justify-center text-white text-lg shadow-inner">
+                                                🤖
+                                            </div>
+                                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#008069] dark:border-[#1F2C34]"></span>
                                         </div>
                                         <div>
-                                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Simulasi Pengirim</label>
-                                            <input type="text" id="simSenderInput" value="628123456789" class="w-full px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="text-xs sm:text-sm font-bold leading-tight text-white">RapBot Assistant</h5>
+                                                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/20 text-emerald-200">Sandbox Read-Only</span>
+                                            </div>
+                                            <p class="text-[11px] text-emerald-100/90 leading-none mt-1 flex items-center gap-1.5 font-sans">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                                                <span id="simStatusSubtext">online • Komunitas Kos Bukittinggi (Publik)</span>
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <button onclick="runCommandSimulator()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-sm transition active:scale-98 flex items-center justify-center gap-2">
-                                        <i data-lucide="play" class="w-3.5 h-3.5"></i>
-                                        <span>Jalankan Simulasi Respons</span>
-                                    </button>
-                                </div>
-
-                                <!-- WhatsApp Chat Preview Bubble (Right 7 Cols) -->
-                                <div class="lg:col-span-7 bg-[#EFEAE2] dark:bg-[#0C1317] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between min-h-[220px]">
-                                    <div class="flex items-center justify-between pb-2 border-b border-slate-300/60 dark:border-slate-800/80 text-[10px] text-slate-500">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-[9px]">W</div>
-                                            <span class="font-bold text-slate-800 dark:text-slate-200">WhatsApp Chat Simulator</span>
+                                    <!-- Role Toggle & Clear Chat -->
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center bg-black/25 dark:bg-black/40 rounded-xl p-0.5 border border-white/10 text-[11px]">
+                                            <button type="button" id="simRoleBtnPublic" onclick="setSimulatorRole('public')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#008069] dark:bg-slate-800 dark:text-emerald-400 shadow-xs transition">Publik</button>
+                                            <button type="button" id="simRoleBtnAdmin" onclick="setSimulatorRole('admin')" class="px-2.5 py-1 rounded-lg text-xs font-medium text-white/80 hover:text-white transition">Admin</button>
                                         </div>
-                                        <span class="font-mono" id="simTimeDisplay">Sekarang</span>
-                                    </div>
 
-                                    <!-- User Bubble -->
-                                    <div class="flex justify-end my-2">
-                                        <div class="bg-[#D9FDD3] dark:bg-[#005C4B] text-slate-900 dark:text-slate-100 rounded-xl rounded-tr-none px-3 py-2 text-xs max-w-sm card-shadow shadow-xs font-mono">
-                                            <span id="simUserMessageText">!cari mawar</span>
-                                            <span class="text-[9px] text-slate-400 float-right ml-2 mt-1">✓✓</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Bot Response Bubble -->
-                                    <div class="flex justify-start my-1" id="simBotBubbleContainer">
-                                        <div class="bg-white dark:bg-[#202C33] text-slate-900 dark:text-slate-100 rounded-xl rounded-tl-none px-3.5 py-2.5 text-xs max-w-md card-shadow whitespace-pre-wrap font-sans space-y-1" id="simBotMessageText">
-                                            Tekan tombol <strong>"Jalankan Simulasi Respons"</strong> untuk melihat hasil balasan bot.
-                                        </div>
-                                    </div>
-
-                                    <!-- Copy Output Button -->
-                                    <div class="pt-2 flex items-center justify-end">
-                                        <button onclick="copySimulatorOutput()" class="px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 hover:bg-white transition">
-                                            <i data-lucide="copy" class="w-3 h-3"></i>
-                                            Salin Balasan
+                                        <button type="button" onclick="clearSimulatorChat()" title="Bersihkan Layar Chat" class="p-2 rounded-xl bg-black/20 hover:bg-black/30 dark:bg-white/10 dark:hover:bg-white/20 text-white transition active:scale-95">
+                                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                                         </button>
                                     </div>
+                                </div>
+
+                                <!-- WhatsApp Chat Message Stream -->
+                                <div id="simChatScrollContainer" class="bg-[#EFEAE2] dark:bg-[#0B141A] p-4 sm:p-5 flex flex-col gap-3 min-h-[360px] max-h-[500px] overflow-y-auto relative" style="background-image: radial-gradient(rgba(0,0,0,0.04) 1px, transparent 0); background-size: 16px 16px;">
+                                    
+                                    <!-- Date Bubble -->
+                                    <div class="flex justify-center my-1">
+                                        <span class="px-3 py-1 rounded-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-xs text-[10px] font-semibold text-slate-500 dark:text-slate-400 shadow-xs tracking-wide">
+                                            HARI INI
+                                        </span>
+                                    </div>
+
+                                    <!-- Message Stream -->
+                                    <div id="simMessageStream" class="flex flex-col gap-3">
+                                        <!-- Initial Bot Greeting -->
+                                        <div class="flex justify-start">
+                                            <div class="bg-white dark:bg-[#202C33] text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none px-4 py-3 text-xs max-w-lg shadow-xs leading-relaxed space-y-1 border border-slate-200/50 dark:border-transparent">
+                                                <div>Halo kak! 👋 Simulator WhatsApp bot sudah siap.</div>
+                                                <div class="text-slate-600 dark:text-slate-300">Kamu bisa langsung mengetik perintah apa saja di bawah (seperti di WhatsApp asli) lalu tekan <strong>Enter</strong> atau tombol kirim:</div>
+                                                <div class="bg-slate-50 dark:bg-[#111B21] p-2 rounded-xl text-[11px] font-mono text-emerald-700 dark:text-emerald-400 space-y-0.5 border border-slate-200/60 dark:border-slate-800/60">
+                                                    <div>• <code>!cari birugo</code></div>
+                                                    <div>• <code>!kost pending</code></div>
+                                                    <div>• <code>!sent 24</code></div>
+                                                    <div>• <code>!owner list</code></div>
+                                                    <div>• <code>!help</code> atau <code>!menu</code></div>
+                                                </div>
+                                                <div class="text-[9px] text-slate-400 dark:text-slate-500 text-right mt-1 font-mono">08:00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- WhatsApp Bottom Input Bar -->
+                                <div class="bg-[#F0F2F5] dark:bg-[#202C33] px-3 py-2.5 border-t border-slate-200/90 dark:border-slate-800 flex items-center gap-2">
+                                    <div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                        <button type="button" onclick="insertSimPrefix('!')" class="px-2 py-1 text-xs font-mono font-bold bg-white dark:bg-[#2A3942] rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-300" title="Sisipkan tanda seru (!)">
+                                            !
+                                        </button>
+                                    </div>
+
+                                    <!-- Main WhatsApp Input -->
+                                    <div class="flex-1 relative">
+                                        <input type="text" id="simChatInput" onkeydown="if(event.key==='Enter') sendSimulatorChatMessage()" placeholder="Ketik pesan atau perintah (!cari, !kost, !sent 24, dll)..." class="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-white dark:bg-[#2A3942] border border-slate-200/80 dark:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-sans shadow-xs">
+                                    </div>
+
+                                    <!-- WhatsApp Circular Send Button -->
+                                    <button type="button" id="simSendBtn" onclick="sendSimulatorChatMessage()" class="w-10 h-10 rounded-full bg-[#00A884] hover:bg-[#008F6F] active:scale-95 text-white flex items-center justify-center shadow-sm transition shrink-0" title="Kirim Pesan">
+                                        <i data-lucide="send" class="w-4 h-4 ml-0.5"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -3249,303 +3201,197 @@
             }
         }
 
-        function prepareSimulatorWith(cmdName, sampleText) {
-            scrollToSimulator();
-            const selectEl = document.getElementById('simCommandSelect');
-            const paramInput = document.getElementById('simParamInput');
-            const roleSelect = document.getElementById('simRoleSelect');
-            
-            const rawName = (cmdName || '').replace(/^!/, '').toLowerCase();
-            
-            const allCommands = [
-                'cari', 'addkost', 'editkost', 'delkost', 'dm', 'kost_lengkap', 'kost_pending', 'kost_sent', 'kost_published', 'kost_all', 'kost_dm',
-                'post', 'unpost', 'sent', 'unsent', 'usulkost', 'editusul', 'acc', 'tolak', 'delusul', 'listusul',
-                'menu', 'adminmenu', 'help', 'ping', 'stats', 'owner', 'jid',
-                'groupinfo', 'listadmin', 'tagall', 'hidetag', 'add', 'kick', 'promote', 'demote', 'clear', 'welcome', 'setwelcome', 'initgroup', 'editgroup',
-                'stiker', 'toimg', 'culik', 'brat', 'smeme',
-                'owner_list', 'tariksiaran', 'autoreply_list', 'autoreply_add', 'autoreply_edit', 'autoreply_del'
-            ];
+        // -----------------------------------------------------------------
+        // SUBTAB 3: INTERACTIVE WHATSAPP BOT CHAT SIMULATOR (READ-ONLY SANDBOX)
+        // -----------------------------------------------------------------
+        let currentSimulatorRole = 'public';
+        let currentSimulatorSender = '628123456789';
 
-            if (allCommands.includes(rawName)) {
-                if (selectEl) selectEl.value = rawName;
-            } else if (rawName === 'kost') {
-                if (selectEl) selectEl.value = 'kost_pending';
-            } else if (rawName.includes('lengkap')) {
-                if (selectEl) selectEl.value = 'kost_lengkap';
-            } else if (rawName.includes('pending')) {
-                if (selectEl) selectEl.value = 'kost_pending';
-            } else if (rawName.includes('publish')) {
-                if (selectEl) selectEl.value = 'kost_published';
-            } else if (rawName === 'tolakusul') {
-                if (selectEl) selectEl.value = 'tolak';
-            } else if (rawName === 'autoreply' || rawName === 'autoreply-list') {
-                if (selectEl) selectEl.value = 'autoreply_list';
+        function setSimulatorRole(role) {
+            currentSimulatorRole = role;
+            const btnPublic = document.getElementById('simRoleBtnPublic');
+            const btnAdmin = document.getElementById('simRoleBtnAdmin');
+            const subtext = document.getElementById('simStatusSubtext');
+
+            if (role === 'admin') {
+                currentSimulatorSender = '6285195532009';
+                if (btnAdmin) {
+                    btnAdmin.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#008069] dark:bg-slate-800 dark:text-emerald-400 shadow-xs transition";
+                }
+                if (btnPublic) {
+                    btnPublic.className = "px-2.5 py-1 rounded-lg text-xs font-medium text-white/80 hover:text-white transition";
+                }
+                if (subtext) subtext.textContent = 'online • Group Admin / Super Owner (6285195532009)';
             } else {
-                if (selectEl) selectEl.value = 'custom';
+                currentSimulatorSender = '628123456789';
+                if (btnPublic) {
+                    btnPublic.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#008069] dark:bg-slate-800 dark:text-emerald-400 shadow-xs transition";
+                }
+                if (btnAdmin) {
+                    btnAdmin.className = "px-2.5 py-1 rounded-lg text-xs font-medium text-white/80 hover:text-white transition";
+                }
+                if (subtext) subtext.textContent = 'online • Komunitas Kos Bukittinggi (Publik)';
             }
-
-            onSimCommandChange();
-
-            if (sampleText !== undefined && sampleText !== null && paramInput) {
-                paramInput.value = sampleText;
-            }
-            runCommandSimulator();
         }
 
-        function onSimCommandChange() {
-            const cmd = document.getElementById('simCommandSelect')?.value;
-            const paramInput = document.getElementById('simParamInput');
-            const paramLabel = document.getElementById('simParamLabel');
-            const roleSelect = document.getElementById('simRoleSelect');
-
-            const presets = {
-                // Modul Kos Bukittinggi
-                cari: { label: 'Kata Kunci Pencarian Kos (Publik & Admin)', val: 'birugo', role: 'public' },
-                addkost: { label: 'Format: <Nama Kos> > <Kontak (ig/wa/tt)>', val: 'Kost Melati Asri > ig: melatikos | wa: 08123456789', role: 'admin' },
-                editkost: { label: 'Format: <ID> <Nama Baru> > <Kontak Baru>', val: '1 Kost Melati Asri Baru > ig: @melati | wa: 08123456789', role: 'admin' },
-                delkost: { label: 'ID Kos yang Dihapus (Contoh: 1 atau KST-000001)', val: '1', role: 'admin' },
-                dm: { label: 'ID Kos Target DM (Contoh: 1 atau KST-000001)', val: '1', role: 'admin' },
-                kost_lengkap: { label: 'ID Kos Detail Lengkap (Contoh: 1 atau KST-000001)', val: '1', role: 'admin' },
-                kost_pending: { label: 'Filter Kos Belum Di-DM (Opsional)', val: '', role: 'admin' },
-                kost_sent: { label: 'Filter Kos Sudah Di-DM (Opsional)', val: '', role: 'admin' },
-                kost_published: { label: 'Filter Kos Tayang Publik (Opsional)', val: '', role: 'public' },
-                kost_all: { label: 'Filter Seluruh Database Kos (Opsional)', val: '', role: 'admin' },
-                kost_dm: { label: 'Filter Status DM: (pending / sent / all)', val: 'pending', role: 'admin' },
-                post: { label: 'ID Kos yang Ditayangkan ke Publik (Contoh: 1)', val: '1', role: 'admin' },
-                unpost: { label: 'ID Kos yang Ditarik dari Publik (Contoh: 1)', val: '1', role: 'admin' },
-                sent: { label: 'ID Kos Terkirim DM / Range (Contoh: 1 atau 2 sampai 20)', val: '1', role: 'admin' },
-                unsent: { label: 'ID Kos yang Dikembalikan ke Pending (Contoh: 1)', val: '1', role: 'admin' },
-                usulkost: { label: 'Format: <Nama Kos> > <Kontak (IG/WA/TT)>', val: 'Kost Flamboyan Indah > wa: 082198765432 | ig: flamboyankos', role: 'public' },
-                listusul: { label: 'Filter Status Usulan: (pending / all / approved / rejected)', val: 'pending', role: 'admin' },
-                acc: { label: 'No ID Usulan yang Disetujui (Contoh: 1)', val: '1', role: 'admin' },
-                tolak: { label: 'No ID Usulan yang Ditolak (Contoh: 1)', val: '1', role: 'admin' },
-                editusul: { label: 'Format: <No Usulan> <Nama Baru> > <Kontak Baru>', val: '1 Kost Flamboyan Baru > wa: 082198765432 | ig: @flamboyankos', role: 'admin' },
-                delusul: { label: 'No ID Usulan yang Dihapus (Contoh: 1)', val: '1', role: 'admin' },
-
-                // Menu & Informasi Umum
-                menu: { label: 'Parameter Menu (Opsional)', val: '', role: 'public' },
-                adminmenu: { label: 'Menu Khusus Admin Grup (Opsional)', val: '', role: 'admin' },
-                help: { label: 'Nama Perintah Spesifik (Contoh: addkost / stiker / cari)', val: 'cari', role: 'public' },
-                ping: { label: 'Cek Kecepatan & Responsivitas Bot', val: '', role: 'public' },
-                stats: { label: 'Pantau Statistik Bot & Server STB', val: '', role: 'public' },
-                owner: { label: 'Informasi Kontak Pengelola Bot', val: '', role: 'public' },
-                jid: { label: 'Cek WhatsApp JID Akun / Grup', val: '', role: 'public' },
-
-                // Pengelolaan & Moderasi Grup
-                groupinfo: { label: 'Informasi Lengkap & Anggota Grup', val: '', role: 'public' },
-                listadmin: { label: 'Daftar Seluruh Admin Grup', val: '', role: 'public' },
-                tagall: { label: 'Pesan Tambahan Tag All (Opsional)', val: 'Halo semua member, rapat malam ini jam 20.00 WIB!', role: 'admin' },
-                hidetag: { label: 'Teks Pengumuman Siaran Hidetag', val: 'Pengumuman penting: Silakan cek update terbaru di grup!', role: 'admin' },
-                add: { label: 'Nomor WhatsApp Target (Contoh: 628123456789)', val: '628123456789', role: 'admin' },
-                kick: { label: 'Nomor Target / @mention (Contoh: 628123456789)', val: '628123456789', role: 'admin' },
-                promote: { label: 'Nomor Target / @mention (Contoh: 628123456789)', val: '628123456789', role: 'admin' },
-                demote: { label: 'Nomor Target / @mention (Contoh: 628123456789)', val: '628123456789', role: 'admin' },
-                clear: { label: 'Jumlah Pesan Bot yang Dihapus (1 - 50)', val: '5', role: 'admin' },
-                welcome: { label: 'Opsi: on / off / reset / (kosongkan untuk cek status)', val: '', role: 'admin' },
-                setwelcome: { label: 'Format Teks Sambutan (Tag: @user, @group, @desc, @count, @date, @time)', val: 'Halo @user, selamat datang di grup *@group*!', role: 'admin' },
-                initgroup: { label: 'Format: [admin|public] <nama grup> [--link <induk>] / list', val: 'admin Bukittinggi Kos --type kos', role: 'admin' },
-                editgroup: { label: 'Format: <nama baru> [--role admin|public] [--link <induk>]', val: 'Komunitas Kos Bukittinggi --role public', role: 'admin' },
-
-                // Stiker & Media
-                stiker: { label: 'Aksi: Kirim gambar dengan caption !stiker atau reply gambar', val: '', role: 'public' },
-                toimg: { label: 'Aksi: Reply stiker WhatsApp dengan !toimg', val: '', role: 'public' },
-                culik: { label: 'Aksi: Reply pesan media sekali lihat (View Once) dengan !culik', val: '', role: 'public' },
-                brat: { label: 'Teks Stiker Brat Aesthetic', val: 'dih so ganteng tapi emang ganteng sih', role: 'public' },
-                smeme: { label: 'Format: <Teks Atas|Teks Bawah> (Reply Gambar/Stiker)', val: 'KETIKA KOS PENUH | TAPI TETAP DICARI', role: 'public' },
-
-                // Khusus Owner & Siaran
-                owner_list: { label: 'Subcommand: list (Daftar Seluruh Owner)', val: 'list', role: 'admin', sender: '6285195532009' },
-                tariksiaran: { label: 'ID Broadcast (Kosongkan untuk menarik siaran terakhir)', val: '', role: 'admin', sender: '6285195532009' },
-                autoreply_list: { label: 'Opsi: (kosongkan atau --all)', val: '', role: 'admin', sender: '6285195532009' },
-                autoreply_add: { label: 'Format: <trigger>|<respons> [--global] [--owner]', val: '!rekening|BCA 12345678 a.n Raffa --global', role: 'admin', sender: '6285195532009' },
-                autoreply_edit: { label: 'Format: <trigger>|<respons baru>', val: '!rekening|BCA 99998888 a.n Raffa (Update)', role: 'admin', sender: '6285195532009' },
-                autoreply_del: { label: 'Trigger yang Dihapus (Contoh: !rekening)', val: '!rekening', role: 'admin', sender: '6285195532009' },
-
-                // Kustom
-                custom: { label: 'Ketik Bebas (Perintah !xyz atau Kata Kunci Autoreply)', val: '!owner list', role: 'admin', sender: '6285195532009' }
-            };
-
-            const cfg = presets[cmd] || presets.custom;
-            if (paramLabel) paramLabel.textContent = cfg.label;
-            if (paramInput) paramInput.value = cfg.val;
-            if (roleSelect && cfg.role) roleSelect.value = cfg.role;
-            const senderInput = document.getElementById('simSenderInput');
-            if (senderInput && cfg.sender) senderInput.value = cfg.sender;
-            else if (senderInput && (cfg.role === 'admin')) senderInput.value = '6285195532009';
-            else if (senderInput && (!senderInput.value || senderInput.value === '628123456789')) senderInput.value = '6285195532009';
+        function insertSimPrefix(prefix) {
+            const input = document.getElementById('simChatInput');
+            if (!input) return;
+            if (!input.value.startsWith(prefix)) {
+                input.value = prefix + input.value;
+            }
+            input.focus();
         }
 
-        async function runCommandSimulator() {
-            const cmd = document.getElementById('simCommandSelect')?.value || 'cari';
-            const param = (document.getElementById('simParamInput')?.value || '').trim();
-            const role = document.getElementById('simRoleSelect')?.value || 'public';
-            const sender = (document.getElementById('simSenderInput')?.value || '628123456789').replace(/\D/g, '') || '628123456789';
+        function clearSimulatorChat() {
+            const stream = document.getElementById('simMessageStream');
+            if (!stream) return;
+            const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            stream.innerHTML = `
+                <div class="flex justify-start">
+                    <div class="bg-white dark:bg-[#202C33] text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none px-4 py-3 text-xs max-w-lg shadow-xs leading-relaxed space-y-1 border border-slate-200/50 dark:border-transparent">
+                        <div>Halo kak! 👋 Riwayat simulator telah dibersihkan.</div>
+                        <div class="text-slate-600 dark:text-slate-300">Silakan ketik perintah langsung di bawah untuk menguji respon bot:</div>
+                        <div class="text-[9px] text-slate-400 dark:text-slate-500 text-right mt-1 font-mono">${nowTime}</div>
+                    </div>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
 
-            const userMsgEl = document.getElementById('simUserMessageText');
-            const botMsgEl = document.getElementById('simBotMessageText');
-            const timeEl = document.getElementById('simTimeDisplay');
+        function formatSimMarkdown(text) {
+            if (!text) return '';
+            let formatted = escapeHtml(text);
+            // Replace bold *text*
+            formatted = formatted.replace(/\*([^\*\n]+)\*/g, '<strong class="font-bold text-slate-900 dark:text-white">$1</strong>');
+            // Replace italic _text_
+            formatted = formatted.replace(/_([^_\n]+)_/g, '<em class="italic">$1</em>');
+            // Replace strikethrough ~text~
+            formatted = formatted.replace(/~([^~\n]+)~/g, '<del class="line-through text-slate-400">$1</del>');
+            // Replace inline code `code`
+            formatted = formatted.replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-900 font-mono text-[11px] text-emerald-600 dark:text-emerald-400">$1</code>');
+            // Replace newlines
+            formatted = formatted.replace(/\n/g, '<br>');
+            return formatted;
+        }
 
-            if (timeEl) {
-                timeEl.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        async function sendSimulatorChatMessage(overrideText) {
+            const input = document.getElementById('simChatInput');
+            const stream = document.getElementById('simMessageStream');
+            const scrollContainer = document.getElementById('simChatScrollContainer');
+            if (!stream) return;
+
+            const text = (overrideText !== undefined ? overrideText : (input ? input.value : '')).trim();
+            if (!text) return;
+
+            if (input && overrideText === undefined) {
+                input.value = '';
             }
 
-            let fullUserMsg = '';
-            if (cmd === 'custom') {
-                fullUserMsg = param.startsWith('!') ? param : ('!' + param);
-            } else if (cmd === 'kost_lengkap') {
-                fullUserMsg = '!kost lengkap ' + (param || '1');
-            } else if (cmd === 'kost_pending') {
-                fullUserMsg = '!kost pending' + (param ? ' ' + param : '');
-            } else if (cmd === 'kost_published') {
-                fullUserMsg = '!kost published' + (param ? ' ' + param : '');
-            } else if (cmd === 'kost_all') {
-                fullUserMsg = '!kost all' + (param ? ' ' + param : '');
-            } else if (cmd === 'adminmenu') {
-                fullUserMsg = '!admin-menu' + (param ? ' ' + param : '');
-            } else {
-                fullUserMsg = '!' + cmd + (param ? ' ' + param : '');
+            const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            // User Message Bubble (Right)
+            const userBubble = document.createElement('div');
+            userBubble.className = 'flex justify-end';
+            userBubble.innerHTML = `
+                <div class="bg-[#D9FDD3] dark:bg-[#005C4B] text-slate-900 dark:text-slate-100 rounded-2xl rounded-tr-none px-4 py-2.5 text-xs max-w-lg shadow-xs leading-relaxed space-y-1">
+                    <div class="font-medium whitespace-pre-wrap">${escapeHtml(text)}</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] text-slate-500 dark:text-emerald-200/70 font-mono">
+                        <span>${nowTime}</span>
+                        <span>✓✓</span>
+                    </div>
+                </div>
+            `;
+            stream.appendChild(userBubble);
+
+            // Bot Typing Indicator Bubble (Left)
+            const botBubbleId = 'bot-msg-' + Date.now();
+            const botBubble = document.createElement('div');
+            botBubble.id = botBubbleId;
+            botBubble.className = 'flex justify-start';
+            botBubble.innerHTML = `
+                <div class="bg-white dark:bg-[#202C33] text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none px-4 py-3 text-xs max-w-lg shadow-xs leading-relaxed border border-slate-200/50 dark:border-transparent">
+                    <div class="flex items-center gap-2 text-slate-400 dark:text-slate-400">
+                        <div class="w-3.5 h-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-[11px] font-sans">RapBot sedang mengetik...</span>
+                    </div>
+                </div>
+            `;
+            stream.appendChild(botBubble);
+
+            if (scrollContainer) {
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
             }
 
-            if (userMsgEl) userMsgEl.textContent = fullUserMsg;
-            if (botMsgEl) {
-                botMsgEl.innerHTML = '<div class="flex items-center gap-2 text-slate-400"><div class="w-3.5 h-3.5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div><span>Menjalankan engine bot secara realtime...</span></div>';
-            }
-
+            // Execute via Sandbox Simulator API
+            let botReply = '';
             try {
-                // Panggil endpoint backend realtime yang mengeksekusi command handler asli & database MariaDB/JSON
                 const res = await fetch('/api/bot/simulate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        command: cmd,
-                        param,
-                        sender,
-                        role,
+                        command: 'custom',
+                        param: text,
+                        sender: currentSimulatorSender,
+                        role: currentSimulatorRole,
                         isGroup: true
                     })
                 });
 
                 const data = await res.json();
                 if (data && data.success && data.reply) {
-                    if (botMsgEl) botMsgEl.textContent = data.reply;
-                    return;
+                    botReply = data.reply;
+                } else if (data && data.error) {
+                    botReply = `⚠️ *Error:* ${data.error}`;
                 }
-            } catch (apiErr) {
-                console.warn('[Simulator] API Backend offline/gagal, beralih ke fallback internal:', apiErr);
+            } catch (err) {
+                console.warn('[Simulator] API backend offline, fallback:', err);
+                botReply = `⚠️ *Gagal menghubungi server bot.* (${err.message || 'Network Error'})`;
             }
 
-            // Fallback jika fetch backend tidak dapat diakses
-            let simulatedBotReply = '';
-
-            // Cek apakah ada Custom Autoreply yang cocok dari data autoreply
-            if (typeof rawAutorepliesData !== 'undefined' && Array.isArray(rawAutorepliesData) && rawAutorepliesData.length > 0) {
-                const checkText = (cmd === 'custom' ? param : fullUserMsg).toLowerCase();
-                const matchedAr = rawAutorepliesData.find(ar => {
-                    const trig = (ar.trigger || '').trim().toLowerCase();
-                    if (!trig) return false;
-                    const mode = ar.matchMode || 'contains';
-                    if (mode === 'exact') return checkText === trig || checkText === '!' + trig;
-                    if (mode === 'startsWith') return checkText.startsWith(trig) || checkText.startsWith('!' + trig);
-                    return checkText.includes(trig);
-                });
-                if (matchedAr) {
-                    simulatedBotReply = matchedAr.reply || `💬 *(Autoreply Aktif: "${matchedAr.trigger}")*\n${matchedAr.response || 'Pesan otomatis berhasil dipicu!'}`;
-                }
+            // Update Bot Message Bubble
+            const renderedHtml = formatSimMarkdown(botReply || '*(Tidak ada respon)*');
+            const targetBotEl = document.getElementById(botBubbleId);
+            if (targetBotEl) {
+                targetBotEl.innerHTML = `
+                    <div class="bg-white dark:bg-[#202C33] text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none px-4 py-3 text-xs max-w-lg shadow-xs leading-relaxed space-y-2 border border-slate-200/50 dark:border-transparent group">
+                        <div class="font-sans break-words">${renderedHtml}</div>
+                        <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60 text-[9px]">
+                            <button type="button" onclick="copySimBubbleText(this)" data-content="${encodeURIComponent(botReply)}" class="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-medium">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                <span>Salin Balasan</span>
+                            </button>
+                            <span class="text-slate-400 dark:text-slate-500 font-mono">${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                `;
             }
 
-            if (!simulatedBotReply) {
-                switch(cmd) {
-                    case 'cari': {
-                        const query = param || 'mawar';
-                        const matches = (typeof rawKostData !== 'undefined' && Array.isArray(rawKostData) ? rawKostData : []).filter(k => {
-                            const matchQ = (k.name || '').toLowerCase().includes(query.toLowerCase()) || (k.id || '').toLowerCase().includes(query.toLowerCase());
-                            if (role === 'public') {
-                                const st = (k.status || '').toLowerCase();
-                                return matchQ && (st === 'published' || st === 'posted');
-                            }
-                            return matchQ;
-                        });
-
-                        if (matches.length === 0) {
-                            simulatedBotReply = role === 'public'
-                                ? `🔎 Belum ada data kos yang dipublikasikan atau cocok dengan kata kunci "${query}".\n\n💡 Punya info kos? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``
-                                : `🔎 Tidak ditemukan kos dengan kata kunci "${query}".`;
-                        } else {
-                            if (role === 'public') {
-                                simulatedBotReply = `🔎 *HASIL PENCARIAN KOS*\nKata kunci: *${query}*\n\nDitemukan: ${matches.length} kos\n\n`;
-                                matches.slice(0, 5).forEach((k, idx) => {
-                                    let c = [];
-                                    if (k.instagram) c.push(`   📸 instagram.com/${k.instagram.replace('@','')}`);
-                                    if (k.whatsapp) c.push(`   💬 wa.me/${String(k.whatsapp).replace(/\D/g,'')}`);
-                                    simulatedBotReply += `${idx + 1}. *${k.name}*\n${c.join('\n') || '   ℹ️ Info kontak via admin'}\n\n`;
-                                });
-                                simulatedBotReply += `────────────────────\n📱 Official Instagram: *@bukittinggikos*\n💡 Punya info kos baru? Usulkan via:\n\`!usulkost <Nama> > <Kontak>\``;
-                            } else {
-                                simulatedBotReply = `🔎 *HASIL PENCARIAN (ADMIN)*\nKata kunci: ${query}\n\nDitemukan: ${matches.length}\n\n`;
-                                matches.slice(0, 5).forEach((k, idx) => {
-                                    const stBadge = k.status === 'published' ? '🟢 SUDAH DIPOSTING' : (k.status === 'sent' ? '📩 TERKIRIM DM' : '🟡 BELUM DITAWARKAN');
-                                    simulatedBotReply += `${idx + 1}. *${k.name}*\n   🆔 \`${k.id}\`\n   📌 Status: ${stBadge}\n\n`;
-                                });
-                                simulatedBotReply += `────────────────────\n💡 Gunakan: \`!dm <ID>\` atau \`!post <ID>\``;
-                            }
-                        }
-                        break;
-                    }
-
-                    case 'dm': {
-                        const targetId = param || '1';
-                        const list = (typeof rawKostData !== 'undefined' && Array.isArray(rawKostData) ? rawKostData : []);
-                        const found = list.find(k => k.id === targetId || k.id === `KST-${String(targetId).padStart(6, '0')}`) || list[0] || { name: 'Kost Mawar Induk', id: 'KST-000001', instagram: 'kostmawar' };
-                        const tmpl = (typeof templatePresets !== 'undefined' && templatePresets.outreach) ? templatePresets.outreach.replace('{NAMA_KOS}', found.name) : `Halo admin ${found.name}, kami dari BukittinggiKos ingin menawarkan kolaborasi publikasi...`;
-                        
-                        simulatedBotReply = `🏠 *SIAP DM KOST: ${found.name}*\n\n🆔 ID: \`${found.id}\`\n📌 Status: ⏳ BELUM DI-DM (PENDING)\n📸 Instagram: https://instagram.com/${(found.instagram || 'kost').replace('@','')}\n💬 WhatsApp: wa.me/${(found.whatsapp || '').replace(/\D/g,'') || '-'}\n\n────────────────────\n👇 *Teks template promosi siap kirim:*\n\n"${tmpl}"\n\nSetelah selesai di-DM, tandai dengan:\n\`!sent ${found.id}\``;
-                        break;
-                    }
-
-                    case 'usulkost': {
-                        const parts = param.split('>');
-                        const name = parts[0]?.trim() || 'Kost Kenanga Putri';
-                        const contact = parts.slice(1).join('>').trim() || 'wa: 08123456789';
-                        const count = (typeof rawSubmissionsData !== 'undefined' && Array.isArray(rawSubmissionsData) ? rawSubmissionsData.length : 3);
-                        simulatedBotReply = `✅ *Usulan Kos Berhasil Terkirim!*\n\n🏠 Nama: *${name}*\n📞 Kontak: ${contact}\n🆔 No Usulan: *#${count + 1}*\n\nTerima kasih atas kontribusinya! Usulan ini akan diverifikasi oleh tim admin *@bukittinggikos* sebelum resmi dipublikasikan. 🙏\n\n*(Bot otomatis meneruskan notifikasi usulan ini ke grup admin)*`;
-                        break;
-                    }
-
-                    case 'acc': {
-                        const targetId = param || '1';
-                        const kCount = (typeof rawKostData !== 'undefined' && Array.isArray(rawKostData) ? rawKostData.length : 12);
-                        const newId = `KST-${String(kCount + 1).padStart(6, '0')}`;
-                        simulatedBotReply = `✅ *Usulan #${targetId} Berhasil Disetujui!*\n\nData otomatis masuk ke database:\n🆔 ID Kos Baru: \`${newId}\`\n🏠 Nama: *Kost Kenanga Putri*\n📸 IG: https://instagram.com/kostkenanga\n📌 Status: 🟡 BELUM DITAWARKAN (PENDING)\n👤 Pengusul: wa.me/${sender}\n\n💡 Sekarang admin dapat menjalankan \`!dm ${newId}\` untuk mulai penawaran.`;
-                        break;
-                    }
-
-                    case 'menu': {
-                        simulatedBotReply = `🤖 *RAPBOT WHATSAPP ASSISTANT*\n\nHalo kak! Berikut daftar perintah yang dapat kamu gunakan:\n\n🏠 *Modul Kos Bukittinggi*\n• \`!cari <nama/daerah>\` - Cari info kos publik\n• \`!usulkost <nama> > <kontak>\` - Usulkan info kos baru\n\n⚡ *Umum & Informasi*\n• \`!menu\` - Tampilkan menu ini\n• \`!ping\` - Cek responsivitas bot\n• \`!owner\` - Kontak pengelola bot\n• \`!jid\` - Info identitas akun / grup\n\n🎨 *Stiker & Media*\n• \`!brat <teks>\` - Buat stiker teks brat\n• \`!stiker\` - Jadikan gambar stiker WA\n• \`!smeme <atas|bawah>\` - Stiker meme teks\n\n────────────────────\n💡 *Prefix:* \`!\` | Versi: *2.0.0*`;
-                        break;
-                    }
-
-                    case 'ping': {
-                        simulatedBotReply = `🏓 *PONG!*\n\n⚡ Kecepatan Respon: *28 ms*\n⏱️ Uptime Bot: *3 hari 14 jam 22 menit*\n📡 Status Server: *🟢 Normal & Terhubung*`;
-                        break;
-                    }
-
-                    default: {
-                        simulatedBotReply = `🤖 *RESPON PERINTAH: ${fullUserMsg}*\n\nPerintah telah diproses oleh bot. Silakan periksa parameter dan izin grup.`;
-                        break;
-                    }
-                }
+            if (scrollContainer) {
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
             }
-
-            if (botMsgEl) botMsgEl.textContent = simulatedBotReply;
+            if (window.lucide) lucide.createIcons();
         }
 
-        function copySimulatorOutput() {
-            const text = document.getElementById('simBotMessageText')?.textContent;
-            if (text) {
-                copyToClipboard(text, '📋 Balasan bot berhasil disalin!');
-            } else {
-                showToast('Tidak ada teks balasan simulasi.', 'warning');
+        function copySimBubbleText(btnEl) {
+            const raw = btnEl?.getAttribute('data-content');
+            if (raw) {
+                copyToClipboard(decodeURIComponent(raw), '📋 Balasan bot berhasil disalin!');
             }
+        }
+
+        function prepareSimulatorWith(cmdName, sampleText) {
+            scrollToSimulator();
+            const input = document.getElementById('simChatInput');
+            let fullText = cmdName ? (cmdName.startsWith('!') ? cmdName : ('!' + cmdName)) : '';
+            if (sampleText) {
+                fullText += ' ' + sampleText;
+            }
+            if (input) {
+                input.value = fullText;
+                input.focus();
+            }
+            sendSimulatorChatMessage(fullText);
         }
 
         // -----------------------------------------------------------------
