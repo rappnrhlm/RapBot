@@ -2700,6 +2700,139 @@
             }
         ];
 
+        const defaultKostSubTabs = [
+            { id: 'listing', name: 'Listing Data', icon: 'building-2', countId: 'modListingCount', color: 'indigo' },
+            { id: 'submissions', name: 'Usulan Masuk', icon: 'inbox', countId: 'modSubCount', color: 'indigo' },
+            { id: 'commands', name: 'Perintah Custom & Simulator', icon: 'terminal', color: 'purple' },
+            { id: 'templates', name: 'Template Pesan & DM', icon: 'message-square', color: 'blue' },
+            { id: 'groups', name: 'Grup Terhubung & Aturan', icon: 'users', color: 'emerald' },
+            { id: 'analytics', name: 'Statistik Modul', icon: 'bar-chart-2', color: 'amber' },
+            { id: 'export', name: 'Ekspor & API Docs', icon: 'code-2', color: 'rose' }
+        ];
+
+        function getSavedKostSubTabOrder() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('kost_subtab_order'));
+                if (Array.isArray(saved) && saved.length > 0) {
+                    const validIds = defaultKostSubTabs.map(t => t.id);
+                    const filtered = saved.filter(id => validIds.includes(id));
+                    defaultKostSubTabs.forEach(t => {
+                        if (!filtered.includes(t.id)) filtered.push(t.id);
+                    });
+                    return filtered;
+                }
+            } catch {}
+            return defaultKostSubTabs.map(t => t.id);
+        }
+
+        function saveKostSubTabOrder(orderArray) {
+            try {
+                localStorage.setItem('kost_subtab_order', JSON.stringify(orderArray));
+            } catch {}
+        }
+
+        let draggedTabId = null;
+
+        function renderKostSubTabs() {
+            const tabsContainer = document.getElementById('modWorkspaceTabs');
+            if (!tabsContainer) return;
+
+            const order = getSavedKostSubTabOrder();
+            const tabMap = new Map(defaultKostSubTabs.map(t => [t.id, t]));
+
+            let buttonsHtml = order.map(id => {
+                const tab = tabMap.get(id);
+                if (!tab) return '';
+
+                const isActive = (currentModSubTab || 'listing') === tab.id;
+                let countHtml = '';
+                if (tab.id === 'listing') {
+                    countHtml = ` (<span id="modListingCount">${rawKostData.length}</span>)`;
+                } else if (tab.id === 'submissions') {
+                    countHtml = ` (<span id="modSubCount">${rawSubmissionsData.length}</span>)`;
+                }
+
+                const activeClass = isActive 
+                    ? "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs" 
+                    : "hover:text-slate-900 dark:hover:text-white text-slate-600 dark:text-slate-400 font-medium";
+
+                const iconColorClass = tab.color === 'purple' ? 'text-purple-500' : (tab.color === 'blue' ? 'text-blue-500' : (tab.color === 'emerald' ? 'text-emerald-500' : (tab.color === 'amber' ? 'text-amber-500' : (tab.color === 'rose' ? 'text-rose-500' : ''))));
+
+                return `
+                    <div 
+                        draggable="true"
+                        data-tab-id="${tab.id}"
+                        ondragstart="handleTabDragStart(event, '${tab.id}')"
+                        ondragover="handleTabDragOver(event)"
+                        ondragleave="handleTabDragLeave(event)"
+                        ondrop="handleTabDrop(event, '${tab.id}')"
+                        class="tab-drag-item inline-flex items-center cursor-grab active:cursor-grabbing select-none rounded-xl transition"
+                    >
+                        <button 
+                            onclick="switchModSubTab('${tab.id}')" 
+                            id="modSubTab-${tab.id}" 
+                            class="px-3.5 py-2 rounded-xl ${activeClass} flex items-center gap-1.5 whitespace-nowrap transition"
+                        >
+                            <i data-lucide="${tab.icon}" class="w-3.5 h-3.5 ${iconColorClass}"></i>
+                            <span>${tab.name}${countHtml}</span>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            tabsContainer.innerHTML = `
+                <div id="subTabsDragWrapper" class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow flex-nowrap gap-1">
+                    ${buttonsHtml}
+                </div>
+            `;
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function handleTabDragStart(e, tabId) {
+            draggedTabId = tabId;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', tabId);
+            e.currentTarget.classList.add('opacity-40', 'scale-95');
+        }
+
+        function handleTabDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const item = e.currentTarget.closest('.tab-drag-item');
+            if (item) {
+                item.classList.add('ring-2', 'ring-indigo-500/50', 'bg-indigo-50/50', 'dark:bg-indigo-950/30');
+            }
+        }
+
+        function handleTabDragLeave(e) {
+            const item = e.currentTarget.closest('.tab-drag-item');
+            if (item) {
+                item.classList.remove('ring-2', 'ring-indigo-500/50', 'bg-indigo-50/50', 'dark:bg-indigo-950/30');
+            }
+        }
+
+        function handleTabDrop(e, targetTabId) {
+            e.preventDefault();
+            const allItems = document.querySelectorAll('.tab-drag-item');
+            allItems.forEach(el => el.classList.remove('opacity-40', 'scale-95', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-50/50', 'dark:bg-indigo-950/30'));
+
+            if (!draggedTabId || draggedTabId === targetTabId) return;
+
+            const order = getSavedKostSubTabOrder();
+            const fromIndex = order.indexOf(draggedTabId);
+            const toIndex = order.indexOf(targetTabId);
+
+            if (fromIndex > -1 && toIndex > -1) {
+                order.splice(fromIndex, 1);
+                order.splice(toIndex, 0, draggedTabId);
+                saveKostSubTabOrder(order);
+                renderKostSubTabs();
+                showToast(`Urutan tab berhasil disimpan!`, 'success');
+            }
+            draggedTabId = null;
+        }
+
         function openModuleWorkspace(moduleKey) {
             activeBusinessModule = moduleKey;
             const catView = document.getElementById('modView-catalog');
@@ -2709,56 +2842,25 @@
 
             const titleEl = document.getElementById('activeModTitle');
             const subEl = document.getElementById('activeModSubtitle');
-            const tabsContainer = document.getElementById('modWorkspaceTabs');
-            const actionContainer = document.getElementById('modActionBtnContainer');
 
             if (moduleKey === 'kost') {
                 if (titleEl) titleEl.innerHTML = '<i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i><span>Manajemen Kos & Properti</span>';
                 if (subEl) subEl.textContent = 'Kelola listing data kos, perintah custom bot, template pesan DM, moderasi usulan, dan integrasi grup.';
                 
-                if (tabsContainer) {
-                    tabsContainer.innerHTML = `
-                        <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow flex-nowrap">
-                            <button onclick="switchModSubTab('listing')" id="modSubTab-listing" class="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
-                                <span>Listing Data (<span id="modListingCount">${rawKostData.length}</span>)</span>
-                            </button>
-                            <button onclick="switchModSubTab('submissions')" id="modSubTab-submissions" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
-                                <span>Usulan Masuk (<span id="modSubCount">${rawSubmissionsData.length}</span>)</span>
-                            </button>
-                            <button onclick="switchModSubTab('commands')" id="modSubTab-commands" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="terminal" class="w-3.5 h-3.5 text-purple-500"></i>
-                                <span>Perintah Custom & Simulator</span>
-                            </button>
-                            <button onclick="switchModSubTab('templates')" id="modSubTab-templates" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-blue-500"></i>
-                                <span>Template Pesan & DM</span>
-                            </button>
-                            <button onclick="switchModSubTab('groups')" id="modSubTab-groups" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-500"></i>
-                                <span>Grup Terhubung & Aturan</span>
-                            </button>
-                            <button onclick="switchModSubTab('analytics')" id="modSubTab-analytics" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-amber-500"></i>
-                                <span>Statistik Modul</span>
-                            </button>
-                            <button onclick="switchModSubTab('export')" id="modSubTab-export" class="px-3.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 whitespace-nowrap transition">
-                                <i data-lucide="code-2" class="w-3.5 h-3.5 text-rose-500"></i>
-                                <span>Ekspor & API Docs</span>
-                            </button>
-                        </div>
-                    `;
-                }
-                
+                const savedOrder = getSavedKostSubTabOrder();
+                const defaultFirstTab = savedOrder[0] || 'listing';
+                currentModSubTab = defaultFirstTab;
+
+                renderKostSubTabs();
                 renderExtensionCommands();
                 renderExtensionTemplates();
                 renderExtensionGroups();
                 renderExtensionAnalytics();
-                switchModSubTab('listing');
+                switchModSubTab(defaultFirstTab);
             } else if (moduleKey === 'marketplace') {
                 if (titleEl) titleEl.innerHTML = '<i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-600"></i><span>Marketplace & Jual Beli Komunitas</span>';
                 if (subEl) subEl.textContent = 'Katalog produk barang jualan member, verifikasi seller, dan integrasi toko multi-grup.';
+                const tabsContainer = document.getElementById('modWorkspaceTabs');
                 if (tabsContainer) {
                     tabsContainer.innerHTML = `
                         <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
@@ -2769,11 +2871,13 @@
                         </div>
                     `;
                 }
+                const actionContainer = document.getElementById('modActionBtnContainer');
                 if (actionContainer) actionContainer.innerHTML = '';
                 switchModSubTab('marketplace');
             } else if (moduleKey === 'services') {
                 if (titleEl) titleEl.innerHTML = '<i data-lucide="briefcase" class="w-4 h-4 text-amber-600"></i><span>Direktori Jasa & UMKM Lokal</span>';
                 if (subEl) subEl.textContent = 'Database penyedia jasa, kuliner, dan usaha lokal dengan pencarian bot interaktif.';
+                const tabsContainer = document.getElementById('modWorkspaceTabs');
                 if (tabsContainer) {
                     tabsContainer.innerHTML = `
                         <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
@@ -2784,11 +2888,13 @@
                         </div>
                     `;
                 }
+                const actionContainer = document.getElementById('modActionBtnContainer');
                 if (actionContainer) actionContainer.innerHTML = '';
                 switchModSubTab('services');
             } else if (moduleKey === 'features') {
                 if (titleEl) titleEl.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4 text-purple-600"></i><span>Inspektur Fitur & Izin Global</span>';
                 if (subEl) subEl.textContent = 'Pusat pengawasan hak akses seluruh perintah bot (commands/) dan perizinan grup.';
+                const tabsContainer = document.getElementById('modWorkspaceTabs');
                 if (tabsContainer) {
                     tabsContainer.innerHTML = `
                         <div class="inline-flex p-1 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 card-shadow">
@@ -2799,6 +2905,7 @@
                         </div>
                     `;
                 }
+                const actionContainer = document.getElementById('modActionBtnContainer');
                 if (actionContainer) actionContainer.innerHTML = '';
                 switchModSubTab('features');
             }
