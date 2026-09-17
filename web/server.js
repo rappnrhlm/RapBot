@@ -1998,6 +1998,23 @@ app.post('/api/bot/simulate', async (req, res) => {
                 if (prop === 'isGroupInitialized') {
                     return () => true; // Always true in simulation context so admin commands can run preview
                 }
+                if (prop === 'getGroupById') {
+                    return (gid) => {
+                        const realGroup = database.getGroupById(gid);
+                        if (realGroup) return realGroup;
+                        return {
+                            id: gid || simulatedFrom,
+                            name: role === 'admin' ? 'Grup Internal Admin (Simulasi)' : 'Komunitas Kos Bukittinggi (Publik)',
+                            role: role === 'admin' ? 'admin' : 'public',
+                            type: 'kos',
+                            parentGroupId: null,
+                            settings: {
+                                maxSearchResults: 5,
+                                cooldownSeconds: 0
+                            }
+                        };
+                    };
+                }
 
                 const orig = Reflect.get(target, prop, receiver);
                 if (typeof orig === 'function') {
