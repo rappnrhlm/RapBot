@@ -36,6 +36,20 @@ function extractPin(req) {
 }
 
 // ----------------------------------------------------
+// AUTH & PIN VERIFICATION API
+// ----------------------------------------------------
+app.post('/api/auth/verify-pin', (req, res) => {
+    const pin = req.body?.pin || extractPin(req);
+    if (!ADMIN_PIN) {
+        return res.json({ success: true, message: 'PIN belum dikonfigurasi di server (mode terbuka).' });
+    }
+    if (validatePin(pin)) {
+        return res.json({ success: true, message: 'PIN valid! Akses Superuser berhasil diaktifkan.' });
+    }
+    return res.status(401).json({ success: false, message: 'PIN yang dimasukkan tidak cocok dengan ADMIN_PIN server.' });
+});
+
+// ----------------------------------------------------
 // 1. SYSTEM & STATUS API
 // ----------------------------------------------------
 
