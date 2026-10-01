@@ -1,4 +1,4 @@
-const dmTemplate = require('../../utils/dmTemplate');
+const dmTemplate = require('../utils/dmTemplate');
 
 module.exports = {
     name: 'dm',
@@ -8,8 +8,8 @@ module.exports = {
     usage: '!dm <ID>',
 
     async execute({ sock, msg, from, senderNumber, args, isGroup: isGroupChat, reply, services, utils }) {
-        const database = services?.database || require('../../services/database');
-        const jidUtils = utils?.jid || require('../../utils/jid');
+        const database = services?.database || require('../../../services/database');
+        const jidUtils = utils?.jid || require('../../../core/utils/jid');
 
         const sendReply = async (text) => {
             if (typeof reply === 'function') return await reply(text);

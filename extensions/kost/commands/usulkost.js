@@ -6,9 +6,9 @@ module.exports = {
     usage: '!usulkost <Nama Kos> > <kontak (ig/wa/tt)>',
 
     async execute({ sock, msg, from, senderNumber, args, isGroup: isGroupChat, reply, services, utils }) {
-        const database = services?.database || require('../../services/database');
-        const jidUtils = utils?.jid || require('../../utils/jid');
-        const cooldownUtils = require('../../utils/cooldown');
+        const database = services?.database || require('../../../services/database');
+        const jidUtils = utils?.jid || require('../../../core/utils/jid');
+        const cooldownUtils = require('../../../core/utils/cooldown');
 
         const sendReply = async (text) => {
             if (typeof reply === 'function') return await reply(text);

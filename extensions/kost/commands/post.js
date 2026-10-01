@@ -6,8 +6,8 @@ module.exports = {
     usage: '!post <ID> | !unpost <ID>',
 
     async execute({ sock, msg, from, senderNumber, command, args, isGroup: isGroupChat, reply, services, utils }) {
-        const database = services?.database || require('../../services/database');
-        const jidUtils = utils?.jid || require('../../utils/jid');
+        const database = services?.database || require('../../../services/database');
+        const jidUtils = utils?.jid || require('../../../core/utils/jid');
 
         const sendReply = async (text) => {
             if (typeof reply === 'function') {

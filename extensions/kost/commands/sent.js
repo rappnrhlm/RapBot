@@ -6,8 +6,8 @@ module.exports = {
     usage: '!sent <ID> | !unsent <ID> | !sent <ID_awal> sampai <ID_akhir> | !sent 2 - 20 | !sent 1, 3, 5',
 
     async execute({ sock, msg, from, senderNumber, command, args, isGroup: isGroupChat, reply, services, utils }) {
-        const database = services?.database || require('../../services/database');
-        const jidUtils = utils?.jid || require('../../utils/jid');
+        const database = services?.database || require('../../../services/database');
+        const jidUtils = utils?.jid || require('../../../core/utils/jid');
 
         const sendReply = async (text) => {
             if (typeof reply === 'function') {

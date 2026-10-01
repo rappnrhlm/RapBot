@@ -87,8 +87,8 @@ module.exports = {
     usage: '!addkost <Nama Kost> > <kontak (ig/wa/tt)> | !kost [all|pending|sent|published] | !kost dm | !kost lengkap <ID> | !cari <keyword>',
 
     async execute({ sock, msg, from, senderNumber, command, args, isGroup: isGroupChat, reply, services, utils }) {
-        const database = services?.database || require('../../services/database');
-        const jidUtils = utils?.jid || require('../../utils/jid');
+        const database = services?.database || require('../../../services/database');
+        const jidUtils = utils?.jid || require('../../../core/utils/jid');
 
         const sendReply = async (text) => {
             if (typeof reply === 'function') {
@@ -177,7 +177,7 @@ Status: 🟡 PROSPEK BARU (BELUM DI-DM)`;
 
                 // Cooldown check for public groups
                 if (isPublicGroup) {
-                    const cooldownUtils = require('../../utils/cooldown');
+                    const cooldownUtils = require('../../../core/utils/cooldown');
                     const cdKey = `cari:${from}:${senderNumber || 'anon'}`;
                     const cdDuration = registeredGroup?.settings?.cooldownSeconds || 10;
                     const cd = cooldownUtils.checkCooldown(cdKey, cdDuration);
