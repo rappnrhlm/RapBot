@@ -6,13 +6,13 @@ const cooldownUtils = require('../utils/cooldown');
 const jidUtils = require('../utils/jid');
 const { PREFIX, getMessageTimestamp, getBody, formatAutoreplyText } = require('./parser');
 const { createContext } = require('./context');
+const extensionManager = require('../extensions/manager');
 
 const BOT_START_TIME = Math.floor(Date.now() / 1000);
 const MAX_MESSAGE_AGE_SECONDS = Number(process.env.MAX_MESSAGE_AGE) || 60;
 
 function loadCommands(dirs = [
-    path.join(__dirname, '..', 'commands'),
-    path.join(__dirname, '..', '..', 'extensions', 'kost', 'commands')
+    path.join(__dirname, '..', 'commands')
 ]) {
     const targetDirs = Array.isArray(dirs) ? dirs : [dirs];
     const commands = new Map();
@@ -57,6 +57,10 @@ function loadCommands(dirs = [
     for (const dir of targetDirs) {
         readDirRecursive(dir);
     }
+
+    // Register external extensions generically from ExtensionManager
+    extensionManager.registerExtensionCommands(commands);
+
     return commands;
 }
 
@@ -250,34 +254,7 @@ async function handleSingleMessage(sock, msg, registry) {
         return;
     }
 
-    // Auto-Helper: deteksi pertanyaan natural seputar info kos di grup publik
-    if (isGroupChat) {
-        const groupInfo = database.getGroupById(from);
-        if (groupInfo && (groupInfo.role === 'public' || groupInfo.settings?.autoHelper)) {
-            const lowerBody = body.toLowerCase();
-            const isKostInquiry =
-                /(info|cari|ada|rekomendasi|spill|minta)\s+(kos|kost|kontrakan|sewa)/i.test(lowerBody) ||
-                /(kos|kost|kontrakan)\s+(putri|putra|cowok|cewek|pasutri|murah|birugo|dekat|uin|unp)/i.test(lowerBody);
 
-            if (isKostInquiry) {
-                const cd = cooldownUtils.checkCooldown(`autohelp:${from}`, 180); // Maksimal 1x tiap 3 menit per grup
-                if (cd.allowed) {
-                    const tip =
-`💡 *Tips Pencarian Kos Otomatis*
-Halo kak! Kamu bisa langsung cari kos dengan ketik:
-\`!cari <kata kunci>\`
-
-_Contoh:_
-• \`!cari birugo\`
-• \`!cari putri\`
-• \`!cari dekat uin\`
-
-📱 Info & update kos: *@bukittinggikos*`;
-                    await sock.sendMessage(from, { text: tip }, { quoted: msg }).catch(() => {});
-                }
-            }
-        }
-    }
 }
 
 module.exports = {

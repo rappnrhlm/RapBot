@@ -1,0 +1,18 @@
+{
+  "id": "example",
+  "name": "Example Extension",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:3006",
+  "description": "Extension generic demonstrasi RapBot",
+  "commands": [
+    {
+      "name": "hello",
+      "aliases": [
+        "hi",
+        "halo"
+      ],
+      "description": "Menyapa dari Example Extension!",
+      "category": "example"
+    }
+  ]
+}

@@ -188,9 +188,8 @@ module.exports = {
 
             if (result.group.role === 'public') {
                 succMsg += `\n\n💡 *Mode Publik Aktif:*\n` +
-                           `- Perintah pencarian: \`!cari <kata kunci>\`\n` +
-                           `- Usul info kos baru: \`!usulkost <nama> > <kontak>\`\n` +
-                           `- Perintah admin (!addkost, !sent, !delkost) otomatis dibatasi.`;
+                           `- Seluruh anggota dapat menggunakan perintah publik.\n` +
+                           `- Perintah admin otomatis dibatasi.`;
             }
 
             return sendReply(succMsg);

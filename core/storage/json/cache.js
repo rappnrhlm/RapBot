@@ -10,10 +10,8 @@ const STATS_FILE = path.join(DATA_DIR, 'stats.json');
 const LOG_FILE = path.join(DATA_DIR, 'command-log.json');
 const WELCOME_FILE = path.join(DATA_DIR, 'welcome.json');
 const AUTOREPLY_FILE = path.join(DATA_DIR, 'autoreplies.json');
-const KOST_FILE = path.join(DATA_DIR, 'kost.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
 const DISCOVERED_GROUPS_FILE = path.join(DATA_DIR, 'discovered_groups.json');
-const SUBMISSIONS_FILE = path.join(DATA_DIR, 'kost_submissions.json');
 const BROADCAST_FILE = path.join(DATA_DIR, 'broadcasts.json');
 
 const SUPER_OWNER = normalizePhoneNumber(process.env.SUPER_OWNER || '');
@@ -52,7 +50,6 @@ const cache = {
         commandUsage: {}
     },
     logs: [],
-    submissions: [],
     broadcasts: [],
     initialized: false
 };
@@ -106,11 +103,6 @@ function initLocalCache() {
             cache.logs = rawLogs;
         }
 
-        const rawSubmissions = readJSON(SUBMISSIONS_FILE, null);
-        if (Array.isArray(rawSubmissions)) {
-            cache.submissions = rawSubmissions;
-        }
-
         const rawBroadcasts = readJSON(BROADCAST_FILE, null);
         if (Array.isArray(rawBroadcasts)) {
             cache.broadcasts = rawBroadcasts;
@@ -131,8 +123,6 @@ function ensureDataFiles() {
     if (!fs.existsSync(AUTOREPLY_FILE)) writeJSON(AUTOREPLY_FILE, cache.autoreplies);
     if (!fs.existsSync(GROUPS_FILE)) writeJSON(GROUPS_FILE, { groups: cache.groups });
     if (!fs.existsSync(DISCOVERED_GROUPS_FILE)) writeJSON(DISCOVERED_GROUPS_FILE, []);
-    if (!fs.existsSync(KOST_FILE)) writeJSON(KOST_FILE, []);
-    if (!fs.existsSync(SUBMISSIONS_FILE)) writeJSON(SUBMISSIONS_FILE, []);
     if (!fs.existsSync(BROADCAST_FILE)) writeJSON(BROADCAST_FILE, cache.broadcasts);
 }
 
@@ -151,10 +141,8 @@ module.exports = {
     LOG_FILE,
     WELCOME_FILE,
     AUTOREPLY_FILE,
-    KOST_FILE,
     GROUPS_FILE,
     DISCOVERED_GROUPS_FILE,
-    SUBMISSIONS_FILE,
     BROADCAST_FILE,
     SUPER_OWNER,
     DEFAULT_WELCOME,

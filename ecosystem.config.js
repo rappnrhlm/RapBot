@@ -11,6 +11,7 @@ module.exports = {
                 '.wwebjs_auth',
                 '.wwebjs_cache',
                 'data',
+                'extensions/*/data',
                 '*.log',
                 '.git'
             ],

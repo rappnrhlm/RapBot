@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Shared Auth and Socket references
 const { ADMIN_PIN, validatePin, extractPin } = require('./auth');
 const { setBotSocket, getBotSocket, getBotStatus } = require('./socket');
-const kostRouter = require('../extensions/kost/web/router');
+const extensionManager = require('../core/extensions/manager');
 
 // ----------------------------------------------------
 // AUTH & PIN VERIFICATION API
@@ -43,23 +43,6 @@ app.get('/api/system/status', async (req, res) => {
         const groups = database.getGroups();
         const owners = database.getOwners();
 
-        let totalKost = 0;
-        let pendingKost = 0;
-        let sentKost = 0;
-        let pendingSubmissions = 0;
-
-        try {
-            const kostStats = await database.getKostStats();
-            totalKost = kostStats?.total || 0;
-            pendingKost = kostStats?.pending || 0;
-            sentKost = kostStats?.sent || 0;
-        } catch {}
-
-        try {
-            const subs = await database.getKostSubmissions({ status: 'pending' });
-            pendingSubmissions = subs.length;
-        } catch {}
-
         let botUserJid = null;
         const sock = getBotSocket();
         if (sock?.user?.id) {
@@ -80,10 +63,6 @@ app.get('/api/system/status', async (req, res) => {
                 counts: {
                     groups: groups.length,
                     owners: owners.length,
-                    totalKost,
-                    pendingKost,
-                    sentKost,
-                    pendingSubmissions,
                     commands: stats?.commands || 0,
                     messages: stats?.messages || 0,
                     stickers: stats?.stickers || 0,
@@ -333,8 +312,7 @@ app.get('/api/groups', async (req, res) => {
 // ----------------------------------------------------
 function scanAvailableFeatures() {
     const commandDirs = [
-        path.join(__dirname, '..', 'core', 'commands'),
-        path.join(__dirname, '..', 'extensions', 'kost', 'commands')
+        path.join(__dirname, '..', 'core', 'commands')
     ];
     const features = [];
 
@@ -661,12 +639,7 @@ app.delete('/api/groups/:id', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// 4. BUKITTINGGI KOS & SUBMISSIONS API (Mounted from extensions/kost)
-// ----------------------------------------------------
-app.use(kostRouter);
-
-// ----------------------------------------------------
-// 5. AUTOREPLIES API
+// 4. AUTOREPLIES API
 // ----------------------------------------------------
 
 app.get('/api/autoreplies', (req, res) => {

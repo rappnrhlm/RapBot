@@ -1,0 +1,94 @@
+[
+  {
+    "id": "kost",
+    "name": "Bukittinggi Kos",
+    "endpoint": "http://localhost:3005",
+    "enabled": true,
+    "commands": [
+      {
+        "name": "kost",
+        "aliases": ["listkost", "kos", "kostdm"],
+        "description": "Menampilkan daftar listing kos, filter status, dan detail lengkap",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "addkost",
+        "aliases": [],
+        "description": "Menambahkan data kos baru (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "cari",
+        "aliases": ["carikost", "infokost"],
+        "description": "Mencari kos berdasarkan nama, kontak, atau lokasi",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "dm",
+        "aliases": ["dmpromosi", "dmkost"],
+        "description": "Menyiapkan balon teks template DM promosi siap kirim (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "sent",
+        "aliases": ["kirim", "unsent", "pending"],
+        "description": "Menandai status kos menjadi SENT atau kembali ke PENDING (Dukung range/batch)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "post",
+        "aliases": ["tayang", "publikasikan", "unpost", "tarik"],
+        "description": "Mempublikasikan kos menjadi tayang ke publik atau unpost",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "editkost",
+        "aliases": ["ubahkost", "updatekost", "kostedit"],
+        "description": "Mengedit nama atau kontak data kos",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "delkost",
+        "aliases": ["hapuskost"],
+        "description": "Menghapus data kos dari database",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "usulkost",
+        "aliases": ["submitkost", "usul", "suggest", "daftarkost"],
+        "description": "Mengusulkan data kos baru dari grup publik untuk direview admin",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "listusul",
+        "aliases": ["usulan", "daftarusul", "daftar-usul", "usulan-kost"],
+        "description": "Melihat antrean usulan kos dari warga (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "acc",
+        "aliases": ["approvekost", "terimakost", "acckost", "terimausul", "setujuiusul", "acc-usul"],
+        "description": "Menyetujui usulan kos warga dan memasukkannya ke database (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "tolak",
+        "aliases": ["tolakusul", "rejectusul", "tolak-usul", "rejectkost", "tolakkost"],
+        "description": "Menolak usulan kos dari warga (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "delusul",
+        "aliases": ["hapususul", "usuldel"],
+        "description": "Menghapus antrean data usulan kos (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      },
+      {
+        "name": "editusul",
+        "aliases": ["ubahusul", "updateusul", "usuledit"],
+        "description": "Mengedit data nama/kontak usulan warga (Khusus Admin)",
+        "category": "bukittinggi-kos"
+      }
+    ]
+  }
+]

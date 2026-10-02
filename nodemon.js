@@ -3,6 +3,7 @@ module.exports = {
         'auth_baileys/*',
         '.wwebjs_auth/*',
         '.wwebjs_cache/*',
-        'data/*'
+        'data/*',
+        'extensions/*/data/*'
     ]
 };

@@ -1,18 +1,17 @@
 // core/storage/mariadb/schema.js - DDL table initialization, auto-seeding, and cache synchronization
 const { getPool } = require('./pool');
 const {
-    KOST_FILE,
     GROUPS_FILE,
     AUTOREPLY_FILE,
     OWNER_FILE,
     WELCOME_FILE,
     STATS_FILE,
-    SUBMISSIONS_FILE,
     SUPER_OWNER,
     DEFAULT_WELCOME,
     cache,
     syncDataFile
 } = require('../json/cache');
+
 const { readJSON } = require('../../utils/json');
 const { normalizePhoneNumber } = require('../../utils/phone');
 const { normalizeJid } = require('../../utils/jid');
@@ -20,39 +19,13 @@ const { normalizeJid } = require('../../utils/jid');
 async function ensureAllTables() {
     const db = getPool();
 
-    // 1. Table: kost
-    await db.query(`
-        CREATE TABLE IF NOT EXISTS kost (
-            id VARCHAR(20) NOT NULL PRIMARY KEY,
-            group_id VARCHAR(100) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            instagram VARCHAR(100) DEFAULT NULL,
-            tiktok VARCHAR(100) DEFAULT NULL,
-            whatsapp VARCHAR(50) DEFAULT NULL,
-            status VARCHAR(50) NOT NULL DEFAULT 'pending',
-            added_by VARCHAR(100) DEFAULT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            sent_by VARCHAR(100) DEFAULT NULL,
-            sent_at DATETIME DEFAULT NULL,
-            INDEX idx_group_id (group_id),
-            INDEX idx_group_status (group_id, status)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-
-    try {
-        await db.query(`ALTER TABLE kost MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'pending'`);
-        await db.query(`ALTER TABLE kost ADD COLUMN IF NOT EXISTS tiktok VARCHAR(100) NULL AFTER instagram`);
-        await db.query(`ALTER TABLE kost ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(50) NULL AFTER tiktok`);
-        await db.query(`ALTER TABLE kost MODIFY COLUMN instagram VARCHAR(100) NULL DEFAULT NULL`);
-    } catch {}
-
-    // 2. Table: bot_groups (Persistent Group Registration)
+    // 1. Table: bot_groups (Persistent Group Registration)
     await db.query(`
         CREATE TABLE IF NOT EXISTS bot_groups (
             id VARCHAR(100) NOT NULL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             group_name VARCHAR(255) DEFAULT '',
-            type VARCHAR(50) NOT NULL DEFAULT 'kos',
+            type VARCHAR(50) NOT NULL DEFAULT 'umum',
             role VARCHAR(20) NOT NULL DEFAULT 'admin',
             parent_group_id VARCHAR(100) DEFAULT NULL,
             settings_json TEXT DEFAULT NULL,
@@ -63,27 +36,11 @@ async function ensureAllTables() {
     `);
 
     try {
-        await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS type VARCHAR(50) NOT NULL DEFAULT 'kos' AFTER name`);
+        await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS type VARCHAR(50) NOT NULL DEFAULT 'umum' AFTER name`);
         await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'admin' AFTER type`);
         await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS parent_group_id VARCHAR(100) NULL DEFAULT NULL AFTER role`);
         await db.query(`ALTER TABLE bot_groups ADD COLUMN IF NOT EXISTS settings_json TEXT NULL DEFAULT NULL AFTER parent_group_id`);
     } catch {}
-
-    // 2b. Table: kost_submissions (Crowdsourcing Usul Kos)
-    await db.query(`
-        CREATE TABLE IF NOT EXISTS kost_submissions (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            group_id VARCHAR(100) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            contacts_raw TEXT NOT NULL,
-            submitted_by VARCHAR(100) NOT NULL,
-            submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            status VARCHAR(20) NOT NULL DEFAULT 'pending',
-            reviewed_by VARCHAR(100) DEFAULT NULL,
-            reviewed_at DATETIME DEFAULT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
 
     // 3. Table: autoreplies (Dynamic Multi-Trigger Autoreply)
     await db.query(`
@@ -163,28 +120,7 @@ async function ensureAllTables() {
 }
 
 async function autoSeedTablesIfEmpty(db) {
-    // 1. Seed kost from data/kost.json if table is empty
-    try {
-        const [cntRows] = await db.query('SELECT COUNT(*) as cnt FROM kost');
-        if (cntRows[0]?.cnt === 0) {
-            const fileKost = readJSON(KOST_FILE, []);
-            if (Array.isArray(fileKost) && fileKost.length > 0) {
-                for (const k of fileKost) {
-                    if (!k?.id || !k?.name) continue;
-                    await db.query(
-                        `INSERT IGNORE INTO kost (id, group_id, name, instagram, tiktok, whatsapp, status, added_by, created_at, sent_by, sent_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [k.id, k.groupId || k.group_id || '', k.name, k.instagram || null, k.tiktok || null, k.whatsapp || null, k.status || 'pending', k.addedBy || k.added_by || 'init', k.createdAt || k.created_at ? new Date(k.createdAt || k.created_at) : new Date(), k.sentBy || k.sent_by || null, k.sentAt || k.sent_at ? new Date(k.sentAt || k.sent_at) : null]
-                    );
-                }
-                console.log(`[core/storage] Auto-seeded ${fileKost.length} data kost ke MariaDB.`);
-            }
-        }
-    } catch (e) {
-        console.error('[core/storage] Auto-seed kost check error:', e.message);
-    }
-
-    // 2. Seed bot_groups from data/groups.json if table is empty
+    // 1. Seed bot_groups from data/groups.json if table is empty
     try {
         const [cntGroups] = await db.query('SELECT COUNT(*) as cnt FROM bot_groups');
         if (cntGroups[0]?.cnt === 0) {
@@ -195,7 +131,7 @@ async function autoSeedTablesIfEmpty(db) {
                 await db.query(
                     `INSERT IGNORE INTO bot_groups (id, name, group_name, type, role, parent_group_id, settings_json, initialized_at, initialized_by)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [g.id, g.name || 'Grup', g.groupName || '', g.type || 'kos', g.role || 'admin', g.parentGroupId || null, JSON.stringify(g.settings || {}), g.initializedAt ? new Date(g.initializedAt) : new Date(), g.initializedBy || '']
+                    [g.id, g.name || 'Grup', g.groupName || '', g.type || 'umum', g.role || 'admin', g.parentGroupId || null, JSON.stringify(g.settings || {}), g.initializedAt ? new Date(g.initializedAt) : new Date(), g.initializedBy || '']
                 );
             }
             if (list.length > 0) {
@@ -304,36 +240,6 @@ async function autoSeedTablesIfEmpty(db) {
     } catch (e) {
         console.error('[core/storage] Auto-seed bot_stats check error:', e.message);
     }
-
-    // 7. Seed kost_submissions
-    try {
-        const [cntSub] = await db.query('SELECT COUNT(*) as cnt FROM kost_submissions');
-        if (cntSub[0]?.cnt === 0) {
-            const fileSubs = readJSON(SUBMISSIONS_FILE, []);
-            if (Array.isArray(fileSubs) && fileSubs.length > 0) {
-                for (const sub of fileSubs) {
-                    await db.query(
-                        `INSERT INTO kost_submissions (id, group_id, name, contacts_raw, submitted_by, submitted_at, status, reviewed_by, reviewed_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [
-                            sub.id || null,
-                            sub.groupId || '',
-                            sub.name || 'Usulan',
-                            sub.contactsRaw || '',
-                            sub.submittedBy || '',
-                            sub.submittedAt ? new Date(sub.submittedAt) : new Date(),
-                            sub.status || 'pending',
-                            sub.reviewedBy || null,
-                            sub.reviewedAt ? new Date(sub.reviewedAt) : null
-                        ]
-                    );
-                }
-                console.log(`[core/storage] Auto-seeded ${fileSubs.length} kost submissions ke MariaDB.`);
-            }
-        }
-    } catch (e) {
-        console.error('[core/storage] Auto-seed kost submissions check error:', e.message);
-    }
 }
 
 async function refreshDatabaseCache() {
@@ -363,7 +269,7 @@ async function refreshDatabaseCache() {
                     id: r.id,
                     name: r.name,
                     groupName: r.group_name || '',
-                    type: r.type || 'kos',
+                    type: r.type || 'umum',
                     role: r.role || 'admin',
                     parentGroupId: r.parent_group_id || null,
                     settings: settings || {},
@@ -372,25 +278,6 @@ async function refreshDatabaseCache() {
                 };
             });
             syncDataFile(GROUPS_FILE, { groups: cache.groups });
-        }
-
-        // 2b. Refresh Kost Submissions
-        try {
-            const [subRows] = await db.query('SELECT id, group_id, name, contacts_raw, submitted_by, submitted_at, status, reviewed_by, reviewed_at FROM kost_submissions ORDER BY id DESC');
-            cache.submissions = subRows.map(r => ({
-                id: r.id,
-                groupId: r.group_id,
-                name: r.name,
-                contactsRaw: r.contacts_raw,
-                submittedBy: r.submitted_by,
-                submittedAt: r.submitted_at,
-                status: r.status,
-                reviewedBy: r.reviewed_by,
-                reviewedAt: r.reviewed_at
-            }));
-            syncDataFile(SUBMISSIONS_FILE, cache.submissions);
-        } catch (subErr) {
-            console.warn('[core/storage] Warning reading submissions from MariaDB:', subErr.message);
         }
 
         // 3. Refresh Autoreplies

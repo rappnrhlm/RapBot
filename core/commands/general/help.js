@@ -1,3 +1,4 @@
+// core/commands/general/help.js - Dynamic Help Command
 module.exports = {
     name: 'help',
     aliases: ['bantuan'],
@@ -5,59 +6,12 @@ module.exports = {
     description: 'Menampilkan panduan lengkap seluruh perintah bot.',
     usage: '!help atau !help <command>',
 
-    async execute({ sock, msg, from, senderNumber, args, reply, services, utils, isGroup: isGroupChat }) {
+    async execute({ sock, msg, from, senderNumber, args, reply, services, utils, isGroup: isGroupChat, commands: registry }) {
         const database = services?.database || require('../../services/database');
         const jidUtils = utils?.jid || require('../../utils/jid');
 
         const inGroup = typeof isGroupChat === 'boolean' ? isGroupChat : jidUtils.isGroup(from);
         const isOwner = database.isOwner(senderNumber);
-
-        let showKosAdmin = false;
-        let showKosPublic = false;
-
-        if (inGroup) {
-            const cleanFrom = jidUtils.normalizeJid(from);
-            const groupObj = database.getGroupById(cleanFrom);
-            const effectiveGroupId = database.resolveDataGroupId(cleanFrom);
-            const effectiveGroupObj = effectiveGroupId ? database.getGroupById(effectiveGroupId) : groupObj;
-
-            const isKosType = Boolean(
-                (groupObj && (groupObj.type === 'kos' || !groupObj.type)) ||
-                (effectiveGroupObj && (effectiveGroupObj.type === 'kos' || !effectiveGroupObj.type))
-            );
-
-            if (isKosType) {
-                const role = groupObj?.role || 'admin';
-                if (role === 'admin' || isOwner) {
-                    showKosAdmin = true;
-                    showKosPublic = true;
-                } else if (role === 'public') {
-                    showKosPublic = true;
-                }
-            }
-        } else {
-            // Private chat (DM ke bot)
-            if (isOwner) {
-                showKosAdmin = true;
-                showKosPublic = true;
-            }
-        }
-
-        const kosAdminCmds = new Set([
-            'kost', 'kos', 'kosts', 'kostdm', 'listkost',
-            'addkost',
-            'dm', 'dmpromosi', 'dmkost',
-            'sent', 'kirim', 'terkirim', 'marksent',
-            'delkost', 'hapuskost',
-            'listusul', 'usulan', 'daftar-usul', 'usulan-kost',
-            'acc', 'terimausul', 'setujuiusul', 'acc-usul',
-            'tolak', 'tolakusul', 'rejectusul', 'tolak-usul'
-        ]);
-
-        const kosPublicCmds = new Set([
-            'cari',
-            'usulkost', 'usul', 'suggest', 'daftarkost'
-        ]);
 
         const helps = {
             // General
@@ -83,6 +37,7 @@ module.exports = {
             togambar: '🖼️ `!toimg`\nReply stiker dengan `!togambar` untuk mengubahnya kembali menjadi foto/gambar.',
 
             // Group
+            initgroup: '👥 `!initgroup [admin|public] <nama>`\nMendaftarkan grup ke sistem bot.',
             groupinfo: '👥 `!groupinfo`\nMenampilkan informasi lengkap grup (nama, deskripsi, pembuat, jumlah member).',
             listadmin: '👑 `!listadmin`\nMenampilkan daftar nama dan nomor seluruh admin grup.',
             tagall: '📢 `!tagall`\nMention seluruh anggota grup secara terbuka.',
@@ -91,8 +46,10 @@ module.exports = {
             kick: '🔨 `!kick @user`\nMengeluarkan anggota dari grup (Khusus Admin). Bisa juga reply pesan target lalu ketik `!kick`.',
             promote: '👑 `!promote @user`\nMenaikkan anggota menjadi admin grup (Khusus Admin).',
             demote: '⬇️ `!demote @user`\nMenurunkan admin menjadi anggota biasa (Khusus Admin).',
-            welcome: '👋 `!welcome [on|off|reset]`\nMengatur sambutan otomatis khusus grup ini. Gunakan `!welcome` untuk cek status, `!welcome on/off`, atau `!welcome reset` untuk kembali ke default global.',
-            setwelcome: '✏️ `!setwelcome <teks>`\nMengatur teks sambutan khusus grup ini (bisa dipisah tiap grup). Tag: `@user`, `@group`, `@desc`, `@count`, `@date`, `@time`.\nContoh: `!setwelcome Selamat datang @user di *@group*! Jangan lupa baca deskripsi ya.`',
+            welcome: '👋 `!welcome [on|off|reset]`\nMengatur sambutan otomatis khusus grup ini.',
+            setwelcome: '✏️ `!setwelcome <teks>`\nMengatur teks sambutan khusus grup ini.',
+            clear: '🧹 `!clear [jumlah]` atau `!del (reply chat)`\nMenghapus pesan bot untuk membersihkan chat.',
+            del: '🗑️ `!del (reply chat)`\nMenghapus pesan yang di-reply untuk semua orang di grup.',
 
             // Owner
             owner: '👑 `!owner list` | `!owner add <nomor>` | `!owner delete <nomor>`\nManajemen daftar owner bot (Khusus Super Owner).',
@@ -102,55 +59,41 @@ module.exports = {
 
             // Autoreply
             autoreply: '🤖 `!autoreply list` | `!autoreply-add` | `!autoreply-edit` | `!autoreply-del`\nPengaturan pesan balasan otomatis bot (Khusus Owner).',
-            'autoreply-add': '🤖 `!autoreply-add <trigger>|<respons>`\nMenambahkan respons otomatis baru (Khusus Owner).\nContoh multi-trigger:\n`!autoreply-add {!rekening/!rek/!norek}|Transfer BCA: 8456243687`\n🖼️ *Media:* Kirim/reply gambar untuk membuat autoreply bergambar.\n🔒 *Khusus Owner:* Tambahkan `--owner` di akhir respons (contoh: `!autoreply-add !qris|Scan QRIS di atas --owner --global`).\n💡 Mendukung enter langsung atau `\\n`.',
+            'autoreply-add': '🤖 `!autoreply-add <trigger>|<respons>`\nMenambahkan respons otomatis baru (Khusus Owner).',
             'autoreply-list': '📋 `!autoreply-list`\nMenampilkan seluruh pesan balasan otomatis yang terdaftar di database.',
             'autoreply-edit': '✏️ `!autoreply-edit <trigger>|<respons baru>`\nMengubah balasan autoreply yang sudah terdaftar (Khusus Owner).',
-            'autoreply-del': '🗑️ `!autoreply-del <trigger>`\nMenghapus autoreply dari database (Khusus Owner).',
-
-            // Bukittinggi Kos
-            initgroup: '👥 `!initgroup [admin|public] <nama> [--link <grup_induk>]`\nMendaftarkan grup ke database. Mendukung mode admin, publik dengan link data, atau `!initgroup list`.\nContoh:\n• Admin: `!initgroup admin Bukittinggi Kos`\n• Publik: `!initgroup public Komunitas Kos --link Bukittinggi Kos`\n• Daftar grup: `!initgroup list`',
-            kost: '🏠 *MANAJEMEN KOST: !kost*\n\n`!kost` atau `!kost pending` — Daftar kos yang belum di-DM\n`!kost sent` — Daftar kos yang sudah di-DM\n`!kost all` — Semua daftar kos\n`!kost dm` — Format ringkas & link langsung untuk DM IG/WA/TT\n`!kost dm <ID>` / `!dm <ID>` — Link prefilled & balon template DM siap salin\n`!kost lengkap <ID>` — Detail lengkap satu kos (ID bisa: `12`, `KST-12`, `kst 12`, `KST-000012`)',
-            dm: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin untuk pemilik kos (Khusus Admin).\nFormat ID fleksibel: `!dm 12`, `!dm 000012`, `!dm KST-12`, `!dm kst 12`, `!dm KST-000012`.',
-            dmpromosi: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin (alias dari !dm).',
-            dmkost: '💬 `!dm <ID>`\nMenyiapkan link WhatsApp prefilled & balon teks DM promosi siap salin (alias dari !dm).',
-            addkost: '🏠 `!addkost <Nama Kost> > <kontak>`\nMenambahkan data kos ke database (khusus Admin).\nContoh:\n• `!addkost Kost Melati > kostmelati_bkt`\n• `!addkost Kost Mawar > wa: 08123456789`\n• `!addkost Kost Indah > ig: indah | wa: 08123456789 | tt: indahkos`',
-            cari: '🔍 `!cari <keyword>`\nMencari data kos (aktif di grup Admin & Publik).\nContoh: `!cari birugo` atau `!cari 0812`',
-            usulkost: '📥 `!usulkost <Nama> > <Kontak>`\nMengusulkan data kos baru dari grup publik untuk direview oleh admin.\nContoh:\n`!usulkost Kost Melati > wa: 08123456789`\n`!usulkost Kost Flamboyan > ig: flamboyankos`',
-            listusul: '📥 `!listusul [pending|all|approved|rejected]`\nMenampilkan daftar usulan kos warga yang masuk (Khusus Admin).',
-            acc: '✅ `!acc <ID Usulan>`\nMenyetujui usulan kos dari warga dan otomatis memasukkannya ke database (Khusus Admin).\nContoh: `!acc 1`',
-            tolak: '❌ `!tolak <ID Usulan>`\nMenolak usulan kos dari warga (Khusus Admin).\nContoh: `!tolak 1`',
-            sent: '✅ `!sent <ID>` atau `!sent 2 sampai 20`\nMenandai status kos menjadi SENT (mendukung satu ID, daftar koma, atau range).\nContoh:\n• `!sent 12` atau `!sent KST-12` atau `!sent KST-000012`\n• `!sent 2 sampai 20` atau `!sent 2 - 20`\n• `!sent 1, 3, 5`',
-            clear: '🧹 `!clear [jumlah]` atau `!del (reply chat)`\nMenghapus pesan bot (atau pesan member) untuk semua orang di grup agar riwayat chat bersih.\nContoh:\n• `!clear` (hapus 5 pesan bot terakhir)\n• `!clear 10` (hapus 10 pesan bot terakhir)\n• Reply chat + `!del` (hapus pesan tersebut)',
-            del: '🗑️ `!del (reply chat)`\nMenghapus pesan yang di-reply untuk semua orang di grup (alias dari !clear).'
+            'autoreply-del': '🗑️ `!autoreply-del <trigger>`\nMenghapus autoreply dari database (Khusus Owner).'
         };
 
         if (!args || !args[0]) {
             const sections = [];
 
-            if (showKosAdmin) {
-                sections.push(
-`🏠 *BUKITTINGGI KOS (ADMIN)*
-│ \`!kost\` — Daftar kos (pending/sent/all)
-│ \`!kost dm\` — Format ringkas link untuk DM
-│ \`!dm <ID>\` — Link WA & balon template DM siap salin
-│ \`!kost lengkap <ID>\` — Detail lengkap data kos
-│ \`!addkost <Nama> > <kontak>\` — Tambah data kos (IG/WA/TT)
-│ \`!sent <ID/range>\` — Tandai kos sudah di-DM (dukung range)
-│ \`!delkost <ID>\` — Hapus data kos
-│ \`!listusul\` — Daftar usulan kos dari warga
-│ \`!acc <ID>\` — Setujui usulan kos warga
-│ \`!tolak <ID>\` — Tolak usulan kos warga`
-                );
+            // 1. Dynamic Extension Commands Section
+            if (registry) {
+                const extensionsMap = new Map();
+                for (const [key, cmd] of registry.entries()) {
+                    if (cmd.isExtension && cmd.extensionInfo && cmd.name === key) {
+                        const extId = cmd.extensionInfo.id || 'extension';
+                        if (!extensionsMap.has(extId)) {
+                            extensionsMap.set(extId, {
+                                name: cmd.extensionInfo.name || extId,
+                                commands: []
+                            });
+                        }
+                        extensionsMap.get(extId).commands.push(cmd);
+                    }
+                }
+
+                for (const [extId, extData] of extensionsMap.entries()) {
+                    const extLines = [`🔌 *${extData.name.toUpperCase()}*`];
+                    for (const cmd of extData.commands) {
+                        extLines.push(`│ \`!${cmd.name}\` — ${cmd.description || 'Extension command'}`);
+                    }
+                    sections.push(extLines.join('\n'));
+                }
             }
 
-            if (showKosPublic) {
-                sections.push(
-`🔍 *PUBLIK & WARGA*
-│ \`!cari <keyword>\` — Cari kos berdasarkan nama/daerah
-│ \`!usulkost <Nama> > <kontak>\` — Usulkan info kos baru`
-                );
-            }
-
+            // 2. Core Sticker & Media
             sections.push(
 `🎨 *STICKER & MEDIA*
 │ \`!stiker\` — Ubah gambar jadi stiker (caption/reply)
@@ -160,16 +103,7 @@ module.exports = {
 │ \`!brat <teks>\` — Buat stiker Brat aesthetic`
             );
 
-            if (isOwner) {
-                sections.push(
-`🤖 *AUTOREPLY (OWNER)*
-│ \`!autoreply-list\` — Lihat semua autoreply aktif
-│ \`!autoreply-add <trig>|<resp>\` — Tambah autoreply (multi-trigger)
-│ \`!autoreply-edit <trig>|<resp>\` — Ubah isi respons
-│ \`!autoreply-del <trig>\` — Hapus autoreply`
-                );
-            }
-
+            // 3. Core Group
             sections.push(
 `👥 *GRUP & MEMBER*
 │ \`!initgroup <nama>\` — Inisialisasi grup di bot
@@ -183,6 +117,7 @@ module.exports = {
 │ \`!setwelcome <teks>\` — Atur teks sambutan`
             );
 
+            // 4. Core Admin
             sections.push(
 `👑 *ADMIN GRUP*
 │ \`!add 628xxx\` — Tambah anggota ke grup
@@ -191,6 +126,18 @@ module.exports = {
 │ \`!demote @user\` — Turunkan dari admin`
             );
 
+            // 5. Core Owner (if owner)
+            if (isOwner) {
+                sections.push(
+`🤖 *AUTOREPLY (OWNER)*
+│ \`!autoreply-list\` — Lihat semua autoreply aktif
+│ \`!autoreply-add <trig>|<resp>\` — Tambah autoreply (multi-trigger)
+│ \`!autoreply-edit <trig>|<resp>\` — Ubah isi respons
+│ \`!autoreply-del <trig>\` — Hapus autoreply`
+                );
+            }
+
+            // 6. Core System
             sections.push(
 `⚙️ *SISTEM & OWNER*
 │ \`!ping\` — Cek status & latency bot
@@ -200,7 +147,6 @@ module.exports = {
 │ \`!owner add/del\` — Tambah/hapus owner`
             );
 
-            const exampleTip = showKosAdmin ? '`!help addkost` atau `!help stiker`' : '`!help stiker` atau `!help groupinfo`';
             const fullGuide =
 `╭━━━〔 📖 *PANDUAN LENGKAP BOT* 〕━━━╮
 
@@ -210,7 +156,7 @@ ${sections.join('\n\n')}
 
 💡 *TIPS:*
 Ketik \`!help <nama_command>\` untuk panduan lebih detail.
-Contoh: ${exampleTip}`;
+Contoh: \`!help stiker\` atau \`!help groupinfo\``;
 
             if (typeof reply === 'function') {
                 await reply(fullGuide);
@@ -222,20 +168,15 @@ Contoh: ${exampleTip}`;
 
         const targetCmd = args[0].toLowerCase().replace(/^!/, '');
 
-        // Validasi pembatasan perintah kos untuk grup non-kos
-        if (kosAdminCmds.has(targetCmd) && !showKosAdmin) {
-            const notFoundText = `❌ Perintah \`!${targetCmd}\` hanya tersedia di grup internal admin Bukittinggi Kos.`;
-            if (typeof reply === 'function') return await reply(notFoundText);
-            return await sock.sendMessage(from, { text: notFoundText }, { quoted: msg });
+        // Check if command is in dynamic registry
+        const registeredCmd = registry?.get(targetCmd);
+        if (registeredCmd && registeredCmd.isExtension) {
+            const extHelp = `🔌 *Command Extension: !${registeredCmd.name}*\n\n${registeredCmd.description || '-'}\n\nDisediakan oleh: *${registeredCmd.extensionInfo?.name || 'External Extension'}*`;
+            if (typeof reply === 'function') return await reply(extHelp);
+            return await sock.sendMessage(from, { text: extHelp }, { quoted: msg });
         }
 
-        if (kosPublicCmds.has(targetCmd) && !showKosPublic) {
-            const notFoundText = `❌ Perintah \`!${targetCmd}\` hanya tersedia di grup Bukittinggi Kos.`;
-            if (typeof reply === 'function') return await reply(notFoundText);
-            return await sock.sendMessage(from, { text: notFoundText }, { quoted: msg });
-        }
-
-        const helpText = helps[targetCmd] || `❌ Help untuk \`!${targetCmd}\` tidak ditemukan.\n\nKetik \`!help\` untuk melihat seluruh daftar perintah.`;
+        const helpText = helps[targetCmd] || (registeredCmd ? `ℹ️ \`!${registeredCmd.name}\`\n${registeredCmd.description || '-'}` : `❌ Help untuk \`!${targetCmd}\` tidak ditemukan.\n\nKetik \`!help\` untuk melihat seluruh daftar perintah.`);
 
         if (typeof reply === 'function') {
             await reply(helpText);
