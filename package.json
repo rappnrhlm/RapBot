@@ -1,8 +1,8 @@
 {
-  "name": "bot-wa-wwebjs",
+  "name": "rapbot-core",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Modular WhatsApp Bot Core with Baileys & Dynamic Extensions",
+  "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
     "dev": "nodemon --ignore auth_baileys/ --ignore data/ --ignore owners.json bot.js",
