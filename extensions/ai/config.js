@@ -44,7 +44,7 @@ function loadConfig() {
         port: Number(get('PORT', 3007)),
         enabled: get('AI_ENABLED', 'true') === 'true' || get('AI_ENABLED', 'true') === true,
         provider: (get('AI_PROVIDER', 'gemini')).toLowerCase(),
-        model: get('AI_MODEL', 'gemini-2.5-flash'),
+        model: get('AI_MODEL', 'gemini-3.5-flash-lite'),
         geminiApiKey: get('GEMINI_API_KEY', '').trim(),
         dailyBudgetIDR: Number(get('AI_DAILY_BUDGET_IDR', 1000)),
         monthlyBudgetIDR: Number(get('AI_MONTHLY_BUDGET_IDR', 25000)),
