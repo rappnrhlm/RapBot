@@ -24,6 +24,21 @@ class GeminiProvider extends BaseProvider {
         const url = `${this.baseUrl.replace(/\/+$/, '')}/v1beta/models/${model}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
 
         const requestPayload = {
+            systemInstruction: {
+                parts: [
+                    {
+                        text: (
+                            "Kamu adalah asisten AI cerdas di RapBot WhatsApp. Berikan jawaban yang ramah, ringkas, padat, dan SANGAT NYAMAN DIBACA di layar HP WhatsApp.\n\n" +
+                            "PANDUAN FORMAT WAJIB KHUSUS WHATSAPP:\n" +
+                            "1. DILARANG menggunakan tanda Markdown heading (#, ##, ###, ####). Ganti sub-judul atau penomoran dengan teks tebal biasa, contoh: *1. Apa itu RDW?*\n" +
+                            "2. DILARANG menggunakan garis pemisah horizontal (--- atau ___).\n" +
+                            "3. Gunakan simbol titik bulat '• ' untuk poin-poin list, JANGAN gunakan tanda bintang (*).\n" +
+                            "4. Gunakan format WhatsApp: *tebal* untuk kata penting, _miring_ untuk istilah asing/latin, dan `kode` untuk teks teknis.\n" +
+                            "5. Jangan berlebihan memakai tanda bintang/kutip di setiap kalimat. Buat teks mengalir rapi, natural, dan bersih."
+                        )
+                    }
+                ]
+            },
             contents: [
                 {
                     parts: [

@@ -1,6 +1,7 @@
 // extensions/ai/src/aiService.js - Main orchestrator for RapBot AI Extension
 const { providerFactory } = require('./providers/providerFactory');
 const { getModelPricing } = require('./utils/pricing');
+const { formatWhatsApp } = require('./utils/formatter');
 
 class AiService {
     constructor({ config, storage, budgetManager, rateLimiter }) {
@@ -229,7 +230,7 @@ class AiService {
 
             return {
                 type: 'reply',
-                text: result.text
+                text: formatWhatsApp(result.text)
             };
         } catch (err) {
             // 10. Failure handling: release locks & record failure

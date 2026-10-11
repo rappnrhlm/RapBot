@@ -1,31 +1,31 @@
 {
-  "totalRequests": 1,
-  "successfulRequests": 1,
+  "totalRequests": 2,
+  "successfulRequests": 2,
   "failedRequests": 0,
-  "totalInputTokens": 20,
-  "totalOutputTokens": 10,
-  "totalCostIdr": 0.496,
+  "totalInputTokens": 40,
+  "totalOutputTokens": 20,
+  "totalCostIdr": 0.992,
   "daily": {
     "2026-10-11": {
       "date": "2026-10-11",
-      "requests": 1,
-      "successful": 1,
+      "requests": 2,
+      "successful": 2,
       "failed": 0,
-      "inputTokens": 20,
-      "outputTokens": 10,
-      "costIdr": 0.496
+      "inputTokens": 40,
+      "outputTokens": 20,
+      "costIdr": 0.992
     }
   },
   "monthly": {
     "2026-10": {
       "month": "2026-10",
-      "requests": 1,
-      "successful": 1,
+      "requests": 2,
+      "successful": 2,
       "failed": 0,
-      "inputTokens": 20,
-      "outputTokens": 10,
-      "costIdr": 0.496
+      "inputTokens": 40,
+      "outputTokens": 20,
+      "costIdr": 0.992
     }
   },
-  "lastUpdated": "2026-10-11T01:03:11.372Z"
+  "lastUpdated": "2026-10-11T01:24:51.514Z"
 }
