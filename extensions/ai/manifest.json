@@ -1,0 +1,15 @@
+{
+  "id": "ai",
+  "name": "RapBot AI",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:3007",
+  "description": "Fitur kecerdasan buatan berbasis Google Gemini API",
+  "commands": [
+    {
+      "name": "ai",
+      "aliases": [],
+      "description": "Tanya jawab cerdas menggunakan AI (!ai <pertanyaan>, !ai status, !ai usage)",
+      "category": "ai"
+    }
+  ]
+}

@@ -90,5 +90,20 @@
         "category": "bukittinggi-kos"
       }
     ]
+  },
+  {
+    "id": "ai",
+    "name": "RapBot AI",
+    "endpoint": "http://localhost:3007",
+    "enabled": true,
+    "timeoutMs": 30000,
+    "commands": [
+      {
+        "name": "ai",
+        "aliases": [],
+        "description": "Tanya jawab cerdas menggunakan AI (!ai <pertanyaan>, !ai status, !ai usage)",
+        "category": "ai"
+      }
+    ]
   }
 ]

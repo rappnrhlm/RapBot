@@ -1,0 +1,18 @@
+{
+  "name": "rapbot-extension-ai",
+  "version": "1.0.0",
+  "description": "Google Gemini AI Extension for RapBot WhatsApp",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/ai.test.js"
+  },
+  "keywords": [
+    "rapbot",
+    "whatsapp",
+    "gemini",
+    "ai"
+  ],
+  "author": "",
+  "license": "ISC"
+}

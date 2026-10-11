@@ -22,6 +22,24 @@ module.exports = {
             env: {
                 NODE_ENV: 'production'
             }
+        },
+        {
+            name: 'rapbot-ai',
+            script: 'extensions/ai/server.js',
+            watch: true,
+            ignore_watch: [
+                'node_modules',
+                'extensions/ai/data',
+                '*.log',
+                '.git'
+            ],
+            watch_options: {
+                followSymlinks: false
+            },
+            max_memory_restart: '300M',
+            env: {
+                NODE_ENV: 'production'
+            }
         }
     ]
 };

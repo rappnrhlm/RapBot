@@ -225,7 +225,8 @@ class ExtensionManager {
 
         try {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 7000);
+            const timeoutMs = ext.timeoutMs || 7000;
+            const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
             const res = await fetch(endpointUrl, {
                 method: 'POST',

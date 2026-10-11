@@ -15,6 +15,7 @@ module.exports = {
 
         const helps = {
             // General
+            ai: '🤖 `!ai <pertanyaan>`\nTanya jawab cerdas menggunakan AI.\n• `!ai` : Petunjuk penggunaan\n• `!ai status` : Status & koneksi AI\n• `!ai usage` : Statistik pemakaian & estimasi biaya',
             ping: '🏓 `!ping`\nCek apakah bot aktif dan responsif.',
             menu: '📋 `!menu`\nMenampilkan menu fitur bot untuk seluruh anggota.',
             'admin-menu': '👑 `!admin-menu`\nMenampilkan menu perintah khusus admin grup.',
