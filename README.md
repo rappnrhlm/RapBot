@@ -35,7 +35,7 @@ RapBot/
 
 ### 1. Installation
 ```bash
-git clone <your-repo-url>/RapBot.git core
+git clone https://github.com/rappnrhlm/RapBot/RapBot.git core
 cd core
 npm install
 ```
@@ -46,8 +46,8 @@ Copy `.env.example` to `.env` and set your credentials:
 cp .env.example .env
 ```
 ```env
-ADMIN_PIN=160509
-SUPER_OWNER=6285195532009
+ADMIN_PIN=XXXXXX (YOUR PIN FOR DASHBOARD)
+SUPER_OWNER=628xxxxxxxxxx (YOUR WHATSAPP NUMBER)
 PORT=3001
 ```
 
@@ -77,7 +77,3 @@ Register your external services in `config/extensions.json`:
 ]
 ```
 
----
-
-## 📜 License
-ISC License
