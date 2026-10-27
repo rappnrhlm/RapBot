@@ -120,6 +120,27 @@ async function handleSingleMessage(sock, msg, registry) {
     const botNumber = jidUtils.getJidNumber(sock?.user?.id);
     const isOwner = database.isOwner(senderNumber, botNumber);
 
+    // Forward to Webhook if configured (Async, non-blocking)
+    const webhookUrl = process.env.WEBHOOK_URL;
+    if (webhookUrl) {
+        fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                event: 'message.received',
+                from,
+                senderNumber,
+                isGroup: Boolean(isGroupChat),
+                isOwner: Boolean(isOwner),
+                body,
+                messageId: msg.key?.id,
+                timestamp: msgTimestamp
+            })
+        }).catch(whErr => {
+            // Graceful silent error on webhook dispatch
+        });
+    }
+
     // Private Chat (DM) Gatekeeper: Only owners can interact with the bot in private chat
     if (!isGroupChat) {
         if (!isOwner) {

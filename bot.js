@@ -14,8 +14,12 @@ const { connectToWhatsApp } = require('./core/whatsapp/connection');
 
         // 1. Inisialisasi koneksi MariaDB dan sinkronisasi seluruh tabel & cache
         database.ensureDataFiles();
-        await database.ensureAllTables();
-        console.log('✅ MariaDB tables & low-latency cache siap.');
+        try {
+            await database.ensureAllTables();
+            console.log('✅ MariaDB tables & low-latency cache siap.');
+        } catch (dbErr) {
+            console.warn('⚠️ Gagal terhubung ke MariaDB, beralih ke mode lokal (JSON file storage):', dbErr.message);
+        }
 
         // 2. Load command registry secara dinamis (Core + Extensions)
         const commandRegistry = loadCommands();

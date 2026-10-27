@@ -995,7 +995,7 @@ app.post('/api/bot/broadcast/delete', async (req, res) => {
     }
 });
 
-// Send to Individual Number
+// Send message to Individual Number or Group (Text & Media)
 app.post('/api/bot/send', async (req, res) => {
     try {
         const pin = extractPin(req);
@@ -1004,25 +1004,98 @@ app.post('/api/bot/send', async (req, res) => {
         const sock = getBotSocket();
         if (!sock) return res.status(503).json({ success: false, message: 'Bot tidak terhubung.' });
         
-        const { number, message } = req.body;
-        if (!number || !message) return res.status(400).json({ success: false, message: 'Nomor dan pesan wajib diisi.' });
+        const { number, jid: rawJid, groupId, message, text, mediaUrl, mediaBase64, mediaType, mimetype, fileName, caption } = req.body;
+        const finalMessage = message || text || caption || '';
         
-        // Normalize number to JID format
-        let jid = number.replace(/[^0-9]/g, '');
-        if (jid.startsWith('0')) jid = '62' + jid.substring(1);
-        jid = jid + '@s.whatsapp.net';
+        let targetJid = rawJid || groupId;
+        if (!targetJid && number) {
+            let cleanNumber = String(number).replace(/[^0-9]/g, '');
+            if (cleanNumber.startsWith('0')) cleanNumber = '62' + cleanNumber.substring(1);
+            targetJid = cleanNumber + '@s.whatsapp.net';
+        }
         
-        await sock.sendMessage(jid, { text: message });
+        if (!targetJid) {
+            return res.status(400).json({ success: false, message: 'Tujuan (number atau groupId/jid) wajib diisi.' });
+        }
+        
+        // Normalize target JID if not full
+        if (!targetJid.includes('@')) {
+            targetJid = targetJid + '@s.whatsapp.net';
+        }
+
+        let sendPayload = {};
+        const mediaSource = mediaUrl ? { url: mediaUrl } : (mediaBase64 ? Buffer.from(mediaBase64, 'base64') : null);
+
+        if (mediaSource) {
+            const detectedType = (mediaType || 'image').toLowerCase();
+            if (detectedType === 'image') {
+                sendPayload = { image: mediaSource, caption: finalMessage };
+            } else if (detectedType === 'document' || detectedType === 'pdf') {
+                sendPayload = {
+                    document: mediaSource,
+                    mimetype: mimetype || 'application/pdf',
+                    fileName: fileName || 'document.pdf',
+                    caption: finalMessage
+                };
+            } else if (detectedType === 'video') {
+                sendPayload = { video: mediaSource, caption: finalMessage };
+            } else if (detectedType === 'audio') {
+                sendPayload = { audio: mediaSource, mimetype: mimetype || 'audio/mp4' };
+            } else {
+                sendPayload = { document: mediaSource, mimetype: mimetype || 'application/octet-stream', fileName: fileName || 'file', caption: finalMessage };
+            }
+        } else {
+            if (!finalMessage) {
+                return res.status(400).json({ success: false, message: 'Pesan teks atau media wajib diisi.' });
+            }
+            sendPayload = { text: finalMessage };
+        }
+        
+        await sock.sendMessage(targetJid, sendPayload);
         
         // Log the action
         if (database.logCommand) {
-            database.logCommand(`web-send-direct`, jid, 'web-admin', false);
+            database.logCommand(`api-send`, targetJid, 'api-client', targetJid.endsWith('@g.us'));
         }
         
-        res.json({ success: true, message: `Pesan berhasil dikirim ke ${number}`, jid });
+        res.json({ success: true, message: `Pesan berhasil dikirim ke ${targetJid}`, targetJid });
     } catch (err) {
-        console.error('[API] Send direct error:', err);
+        console.error('[API] Send error:', err);
         res.status(500).json({ success: false, message: 'Gagal mengirim pesan: ' + err.message });
+    }
+});
+
+// Dynamic Extension Registration API for external standalone apps
+app.post('/api/extensions/register', async (req, res) => {
+    try {
+        const pin = extractPin(req);
+        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
+
+        const extData = req.body;
+        if (!extData || !extData.id || !extData.endpoint) {
+            return res.status(400).json({ success: false, message: 'Payload harus memuat "id" dan "endpoint".' });
+        }
+
+        const registered = extensionManager.registerDynamicExtension(extData);
+        res.json({
+            success: true,
+            message: `Extension "${registered.name || registered.id}" berhasil didaftarkan secara dinamis.`,
+            extension: registered
+        });
+    } catch (err) {
+        console.error('[API] Extension register error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.get('/api/extensions', (req, res) => {
+    try {
+        res.json({
+            success: true,
+            extensions: extensionManager.getAllExtensionStates()
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 

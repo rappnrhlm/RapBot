@@ -26,6 +26,79 @@ class ExtensionManager {
         this.configPath = configPath;
         this.extensions = [];
         this.states = new Map(); // id -> { id, state, previousState, lastUpdated, lastError }
+        this.activeRegistry = null;
+    }
+
+    /**
+     * Bind active command registry instance for dynamic runtime registration
+     */
+    setActiveRegistry(registry) {
+        this.activeRegistry = registry;
+    }
+
+    /**
+     * Dynamically register or update an extension and its commands at runtime
+     */
+    registerDynamicExtension(extDef, registry = this.activeRegistry) {
+        if (!extDef || !extDef.id || !extDef.endpoint) {
+            throw new Error('Extension definition requires at least "id" and "endpoint".');
+        }
+
+        const ext = {
+            id: String(extDef.id).trim().toLowerCase(),
+            name: extDef.name || extDef.id,
+            version: extDef.version || '1.0.0',
+            endpoint: extDef.endpoint,
+            timeoutMs: Number(extDef.timeoutMs) || 7000,
+            enabled: extDef.enabled !== false,
+            commands: Array.isArray(extDef.commands) ? extDef.commands : []
+        };
+
+        const existingIndex = this.extensions.findIndex(e => e.id === ext.id);
+        if (existingIndex >= 0) {
+            this.extensions[existingIndex] = ext;
+        } else {
+            this.extensions.push(ext);
+        }
+
+        this.setExtensionState(ext.id, ExtensionState.LOADED);
+
+        const targetRegistry = registry || this.activeRegistry;
+        if (targetRegistry && ext.enabled !== false) {
+            for (const cmdDef of ext.commands) {
+                const cmdName = cmdDef.name?.toLowerCase();
+                if (!cmdName) continue;
+
+                const bridgeCommand = {
+                    name: cmdName,
+                    aliases: (cmdDef.aliases || []).map(a => a.toLowerCase()),
+                    description: cmdDef.description || `Provided by ${ext.name || ext.id}`,
+                    category: cmdDef.category || ext.id || 'extension',
+                    isExtension: true,
+                    extensionInfo: {
+                        id: ext.id,
+                        name: ext.name || ext.id,
+                        version: ext.version || '1.0.0',
+                        endpoint: ext.endpoint
+                    },
+                    execute: async (ctx) => {
+                        await this.dispatchCommand(ext, cmdName, ctx);
+                    }
+                };
+
+                targetRegistry.set(cmdName, bridgeCommand);
+                if (Array.isArray(bridgeCommand.aliases)) {
+                    for (const alias of bridgeCommand.aliases) {
+                        if (alias) {
+                            targetRegistry.set(alias, bridgeCommand);
+                        }
+                    }
+                }
+                console.log(`[ExtensionManager] ⚡ Dynamic command registered: !${cmdName} -> ${ext.name} (${ext.endpoint})`);
+            }
+        }
+
+        return ext;
     }
 
     /**
@@ -116,6 +189,7 @@ class ExtensionManager {
      * @param {Map<string, Object>} commandRegistry - RapBot command registry map
      */
     registerExtensionCommands(commandRegistry) {
+        this.setActiveRegistry(commandRegistry);
         this.loadExtensions();
 
         for (const ext of this.extensions) {
