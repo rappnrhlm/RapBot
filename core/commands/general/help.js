@@ -13,6 +13,30 @@ module.exports = {
         const inGroup = typeof isGroupChat === 'boolean' ? isGroupChat : jidUtils.isGroup(from);
         const isOwner = database.isOwner(senderNumber);
 
+        const stikerHelp = `🎨 *CARA PENGGUNAAN !stiker*
+
+Bisa dari *foto* biasa, *video*, maupun media *sekali lihat (View Once)*. Cukup kirim media dengan caption \`!stiker\` atau reply media yang mau dijadikan stiker.
+
+📷 *Kalo Foto:*
+Tinggal reply fotonya lalu ketik:
+\`!stiker\`
+_(Otomatis jadi stiker gambar statis biasa)_
+
+🎬 *Kalo Video:*
+Bisa dipotong sesuai menit/detik yang kamu mau (maksimal 5 detik per stiker):
+• \`!stiker\`
+  Ambil 5 detik pertama dari video.
+• \`!stiker 10\`
+  Mulai dari detik ke-10 (durasi default 5 detik).
+• \`!stiker 10 3\`
+  Mulai dari detik ke-10, durasi cuma 3 detik.
+
+💡 *Catatan:*
+• Format waktu: \`!stiker [detik mulai] [durasi]\` (khusus video).
+• Durasi video maksimal 5 detik.
+• Media sekali lihat (View Once) bisa langsung di-reply.
+• Alias lain: \`!sticker\`, \`!s\``;
+
         const helps = {
             // General
             ai: '🤖 `!ai <pertanyaan>`\nTanya jawab cerdas menggunakan AI.\n• `!ai` : Petunjuk penggunaan\n• `!ai status` : Status & koneksi AI\n• `!ai usage` : Statistik pemakaian & estimasi biaya',
@@ -28,9 +52,9 @@ module.exports = {
             viewonce: '🔓 `!culik`\nReply pesan foto/video sekali lihat (View Once) untuk mengambilnya.',
 
             // Sticker
-            stiker: '🎨 `!stiker`\nKirim gambar dengan caption `!stiker` atau reply gambar untuk dijadikan stiker WhatsApp.',
-            sticker: '🎨 `!stiker`\nKirim gambar dengan caption `!stiker` atau reply gambar.',
-            s: '🎨 `!stiker`\nKirim gambar dengan caption `!s` atau reply gambar.',
+            stiker: stikerHelp,
+            sticker: stikerHelp,
+            s: stikerHelp,
             smeme: '🎨 `!smeme <teks atas|teks bawah>`\nKirim/reply gambar atau stiker dengan caption `!smeme teks atas|teks bawah` untuk membuat stiker meme.',
             brat: '🎨 `!brat <teks>`\nMembuat stiker teks bergaya Brat aesthetic (hijau lime / putih).\nContoh: `!brat halo dunia`',
             toimg: '🖼️ `!toimg`\nReply stiker dengan `!toimg` untuk mengubahnya kembali menjadi foto/gambar.',
@@ -97,7 +121,7 @@ module.exports = {
             // 2. Core Sticker & Media
             sections.push(
 `🎨 *STICKER & MEDIA*
-│ \`!stiker\` — Ubah gambar jadi stiker (caption/reply)
+│ \`!stiker\` — Ubah gambar/video jadi stiker (caption/reply)
 │ \`!toimg\` — Ubah stiker kembali jadi foto/gambar (reply)
 │ \`!culik\` — Ambil foto/video sekali lihat (reply view once)
 │ \`!smeme <atas|bawah>\` — Buat stiker meme teks
