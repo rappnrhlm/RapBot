@@ -13,9 +13,22 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Shared Auth and Socket references
-const { ADMIN_PIN, validatePin, extractPin } = require('./auth');
+const { ADMIN_PIN, validatePin, extractPin, authenticateRequest } = require('./auth');
 const { setBotSocket, getBotSocket, getBotStatus } = require('./socket');
 const extensionManager = require('../core/extensions/manager');
+const apiKeyService = require('../services/apiKeyService');
+
+// Middleware helper to require Superuser Access (via PIN or API Token)
+function requireAuth(req, res, next) {
+    const authResult = authenticateRequest(req);
+    if (!authResult.success) {
+        return res.status(authResult.statusCode || 401).json({
+            success: false,
+            message: authResult.message || 'Akses ditolak.'
+        });
+    }
+    next();
+}
 
 // ----------------------------------------------------
 // AUTH & PIN VERIFICATION API
@@ -29,6 +42,67 @@ app.post('/api/auth/verify-pin', (req, res) => {
         return res.json({ success: true, message: 'PIN valid! Akses Superuser berhasil diaktifkan.' });
     }
     return res.status(401).json({ success: false, message: 'PIN yang dimasukkan tidak cocok dengan ADMIN_PIN server.' });
+});
+
+// ----------------------------------------------------
+// API KEY MANAGEMENT (OPSI B - SECURE TOKENS)
+// ----------------------------------------------------
+app.get('/api/keys', requireAuth, (req, res) => {
+    try {
+        const keys = apiKeyService.listApiKeys();
+        res.json({ success: true, data: keys });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Gagal memuat API Keys: ' + err.message });
+    }
+});
+
+app.post('/api/keys', requireAuth, (req, res) => {
+    try {
+        const { name, description } = req.body || {};
+        if (!name || !name.trim()) {
+            return res.status(400).json({ success: false, message: 'Nama/Label token wajib diisi.' });
+        }
+        const newKey = apiKeyService.createApiKey({
+            name: name.trim(),
+            description: (description || '').trim(),
+            createdBy: req.authType === 'token' ? `Token: ${req.apiKey?.name || 'api'}` : 'Admin Dashboard'
+        });
+
+        res.json({
+            success: true,
+            message: 'API Key berhasil dibuat. Salin sekarang karena token lengkap hanya ditampilkan sekali!',
+            data: newKey
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Gagal membuat API Key: ' + err.message });
+    }
+});
+
+app.delete('/api/keys/:id', requireAuth, (req, res) => {
+    try {
+        const id = req.params.id;
+        const deleted = apiKeyService.revokeApiKey(id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: 'API Key tidak ditemukan.' });
+        }
+        res.json({ success: true, message: 'API Key berhasil dicabut/dihapus permanen.' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Gagal menghapus API Key: ' + err.message });
+    }
+});
+
+app.post('/api/keys/:id/toggle', requireAuth, (req, res) => {
+    try {
+        const id = req.params.id;
+        const { isActive } = req.body;
+        const updated = apiKeyService.toggleApiKeyStatus(id, isActive);
+        if (!updated) {
+            return res.status(404).json({ success: false, message: 'API Key tidak ditemukan.' });
+        }
+        res.json({ success: true, message: `Status API Key berhasil diubah menjadi ${updated.isActive ? 'Aktif' : 'Nonaktif'}.`, data: updated });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Gagal mengubah status API Key: ' + err.message });
+    }
 });
 
 // ----------------------------------------------------
@@ -143,13 +217,8 @@ app.get('/api/owners', (req, res) => {
     });
 });
 
-app.post('/api/owners', async (req, res) => {
-    const { name, number, pin } = req.body;
-    const currentPin = pin || extractPin(req);
-
-    if (!validatePin(currentPin)) {
-        return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-    }
+app.post('/api/owners', requireAuth, async (req, res) => {
+    const { name, number } = req.body;
 
     const cleanName = String(name || '').trim();
     const cleanNumber = normalizePhoneNumber(number);
@@ -169,14 +238,9 @@ app.post('/api/owners', async (req, res) => {
     });
 });
 
-app.put('/api/owners/:number', async (req, res) => {
+app.put('/api/owners/:number', requireAuth, async (req, res) => {
     const oldNumber = normalizePhoneNumber(req.params.number);
-    const { name, number, pin } = req.body;
-    const currentPin = pin || extractPin(req);
-
-    if (!validatePin(currentPin)) {
-        return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-    }
+    const { name, number } = req.body;
 
     const cleanName = String(name || '').trim();
     const cleanNumber = normalizePhoneNumber(number);
@@ -196,13 +260,8 @@ app.put('/api/owners/:number', async (req, res) => {
     });
 });
 
-app.delete('/api/owners/:number', async (req, res) => {
+app.delete('/api/owners/:number', requireAuth, async (req, res) => {
     const number = normalizePhoneNumber(req.params.number);
-    const currentPin = extractPin(req);
-
-    if (!validatePin(currentPin)) {
-        return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-    }
 
     if (database.isSuperOwner(number)) {
         return res.status(403).json({ success: false, message: 'Super owner tidak bisa dihapus.' });
@@ -506,14 +565,9 @@ app.get('/api/features', (req, res) => {
 });
 
 // Register new group
-app.post('/api/groups', async (req, res) => {
+app.post('/api/groups', requireAuth, async (req, res) => {
     try {
-        const { id, name, groupName, type, role, parentGroupId, parentId, settings, pin } = req.body;
-        const currentPin = pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
+        const { id, name, groupName, type, role, parentGroupId, parentId, settings } = req.body;
 
         const rawParent = parentGroupId !== undefined ? parentGroupId : parentId;
         const cleanParent = (rawParent && rawParent !== 'none' && rawParent !== 'unlink' && rawParent !== 'null') ? rawParent : null;
@@ -540,16 +594,11 @@ app.post('/api/groups', async (req, res) => {
 });
 
 // Link Child Group to Parent Group (1-Click Linking)
-app.post('/api/groups/link', async (req, res) => {
+app.post('/api/groups/link', requireAuth, async (req, res) => {
     try {
         const childGroupId = req.body.childGroupId || req.body.groupId || req.body.id || req.body.sourceId;
         const rawParent = req.body.parentGroupId || req.body.parentId || req.body.targetParent || req.body.parent;
         const parentGroupId = (rawParent && rawParent !== 'none' && rawParent !== 'unlink' && rawParent !== 'null') ? rawParent : null;
-        const currentPin = req.body.pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
 
         if (!childGroupId) {
             return res.status(400).json({ success: false, message: 'Grup asal (child) wajib dipilih.' });
@@ -585,15 +634,10 @@ app.post('/api/groups/link', async (req, res) => {
 });
 
 // Update group
-app.put('/api/groups/:id', async (req, res) => {
+app.put('/api/groups/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, groupName, type, role, parentGroupId, parentId, settings, pin } = req.body;
-        const currentPin = pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
+        const { name, groupName, type, role, parentGroupId, parentId, settings } = req.body;
 
         const rawParent = parentGroupId !== undefined ? parentGroupId : parentId;
         const cleanParent = (rawParent && rawParent !== 'none' && rawParent !== 'unlink' && rawParent !== 'null') ? rawParent : (rawParent === '' || rawParent === null ? null : undefined);
@@ -618,14 +662,9 @@ app.put('/api/groups/:id', async (req, res) => {
 });
 
 // Delete group
-app.delete('/api/groups/:id', async (req, res) => {
+app.delete('/api/groups/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const currentPin = extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
 
         const result = await database.deleteGroup(id);
         if (!result.success) {
@@ -650,14 +689,9 @@ app.get('/api/autoreplies', (req, res) => {
     }
 });
 
-app.post('/api/autoreplies', async (req, res) => {
+app.post('/api/autoreplies', requireAuth, async (req, res) => {
     try {
-        const { keyword, trigger, response, matchType, ownerOnly, groupId, pin } = req.body;
-        const currentPin = pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
+        const { keyword, trigger, response, matchType, ownerOnly, groupId } = req.body;
 
         const targetTrigger = trigger || keyword;
         const result = await database.addAutoreply(
@@ -678,15 +712,10 @@ app.post('/api/autoreplies', async (req, res) => {
     }
 });
 
-app.put('/api/autoreplies/:id', async (req, res) => {
+app.put('/api/autoreplies/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { keyword, trigger, response, ownerOnly, groupId, pin } = req.body;
-        const currentPin = pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
+        const { keyword, trigger, response, ownerOnly, groupId } = req.body;
 
         const result = await database.editAutoreply(
             id,
@@ -710,14 +739,9 @@ app.put('/api/autoreplies/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/autoreplies/:keyword', async (req, res) => {
+app.delete('/api/autoreplies/:keyword', requireAuth, async (req, res) => {
     try {
         const { keyword } = req.params;
-        const currentPin = extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
 
         const result = await database.deleteAutoreply(keyword);
         if (!result.success) {
@@ -744,14 +768,9 @@ app.get('/api/welcome', (req, res) => {
     }
 });
 
-app.post('/api/welcome', async (req, res) => {
+app.post('/api/welcome', requireAuth, async (req, res) => {
     try {
-        const { config, pin, groupId, enabled, text, mediaPath } = req.body;
-        const currentPin = pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
+        const { config, groupId, enabled, text, mediaPath } = req.body;
 
         const configObj = (config && typeof config === 'object') ? config : {
             enabled: enabled !== undefined ? Boolean(enabled) : true,
@@ -820,14 +839,9 @@ app.get('/api/stats/commands', async (req, res) => {
 // ----------------------------------------------------
 
 // Broadcast / Send message to target WhatsApp JID or group categories
-app.post('/api/bot/broadcast', async (req, res) => {
+app.post('/api/bot/broadcast', requireAuth, async (req, res) => {
     try {
-        const { target, targetJid, message, pin } = req.body;
-        const currentPin = pin || extractPin(req);
-
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
+        const { target, targetJid, message } = req.body;
 
         if (!message || !String(message).trim()) {
             return res.status(400).json({ success: false, message: 'Isi pesan siaran wajib diisi.' });
@@ -918,10 +932,8 @@ app.post('/api/bot/broadcast', async (req, res) => {
 });
 
 // Get broadcast history
-app.get('/api/bot/broadcasts', (req, res) => {
+app.get('/api/bot/broadcasts', requireAuth, (req, res) => {
     try {
-        const pin = extractPin(req);
-        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
         const list = database.getBroadcasts(30);
         res.json({ success: true, broadcasts: list });
     } catch (err) {
@@ -931,11 +943,8 @@ app.get('/api/bot/broadcasts', (req, res) => {
 });
 
 // Undo / Delete broadcast messages for everyone
-app.post('/api/bot/broadcast/delete', async (req, res) => {
+app.post('/api/bot/broadcast/delete', requireAuth, async (req, res) => {
     try {
-        const pin = extractPin(req);
-        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-
         const sock = getBotSocket();
         if (!sock) {
             return res.status(503).json({ success: false, message: 'Bot WhatsApp sedang offline / belum terhubung.' });
@@ -996,11 +1005,8 @@ app.post('/api/bot/broadcast/delete', async (req, res) => {
 });
 
 // Send message to Individual Number or Group (Text & Media)
-app.post('/api/bot/send', async (req, res) => {
+app.post('/api/bot/send', requireAuth, async (req, res) => {
     try {
-        const pin = extractPin(req);
-        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        
         const sock = getBotSocket();
         if (!sock) return res.status(503).json({ success: false, message: 'Bot tidak terhubung.' });
         
@@ -1066,11 +1072,8 @@ app.post('/api/bot/send', async (req, res) => {
 });
 
 // Dynamic Extension Registration API for external standalone apps
-app.post('/api/extensions/register', async (req, res) => {
+app.post('/api/extensions/register', requireAuth, async (req, res) => {
     try {
-        const pin = extractPin(req);
-        if (!validatePin(pin)) return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-
         const extData = req.body;
         if (!extData || !extData.id || !extData.endpoint) {
             return res.status(400).json({ success: false, message: 'Payload harus memuat "id" dan "endpoint".' });
@@ -1100,13 +1103,8 @@ app.get('/api/extensions', (req, res) => {
 });
 
 // Sync / Flush in-memory cache with database
-app.post('/api/bot/sync', async (req, res) => {
+app.post('/api/bot/sync', requireAuth, async (req, res) => {
     try {
-        const currentPin = extractPin(req);
-        if (!validatePin(currentPin)) {
-            return res.status(401).json({ success: false, message: 'PIN admin salah.' });
-        }
-
         await database.refreshDatabaseCache();
         res.json({ success: true, message: 'Cache data berhasil disinkronisasi.' });
     } catch (err) {
